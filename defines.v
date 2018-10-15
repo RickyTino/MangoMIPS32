@@ -3,9 +3,16 @@ Filename:	defines.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
+/*--------------------Constant--------------------*/
+`define		true				1'b1
+`define     false               1'b0
+`define     ALUWidth			8
 
 /*--------------------Bus Width--------------------*/
-
+`define		DWord				63:0
+`define		Word				31:0
+`define		ALUCtrl				`ALUWidth-1:0
+`define		
 
 /*--------------------Encoding--------------------*/
 //Opcode
@@ -120,3 +127,10 @@ Version:	Unreleased
 `define		C0F_TLBP			6'b001000
 `define		C0F_ERET			6'b011000
 `define		C0F_WAIT			6'b100000
+
+/*--------------------ALUCtrl--------------------*/
+`define		ALU_NOP				`ALUWidth'h00;
+`define		ALU_AND             `ALUWidth'h01;
+`define		ALU_OR              `ALUWidth'h02;
+`define		ALU_NOR             `ALUWidth'h03;
+`define     ALU_XOR             `ALUWidth'h04;

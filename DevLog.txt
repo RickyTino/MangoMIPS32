@@ -4,4 +4,4 @@
 - 创建了工作目录MangoMIPS32
 - 创建了README.md和.gitignore
 - 创建了DevLog.txt（该文件）作为工作开发日志
-- 创建了defines.v，增加了指令译码的宏定义，预留了总线宽度定义的位置
+- 创建了defines.v，增加了完整指令译码的宏定义和部分其他宏定义
