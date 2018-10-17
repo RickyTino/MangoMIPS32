@@ -4,15 +4,21 @@ Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 /*--------------------Constant--------------------*/
-`define		true				1'b1
-`define     false               1'b0
-`define     ALUWidth			8
+`define		true				 1'b1
+`define     false                1'b0
+`define     ZeroWord			32'h0
+`define     ZeroDWord           64'h0
+`define     ZeroReg				 5'h0
+`define     WrDisable            4'h0
+`define     ALUOp_W 			    8
 
 /*--------------------Bus Width--------------------*/
 `define		DWord				63:0
 `define		Word				31:0
-`define		ALUCtrl				`ALUWidth-1:0
-`define		
+`define		HardInt              5:0
+`define     RegAddr              4:0
+`define     ByteWEn              3:0
+`define		ALUOp				`ALUWidth-1:0
 
 /*--------------------Encoding--------------------*/
 //Opcode
@@ -128,9 +134,73 @@ Version:	Unreleased
 `define		C0F_ERET			6'b011000
 `define		C0F_WAIT			6'b100000
 
-/*--------------------ALUCtrl--------------------*/
-`define		ALU_NOP				`ALUWidth'h00;
-`define		ALU_AND             `ALUWidth'h01;
-`define		ALU_OR              `ALUWidth'h02;
-`define		ALU_NOR             `ALUWidth'h03;
-`define     ALU_XOR             `ALUWidth'h04;
+/*--------------------ALUOp--------------------*/
+`define     ALU_NOP				`ALUOp_W'h00
+
+`define     ALU_AND				`ALUOp_W'h01
+`define     ALU_OR				`ALUOp_W'h02
+`define     ALU_XOR				`ALUOp_W'h03
+`define     ALU_NOR				`ALUOp_W'h04
+
+`define     ALU_SLL				`ALUOp_W'h05
+`define     ALU_SRL				`ALUOp_W'h06
+`define     ALU_SRA				`ALUOp_W'h07
+
+`define     ALU_MOVZ			`ALUOp_W'h08
+`define     ALU_MOVN			`ALUOp_W'h09
+`define     ALU_MFHI			`ALUOp_W'h0A
+`define     ALU_MTHI			`ALUOp_W'h0B
+`define     ALU_MFLO			`ALUOp_W'h0C
+`define     ALU_MTLO			`ALUOp_W'h0D
+
+`define     ALU_SLT				`ALUOp_W'h0E
+`define     ALU_SLTU			`ALUOp_W'h0F
+`define     ALU_ADD				`ALUOp_W'h10
+`define     ALU_ADDU			`ALUOp_W'h11
+`define     ALU_SUB				`ALUOp_W'h12
+`define     ALU_SUBU			`ALUOp_W'h13
+`define     ALU_MULT			`ALUOp_W'h14
+`define     ALU_MULTU			`ALUOp_W'h15
+`define     ALU_MUL				`ALUOp_W'h16
+`define     ALU_CLZ				`ALUOp_W'h17
+`define     ALU_CLO				`ALUOp_W'h18
+
+`define     ALU_MADD			`ALUOp_W'h19
+`define     ALU_MADDU			`ALUOp_W'h1A
+`define     ALU_MSUB			`ALUOp_W'h1B
+`define     ALU_MSUBU			`ALUOp_W'h1C
+
+`define     ALU_DIV				`ALUOp_W'h1D
+`define     ALU_DIVU			`ALUOp_W'h1E
+
+`define     ALU_JR				`ALUOp_W'h1F
+`define     ALU_JALR			`ALUOp_W'h20
+`define     ALU_J				`ALUOp_W'h21
+`define     ALU_JAL				`ALUOp_W'h22
+`define     ALU_BEQ				`ALUOp_W'h23
+`define     ALU_BNE				`ALUOp_W'h24
+`define     ALU_BGTZ			`ALUOp_W'h25
+`define     ALU_BLEZ			`ALUOp_W'h26
+`define     ALU_BGEZ			`ALUOp_W'h27
+`define     ALU_BGEZAL			`ALUOp_W'h28
+`define     ALU_BLTZ			`ALUOp_W'h29
+`define     ALU_BLTZAL			`ALUOp_W'h2A
+
+`define     ALU_LB				`ALUOp_W'h2B
+`define     ALU_LBU				`ALUOp_W'h2C
+`define     ALU_LH				`ALUOp_W'h2D
+`define     ALU_LHU				`ALUOp_W'h2E
+`define     ALU_LW				`ALUOp_W'h2F
+`define     ALU_LWL				`ALUOp_W'h30
+`define     ALU_LWR				`ALUOp_W'h31
+`define     ALU_SB				`ALUOp_W'h32
+`define     ALU_SH				`ALUOp_W'h33
+`define     ALU_SW				`ALUOp_W'h34
+`define     ALU_SWL				`ALUOp_W'h35
+`define     ALU_SWR				`ALUOp_W'h36
+
+`define     ALU_MFC0			`ALUOp_W'h37
+`define     ALU_MTC0			`ALUOp_W'h38
+`define     ALU_SYSCALL         `ALUOp_W'h39
+`define     ALU_BREAK			`ALUOp_W'h3A 
+`define     ALU_ERET            `ALUOp_W'h3B
