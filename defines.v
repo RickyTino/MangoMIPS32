@@ -3,6 +3,7 @@ Filename:	defines.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
+
 /*--------------------Constant--------------------*/
 `define		true				 1'b1
 `define     false                1'b0
@@ -11,6 +12,8 @@ Version:	Unreleased
 `define     ZeroReg				 5'h0
 `define     WrDisable            4'h0
 `define     ALUOp_W 			    8
+
+`define     PC_Incr             32'd4
 
 /*--------------------Bus Width--------------------*/
 `define		DWord				63:0
