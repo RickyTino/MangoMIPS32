@@ -7,16 +7,16 @@ Version:	Unreleased
 
 module PC 
 (
-    input  wire         clk,
-    input  wire         rst,
+    input  wire            clk,
+    input  wire            rst,
     
-    output reg  [`Word] pc,
-    output reg          inst_en
+    output reg  [`AddrBus] pc,
+    output reg             inst_en
 );
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            pc      <= `ZeroWord;
+            pc      <= `Entr_Start;
             inst_en <= `false;
         end
         else begin

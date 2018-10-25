@@ -19,3 +19,15 @@
 --------------------------------------------------
 [20181024]
 - 把源代码移动到Src文件夹，整理了目录结构
+- 微调defines.v
+--------------------------------------------------
+[20181025]
+- 决定第一批实现的指令有：
+-- SLL/SRL/SRA
+-- SLLV/SRLV/SRAV
+-- MOVZ/MOVN
+-- ADD/ADDU/SUB/SUBU/AND/OR/XOR/NOR/SLT/SLTU
+-- ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI
+- 实现这些指令到EX阶段，后续未写
+- 下一批实现：CLO/CLZ，HI/LO移动
+- CLO/CLZ已有思路，类似二分法，极大减少层数

@@ -12,15 +12,15 @@ module RegFile
 
 	input  wire            we,
 	input  wire [`RegAddr] waddr, 
-	input  wire [`Word]    wdata,
+	input  wire [`DataBus] wdata,
 
 	input  wire            re1, 
 	input  wire [`RegAddr] r1addr,
-	output reg  [`Word]    r1data,
+	output reg  [`DataBus] r1data,
 
 	input  wire            re2,
 	input  wire [`RegAddr] r2addr,
-	output reg  [`Word]    r2data
+	output reg  [`DataBus] r2data
 );
 
 	reg [`Word] GPR [0:31];
@@ -37,21 +37,19 @@ module RegFile
 		end
 	end
 	
-    wire r1zero = r1addr == `ZeroReg;
-    wire r1whaz = (r1addr == waddr) && we;
-    wire r2zero = r2addr == `ZeroReg;
-    wire r2whaz = (r2addr == waddr) && we;
-    wire r1case = {r1zero, r1whaz, re1};
-    wire r2case = {r2zero, r2whaz, re2};
+    wire r1_zero = r1addr == `ZeroReg;
+    wire r1w_haz = (r1addr == waddr) && we;
+    wire r2_zero = r2addr == `ZeroReg;
+    wire r2w_haz = (r2addr == waddr) && we;
 
 	always @(*) begin
-		case (r1case)
+		case ({r1_zero, r1w_haz, re1})
             3'b011:  r1data <= wdata;
             3'b001:  r1data <= GPR[r1addr];
             default: r1data <= `ZeroWord;
         endcase
 		
-        case (r2case)
+        case ({r2_zero, r2w_haz, re2})
             3'b011:  r2data <= wdata;
             3'b001:  r2data <= GPR[r2addr];
             default: r2data <= `ZeroWord;

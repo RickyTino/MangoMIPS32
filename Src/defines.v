@@ -5,23 +5,30 @@ Version:	Unreleased
 **************************************************/
 
 /*--------------------Constant--------------------*/
-`define		true				 1'b1
-`define     false                1'b0
-`define     ZeroWord			32'h0
-`define     ZeroDWord           64'h0
-`define     ZeroReg				 5'h0
-`define     WrDisable            4'h0
+//Width constant
 `define     ALUOp_W 			    8
 
+//Global constant
+`define		true				 1'b1
+`define     false                1'b0
+`define     ZeroReg				 5'h0
+`define     ZeroWord			32'h0
+`define     ZeroDWord           64'h0
+`define     WrDisable            4'h0
 `define     PC_Incr             32'd4
+
+//Entrance address
+`define     Ent_Start           32'hBFC00000
 
 /*--------------------Bus Width--------------------*/
 `define		DWord				63:0
 `define		Word				31:0
+`define     AddrBus             31:0
+`define     DataBus             31:0
 `define		HardInt              5:0
 `define     RegAddr              4:0
 `define     ByteWEn              3:0
-`define		ALUOp				`ALUWidth-1:0
+`define		ALUOp				`ALUOp_W-1:0
 
 /*--------------------Encoding--------------------*/
 //Opcode

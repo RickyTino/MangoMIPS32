@@ -10,11 +10,11 @@ module IF_ID
     input  wire         clk,
     input  wire         rst,
 
-    input  wire [`Word] if_pc,
-    input  wire [`Word] if_inst,
+    input  wire [`AddrBus] if_pc,
+    input  wire [`DataBus] if_inst,
 
-    output reg  [`Word] id_pc,
-    output reg  [`Word] id_inst
+    output reg  [`AddrBus] id_pc,
+    output reg  [`DataBus] id_inst
 );
 
     always @(posedge clk, posedge rst) begin
