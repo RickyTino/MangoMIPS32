@@ -31,36 +31,35 @@ module MangoMIPS_Core_Top
     wire [`AddrBus] id_pc;
     wire [`DataBus] id_inst;
 
-    wire [`DataBus] id_op1;
-    wire [`DataBus] id_op2;
-    wire [`AluOp  ] id_aluop;
+    wire [`DataBus] id_opr1;
+    wire [`DataBus] id_opr2;
+    wire [`ALUOp  ] id_aluop;
     wire            id_wreg;
     wire [`RegAddr] id_wraddr;
 
     wire [`AddrBus] ex_pc;
-    wire [`DataBus] ex_op1;
-    wire [`DataBus] ex_op2;
-    wire [`AluOp  ] ex_aluop;
+    wire [`DataBus] ex_opr1;
+    wire [`DataBus] ex_opr2;
+    wire [`ALUOp  ] ex_aluop;
     wire            ex_wreg;
     wire [`RegAddr] ex_wraddr;
 
     wire [`DataBus] ex_alures;
     
     wire [`AddrBus] mem_pc;
-    wire [`AluOp  ] mem_aluop;
+    wire [`ALUOp  ] mem_aluop;
     wire [`DataBus] mem_alures;
     wire            mem_wreg;
     wire [`RegAddr] mem_wraddr;
 
     wire [`AddrBus] wb_pc;
-    wire [`AluOp  ] wb_aluop;
+    wire [`ALUOp  ] wb_aluop;
     wire [`DataBus] wb_alures;
     wire            wb_wreg;
     wire [`RegAddr] wb_wraddr;
 
     wire [`DataBus] wb_wrdata;
  
-    
     PC pc (
         .clk     (clk      ),
         .rst     (rst      ),
@@ -68,7 +67,7 @@ module MangoMIPS_Core_Top
         .pc      (ibus_addr),
         .inst_en (ibus_en  )
     );
-
+    
     IF_ID if_id (
         .clk     (clk       ),
         .rst     (rst       ),
@@ -90,8 +89,8 @@ module MangoMIPS_Core_Top
         .r2addr     (r2addr    ),
         .r2data     (r2data    ),
 
-        .op1        (id_op1    ),
-        .op2        (id_op2    ),
+        .opr1        (id_opr1    ),
+        .opr2        (id_opr2    ),
         .aluop      (id_aluop  ),
         .wreg       (id_wreg   ),
         .wraddr     (id_wraddr ),
@@ -129,23 +128,23 @@ module MangoMIPS_Core_Top
 
         .id_pc     (id_pc    ),
         .id_aluop  (id_aluop ),
-        .id_op1    (id_op1   ),
-        .id_op2    (id_op2   ),
+        .id_opr1    (id_opr1   ),
+        .id_opr2    (id_opr2   ),
         .id_wraddr (id_wraddr),
         .id_wreg   (id_wreg  ),
 
         .ex_pc     (ex_pc    ),
         .ex_aluop  (ex_aluop ),
-        .ex_op1    (ex_op1   ),
-        .ex_op2    (ex_op2   ),
+        .ex_opr1    (ex_opr1   ),
+        .ex_opr2    (ex_opr2   ),
         .ex_wraddr (ex_wraddr),
         .ex_wreg   (ex_wreg  )
     );
 
     ALU alu (
         .aluop  (ex_aluop ),
-        .op1    (ex_op1   ),
-        .op2    (ex_op2   ),
+        .opr1    (ex_opr1   ),
+        .opr2    (ex_opr2   ),
         .alures (ex_alures)
     );
 
@@ -167,7 +166,7 @@ module MangoMIPS_Core_Top
     );
     
     MemAccess memaccess (
-        .pc         (pc        ),
+        .pc         (mem_pc    ),
         .aluop      (mem_aluop ),
         .alures     (mem_alures),
         
@@ -178,7 +177,6 @@ module MangoMIPS_Core_Top
         .dbus_wdata (dbus_wdata)
     );
     
-
     MEM_WB mem_wb (
         .clk         (clk       ),
         .rst         (rst       ),
@@ -193,16 +191,14 @@ module MangoMIPS_Core_Top
         .wb_aluop   (wb_aluop  ),
         .wb_alures  (wb_alures ),
         .wb_wraddr  (wb_wraddr ),
-        .wb_wreg    (wb_wreg   ),
+        .wb_wreg    (wb_wreg   )
     );
 
-    
     WriteBack writeback (
         .alures (wb_alures),
         .wrdata (wb_wrdata)
     );
     
-
 endmodule
 
 

@@ -18,9 +18,9 @@ module Decode
     output reg  [`RegAddr] r2addr,
     input  wire [`DataBus] r2data,
 
-    output  reg [`DataBus] op1,
-    output  reg [`DataBus] op2,
-    output  reg [`AluOp  ] aluop,
+    output  reg [`DataBus] opr1,
+    output  reg [`DataBus] opr2,
+    output  reg [`ALUOp  ] aluop,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
@@ -30,7 +30,7 @@ module Decode
 	
 	input  wire            mem_wreg,
 	input  wire [`RegAddr] mem_wraddr,
-	input  wire [`DataBus] mem_alures,
+	input  wire [`DataBus] mem_alures
 );
 
     wire [ 5:0] opcode    = inst[31:26];
@@ -65,7 +65,7 @@ module Decode
         case (opcode)
             `OP_SPECIAL: begin
                 if(sa == 5'b00000) begin
-                    case (funct) begin
+                    case (funct)
                         `SP_SLLV: begin
                             instvalid <= `true;
                             aluop     <= `ALU_SLL;
@@ -188,7 +188,7 @@ module Decode
                     endcase
                 end
                 else if(rs == 5'b00000) begin
-                    case (funct) begin
+                    case (funct)
                         `SP_SLL: begin
                             instvalid <= `true;
                             aluop     <= `ALU_SLL;
@@ -292,7 +292,7 @@ module Decode
             end
 
             `OP_LUI: begin
-                if(rs = 5'b00000) begin
+                if(rs == 5'b00000) begin
                     instvalid <= `true;
                     aluop     <= `ALU_OR;
                     r1read    <= `true;

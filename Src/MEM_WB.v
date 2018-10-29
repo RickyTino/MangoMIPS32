@@ -11,14 +11,14 @@ module MEM_WB
     input  wire            rst,
 
     input  wire [`AddrBus] mem_pc,
-    input  wire [`AluOp  ] mem_aluop, 
+    input  wire [`ALUOp  ] mem_aluop, 
     input  wire [`DataBus] mem_alures,
     input  wire [`DataBus] mem_memdata,
     input  wire [`RegAddr] mem_wraddr,
     input  wire            mem_wreg,
 
     output reg  [`AddrBus] wb_pc,
-    output reg  [`AluOp  ] wb_aluop, 
+    output reg  [`ALUOp  ] wb_aluop, 
     output reg  [`DataBus] wb_alures,
     output reg  [`DataBus] wb_memdata,
     output reg  [`RegAddr] wb_wraddr,

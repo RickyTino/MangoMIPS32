@@ -11,13 +11,13 @@ module EX_MEM
     input  wire            rst,
 
     input  wire [`AddrBus] ex_pc,
-    input  wire [`AluOp  ] ex_aluop, 
+    input  wire [`ALUOp  ] ex_aluop, 
     input  wire [`DataBus] ex_alures,
     input  wire [`RegAddr] ex_wraddr,
     input  wire            ex_wreg,
 
     output reg  [`AddrBus] mem_pc,
-    output reg  [`AluOp  ] mem_aluop, 
+    output reg  [`ALUOp  ] mem_aluop, 
     output reg  [`DataBus] mem_alures,
     output reg  [`RegAddr] mem_wraddr,
     output reg             mem_wreg

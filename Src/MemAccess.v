@@ -8,7 +8,7 @@ Version:	Unreleased
 module MemAccess
 (   
     input  wire [`AddrBus] pc,
-    input  wire [`AluOp  ] aluop,
+    input  wire [`ALUOp  ] aluop,
     input  wire [`DataBus] alures,
 
     output wire            dbus_en,

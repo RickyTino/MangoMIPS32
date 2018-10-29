@@ -7,9 +7,9 @@ Version:	Unreleased
 
 module ALU
 (
-    input  wire [`AluOp  ] aluop,
-    input  wire [`DataBus] op1,
-    input  wire [`DataBus] op2,
+    input  wire [`ALUOp  ] aluop,
+    input  wire [`DataBus] opr1,
+    input  wire [`DataBus] opr2,
 
     output reg  [`DataBus] alures
 );

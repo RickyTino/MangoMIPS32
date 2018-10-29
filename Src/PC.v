@@ -20,7 +20,7 @@ module PC
             inst_en <= `false;
         end
         else begin
-            pc      <= pc + `PC_Incr;
+            pc      <= inst_en ? pc + `PC_Incr : pc;
             inst_en <= `true;
         end
     end
