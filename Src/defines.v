@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	defines.v
 Author:		RickyTino
-Version:	Unreleased 20181029
+Version:	Unreleased
 **************************************************/
 
 /*--------------------Constant--------------------*/

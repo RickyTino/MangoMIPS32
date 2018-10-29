@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	Decode.v
 Author:		RickyTino
-Version:	Unreleased 20181029
+Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
