@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	EX_MEM.v
 Author:		RickyTino
-Version:	Unreleased
+Version:	Unreleased 20181029
 **************************************************/
 `include "defines.v"
 

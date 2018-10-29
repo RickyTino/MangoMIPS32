@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	Core_Top.v
 Author:		RickyTino
-Version:	Unreleased
+Version:	Unreleased 20181029
 **************************************************/
 `include "defines.v"
 
