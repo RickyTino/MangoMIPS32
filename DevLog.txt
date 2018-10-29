@@ -38,3 +38,13 @@
 - 完成了能运行第一批指令的整体架构
 - 移位、逻辑指令测试通过，算术、移动留待下一批测试
 - 向master分支推送了以上所述的预览版本
+- 第二批指令：
+-- CLO/CLZ
+-- MFHI/MTHI/MFLO/MTLO
+-- SYNC/PREF [作为空指令执行]
+-- MUL/MULT/MULTU
+-- DIV/DIVU
+-- MADD/MADDU/MSUB/MSUBU
+- 为了方便综合出结果和后期调试，加上了NSCSCC2018指定的4个WB级信号作为输出
+- 截至目前CLO/CLZ已经实现，未调试
+- 由于MUL的输出是到寄存器的，暂定乘的阶段都在EX完成，乘累加再挪到MEM，即EX阶段只写HILO，MEM才有对HILO的读操作

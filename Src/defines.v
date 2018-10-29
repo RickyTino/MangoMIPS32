@@ -20,7 +20,8 @@ Version:	Unreleased
 //Entrance address
 `define     Entr_Start           32'hBFC00000
 
-/*--------------------Bus Width--------------------*/
+/*--------------------Vector--------------------*/
+//Bus Width
 `define		DWord				63:0
 `define		Word				31:0
 `define     AddrBus             31:0
@@ -29,6 +30,10 @@ Version:	Unreleased
 `define     RegAddr              4:0
 `define     ByteWEn              3:0
 `define		ALUOp				`ALUOp_W-1:0
+
+//Partial Select
+`define     Hi                  63:32
+`define     Lo                  31:0
 
 /*--------------------Encoding--------------------*/
 //Opcode

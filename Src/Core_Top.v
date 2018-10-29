@@ -18,7 +18,12 @@ module MangoMIPS_Core_Top
     output wire [`AddrBus] dbus_addr,
     input  wire [`DataBus] dbus_rdata,
     output wire [`ByteWEn] dbus_wen,
-    output wire [`DataBus] dbus_wdata
+    output wire [`DataBus] dbus_wdata,
+
+    output wire [`AddrBus] debug_wb_pc,
+    output wire            debug_wb_wreg,
+    output wire [`RegAddr] debug_wb_wraddr,
+    output wire [`DataBus] debug_wb_wrdata
 );
 
     wire            r1read;
@@ -198,6 +203,11 @@ module MangoMIPS_Core_Top
         .alures (wb_alures),
         .wrdata (wb_wrdata)
     );
+    
+    assign debug_wb_pc     = wb_pc;
+    assign debug_wb_wreg   = wb_wreg;
+    assign debug_wb_wraddr = wb_wraddr;
+    assign debug_wb_wrdata = wb_wrdata;
     
 endmodule
 

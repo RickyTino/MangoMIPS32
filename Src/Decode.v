@@ -42,12 +42,12 @@ module Decode
     wire [15:0] immediate = inst[15: 0];
     wire [25:0] j_offset  = inst[25: 0];
 
-    wire [31:0] zero_ext = {16'b0, immediate};
-    wire [31:0] sign_ext = {{16{immediate[15]}}, immediate};
-    wire [31:0] lui_ext  = {immediate, 16'b0};
+    wire [`Word] zero_ext = {16'b0, immediate};
+    wire [`Word] sign_ext = {{16{immediate[15]}}, immediate};
+    wire [`Word] lui_ext  = {immediate, 16'b0};
 
     reg instvalid;
-    reg [31:0] ext_imme;
+    reg [`Word] ext_imme;
 
     //TODO: pcp4/pcp8, 
 
@@ -225,7 +225,23 @@ module Decode
             end
 
             `OP_SPECIAL2: begin
-            
+                if(sa == 5'b00000) begin
+                    case (funct)
+                        `SP2_CLZ: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_CLZ;
+                            r1read    <= `true;
+                            wreg      <= `true;
+                        end
+
+                        `SP2_CLO: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_CLO;
+                            r1read    <= `true;
+                            wreg      <= `true;
+                        end
+                    endcase
+                end
             end
 
             `OP_ADDI: begin
