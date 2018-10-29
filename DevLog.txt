@@ -28,6 +28,11 @@
 -- MOVZ/MOVN
 -- ADD/ADDU/SUB/SUBU/AND/OR/XOR/NOR/SLT/SLTU
 -- ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI
-- 实现这些指令到EX阶段，后续未写
-- 下一批实现：CLO/CLZ，HI/LO移动
-- CLO/CLZ已有思路，类似二分法，极大减少层数
+- 已经实现这些指令的PC/IF/ID/EX段，后续未写
+- 下一批实现：CLO/CLZ，HI/LO移动：CLO/CLZ已有思路，类似二分法，极大减少层数
+--------------------------------------------------
+[20181029]
+- 问题：alu运算结果可能作为写寄存器的数或者load的地址，前送时注意
+- 解决方案：增加memtoreg信号，load相关不在ex/mem进行任何前送
+- 整理了模块结构，重命名部分模块
+- 完成了能运行第一批指令的整体架构

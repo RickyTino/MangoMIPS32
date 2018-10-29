@@ -7,8 +7,8 @@ Version:	Unreleased
 
 module ID_EX
 (
-    input  wire  clk,
-    input  wire  rst,
+    input  wire            clk,
+    input  wire            rst,
 
     input  wire [`AddrBus] id_pc,
     input  wire [`AluOp  ] id_aluop,

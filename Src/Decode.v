@@ -1,20 +1,20 @@
 /********************MangoMIPS32*******************
-Filename:	ID.v
+Filename:	Decode.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module ID
+module Decode
 (
     input  wire [`AddrBus] pc,
     input  wire [`DataBus] inst,
 
-    output reg             re1,
+    output reg             r1read,
     output reg  [`RegAddr] r1addr,
     input  wire [`DataBus] r1data,
 
-    output reg             re2,
+    output reg             r2read,
     output reg  [`RegAddr] r2addr,
     input  wire [`DataBus] r2data,
 
@@ -24,15 +24,13 @@ module ID
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
-//  input  wire [`AluOp]   ex_aluop,
 	input  wire            ex_wreg,
 	input  wire [`RegAddr] ex_wraddr,
-	input  wire [`DataBus] ex_wrdata,
+	input  wire [`DataBus] ex_alures,
 	
-//  input  wire [`AluOp]   mem_aluop,
 	input  wire            mem_wreg,
 	input  wire [`RegAddr] mem_wraddr,
-	input  wire [`DataBus] mem_wrdata,
+	input  wire [`DataBus] mem_alures,
 );
 
     wire [ 5:0] opcode    = inst[31:26];
@@ -296,7 +294,8 @@ module ID
             `OP_LUI: begin
                 if(rs = 5'b00000) begin
                     instvalid <= `true;
-                    aluop     <= `ALU_LUI;
+                    aluop     <= `ALU_OR;
+                    r1read    <= `true;
                     wreg      <= `true;
                     wraddr    <=  rt;
                     ext_imme  <=  lui_ext;
@@ -313,16 +312,16 @@ module ID
     always @(*) begin
         case({r1read, ex_r1_haz, mem_r1_haz})
             3'b110,
-            3'b111:  opr1 <= ex_wrdata;
-            3'b101:  opr1 <= mem_wrdata;
+            3'b111:  opr1 <= ex_alures;
+            3'b101:  opr1 <= mem_alures;
             3'b100:  opr1 <= r1data;
             default: opr1 <= ext_imme;
         endcase
 
         case({r2read, ex_r2_haz, mem_r2_haz})
             3'b110,
-            3'b111:  opr2 <= ex_wrdata;
-            3'b101:  opr2 <= mem_wrdata;
+            3'b111:  opr2 <= ex_alures;
+            3'b101:  opr2 <= mem_alures;
             3'b100:  opr2 <= r2data;
             default: opr2 <= ext_imme;
         endcase

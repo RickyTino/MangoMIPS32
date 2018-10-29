@@ -18,7 +18,7 @@ Version:	Unreleased
 `define     PC_Incr             32'd4
 
 //Entrance address
-`define     Ent_Start           32'hBFC00000
+`define     Entr_Start           32'hBFC00000
 
 /*--------------------Bus Width--------------------*/
 `define		DWord				63:0
@@ -156,25 +156,27 @@ Version:	Unreleased
 `define     ALU_SRL				`ALUOp_W'h06
 `define     ALU_SRA				`ALUOp_W'h07
 
-`define     ALU_MOVZ			`ALUOp_W'h08
-`define     ALU_MOVN			`ALUOp_W'h09
-`define     ALU_MFHI			`ALUOp_W'h0A
-`define     ALU_MTHI			`ALUOp_W'h0B
-`define     ALU_MFLO			`ALUOp_W'h0C
-`define     ALU_MTLO			`ALUOp_W'h0D
+`define     ALU_SLT				`ALUOp_W'h08
+`define     ALU_SLTU			`ALUOp_W'h09
+`define     ALU_ADD				`ALUOp_W'h0A
+`define     ALU_ADDU			`ALUOp_W'h0B
+`define     ALU_SUB				`ALUOp_W'h0C
+`define     ALU_SUBU			`ALUOp_W'h0D
+`define     ALU_CLZ				`ALUOp_W'h0E
+`define     ALU_CLO				`ALUOp_W'h0F
 
-`define     ALU_SLT				`ALUOp_W'h0E
-`define     ALU_SLTU			`ALUOp_W'h0F
-`define     ALU_ADD				`ALUOp_W'h10
-`define     ALU_ADDU			`ALUOp_W'h11
-`define     ALU_SUB				`ALUOp_W'h12
-`define     ALU_SUBU			`ALUOp_W'h13
-`define     ALU_MULT			`ALUOp_W'h14
-`define     ALU_MULTU			`ALUOp_W'h15
-`define     ALU_MUL				`ALUOp_W'h16
-`define     ALU_CLZ				`ALUOp_W'h17
-`define     ALU_CLO				`ALUOp_W'h18
+`define     ALU_MOVZ			`ALUOp_W'h10
+`define     ALU_MOVN			`ALUOp_W'h11
+`define     ALU_MFHI			`ALUOp_W'h12
+`define     ALU_MTHI			`ALUOp_W'h13
+`define     ALU_MFLO			`ALUOp_W'h14
+`define     ALU_MTLO			`ALUOp_W'h15
 
+
+/*
+`define     ALU_MULT			`ALUOp_W'h16
+`define     ALU_MULTU			`ALUOp_W'h17
+`define     ALU_MUL				`ALUOp_W'h18
 `define     ALU_MADD			`ALUOp_W'h19
 `define     ALU_MADDU			`ALUOp_W'h1A
 `define     ALU_MSUB			`ALUOp_W'h1B
@@ -214,3 +216,4 @@ Version:	Unreleased
 `define     ALU_SYSCALL         `ALUOp_W'h39
 `define     ALU_BREAK			`ALUOp_W'h3A 
 `define     ALU_ERET            `ALUOp_W'h3B
+*/

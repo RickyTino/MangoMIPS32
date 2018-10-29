@@ -10,17 +10,17 @@ module RegFile
 	input  wire            clk,
     input  wire            rst, 
 
-	input  wire            we,
-	input  wire [`RegAddr] waddr, 
-	input  wire [`DataBus] wdata,
-
 	input  wire            re1, 
 	input  wire [`RegAddr] r1addr,
 	output reg  [`DataBus] r1data,
 
 	input  wire            re2,
 	input  wire [`RegAddr] r2addr,
-	output reg  [`DataBus] r2data
+	output reg  [`DataBus] r2data,
+
+	input  wire            we,
+	input  wire [`RegAddr] waddr, 
+	input  wire [`DataBus] wdata
 );
 
 	reg [`Word] GPR [0:31];
