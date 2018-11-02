@@ -9,6 +9,8 @@ module ID_EX
 (
     input  wire            clk,
     input  wire            rst,
+    input  wire            stall,
+    input  wire            flush,
 
     input  wire [`AddrBus] id_pc,
     input  wire [`ALUOp  ] id_aluop,
@@ -16,31 +18,46 @@ module ID_EX
     input  wire [`DataBus] id_opr2,
     input  wire [`RegAddr] id_wraddr,
     input  wire            id_wreg,
+    input  wire            id_resfmem,
 
     output reg  [`AddrBus] ex_pc,
     output reg  [`ALUOp  ] ex_aluop,
     output reg  [`DataBus] ex_opr1,
     output reg  [`DataBus] ex_opr2,
     output reg  [`RegAddr] ex_wraddr,
-    output reg             ex_wreg
+    output reg             ex_wreg,
+    output reg             ex_resfmem
 );
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            ex_pc     <= `ZeroWord;
-            ex_aluop  <= `ALU_NOP;
+            ex_pc      <= `ZeroWord;
+            ex_aluop   <= `ALU_NOP;
             ex_opr1    <= `ZeroWord;
             ex_opr2    <= `ZeroWord;
-            ex_wraddr <= `ZeroReg;
-            ex_wreg   <= `false;
+            ex_wraddr  <= `ZeroReg;
+            ex_wreg    <= `false;
+            ex_resfmem <= `false;
         end
         else begin
-            ex_pc     <= id_pc;
-            ex_aluop  <= id_aluop;
-            ex_opr1   <= id_opr1;
-            ex_opr2   <= id_opr2;
-            ex_wraddr <= id_wraddr;
-            ex_wreg   <= id_wreg;
+            if(flush) begin
+                ex_pc      <= `ZeroWord;
+                ex_aluop   <= `ALU_NOP;
+                ex_opr1    <= `ZeroWord;
+                ex_opr2    <= `ZeroWord;
+                ex_wraddr  <= `ZeroReg;
+                ex_wreg    <= `false;
+                ex_resfmem <= `false;
+            end
+            else if(!stall) begin
+                ex_pc      <= id_pc;
+                ex_aluop   <= id_aluop;
+                ex_opr1    <= id_opr1;
+                ex_opr2    <= id_opr2;
+                ex_wraddr  <= id_wraddr;
+                ex_wreg    <= id_wreg;
+                ex_resfmem <= id_resfmem;
+            end
         end
     end
 

@@ -8,8 +8,11 @@ Version:	Unreleased
 module WriteBack
 (
     input  wire [`DataBus] alures,
-    output reg  [`DataBus] wrdata
+    output reg  [`DataBus] wrdata,
+    output wire            stallreq
 );
+
+    assign stallreq = `false;
 
     always @(*) begin
         wrdata <= alures;

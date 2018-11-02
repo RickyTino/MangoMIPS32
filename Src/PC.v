@@ -9,6 +9,9 @@ module PC
 (
     input  wire            clk,
     input  wire            rst,
+    input  wire            stall,
+    input  wire            flush,
+    input  wire [`AddrBus] flush_pc,
     
     output reg  [`AddrBus] pc,
     output reg             inst_en
@@ -20,8 +23,14 @@ module PC
             inst_en <= `false;
         end
         else begin
-            pc      <= inst_en ? pc + `PC_Incr : pc;
-            inst_en <= `true;
+            if(flush) begin
+                pc      <= flush_pc;  //Reserved for exception
+                inst_en <= `false;
+            end
+            else if(!stall) begin
+                pc      <= inst_en ? pc + `PC_Incr : pc;
+                inst_en <= `true;
+            end
         end
     end
 

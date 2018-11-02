@@ -15,10 +15,13 @@ module MemAccess
     output wire [`AddrBus] dbus_addr,
     input  wire [`DataBus] dbus_rdata,
     output wire [`ByteWEn] dbus_wen,
-    output wire [`DataBus] dbus_wdata
-);
+    output wire [`DataBus] dbus_wdata,
 
+    output wire            stallreq
+);
     //Temp
+    assign stallreq   = `false;
+
     assign dbus_addr  = `ZeroWord;
     assign dbus_en    = `false;
     assign dbus_wen   = `WrDisable;

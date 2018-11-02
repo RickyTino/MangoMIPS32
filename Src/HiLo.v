@@ -9,23 +9,19 @@ module HiLo
 (
     input  wire          clk,
     input  wire          rst,
-	input  wire          whi,
-    input  wire          wlo,
+	input  wire          whilo,
 	input  wire [`DWord] wdata,
     output wire [`DWord] rdata
 );
 	reg [`DWord] hilo;
 
 	always @(posedge clk, posedge rst) begin
-		if(rst) 
-			hilo <= `ZeroDWord;
-		else begin
-            if(whi) hilo[`Hi] <= wdata[`Hi];
-            if(wlo) hilo[`Lo] <= wdata[`Lo];
-        end
+		if(rst)
+            hilo <= `ZeroDWord;
+		else if(whilo)
+            hilo <= wdata;
 	end
 
-    assign rdata[`Hi] = whi ? wdata[`Hi] : hilo[`Hi];
-    assign rdata[`Lo] = wlo ? wdata[`Lo] : hilo[`Lo];
+    assign rdata = whilo ? wdata : hilo;
 	
 endmodule

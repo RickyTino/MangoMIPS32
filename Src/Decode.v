@@ -21,16 +21,20 @@ module Decode
     output  reg [`DataBus] opr1,
     output  reg [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
+    output  reg            resfmem,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
 	input  wire            ex_wreg,
 	input  wire [`RegAddr] ex_wraddr,
 	input  wire [`DataBus] ex_alures,
-	
+    input  wire            ex_resfmem,
+
 	input  wire            mem_wreg,
 	input  wire [`RegAddr] mem_wraddr,
-	input  wire [`DataBus] mem_alures
+	input  wire [`DataBus] mem_alures,
+
+    output wire            stallreq
 );
 
     wire [ 5:0] opcode    = inst[31:26];
@@ -61,6 +65,7 @@ module Decode
         r2addr    <=  rt;
         wraddr    <=  rd;
         ext_imme  <= `ZeroWord;
+        resfmem   <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
@@ -92,7 +97,7 @@ module Decode
 
                         `SP_MOVZ: begin
                             instvalid <= `true;
-                            aluop     <= `ALU_MOVZ;
+                            aluop     <= `ALU_MOV;
                             r1read    <= `true;
                             r2read    <= `true;
                             wreg      <= (opr2 == `ZeroWord);
@@ -100,10 +105,43 @@ module Decode
 
                         `SP_MOVN: begin
                             instvalid <= `true;
-                            aluop     <= `ALU_MOVN;
+                            aluop     <= `ALU_MOV;
                             r1read    <= `true;
                             r2read    <= `true;
                             wreg      <= (opr2 != `ZeroWord);
+                        end
+
+                        `SP_SYNC: begin
+                            if(inst[25:6] == 20'b1) begin
+                                instvalid <= `true;
+                                aluop     <= `ALU_NOP;
+                            end
+                        end
+
+                        `SP_MFHI: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MFHI;
+                            wreg      <= `true;
+                            //resfmem   <= `true;
+                        end
+
+                        `SP_MTHI: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MTHI;
+                            r1read    <= `true;
+                        end
+
+                        `SP_MFLO: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MFLO;
+                            wreg      <= `true;
+                            //resfmem   <= `true;
+                        end
+
+                        `SP_MTLO: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MTLO;
+                            r1read    <= `true;
                         end
 
                         `SP_ADD: begin
@@ -341,7 +379,10 @@ module Decode
             3'b100:  opr2 <= r2data;
             default: opr2 <= ext_imme;
         endcase
+
     end
+
+    assign stallreq = (ex_r1_haz || ex_r2_haz) && ex_resfmem;
 
 endmodule
     

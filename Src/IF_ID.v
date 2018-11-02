@@ -9,6 +9,8 @@ module IF_ID
 (
     input  wire         clk,
     input  wire         rst,
+    input  wire         stall,
+    input  wire         flush,
 
     input  wire [`AddrBus] if_pc,
     input  wire [`DataBus] if_inst,
@@ -23,8 +25,14 @@ module IF_ID
             id_inst <= `ZeroWord;
         end
         else begin
-            id_pc   <= if_pc;
-            id_inst <= if_inst;
+            if(flush) begin
+                id_pc   <= `ZeroWord;
+                id_inst <= `ZeroWord;
+            end
+            else if(!stall) begin
+                id_pc   <= if_pc;
+                id_inst <= if_inst;
+            end
         end
     end
 

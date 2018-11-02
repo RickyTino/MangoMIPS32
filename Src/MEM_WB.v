@@ -9,6 +9,8 @@ module MEM_WB
 (
     input  wire            clk,
     input  wire            rst,
+    input  wire            stall,
+    input  wire            flush,
 
     input  wire [`AddrBus] mem_pc,
     input  wire [`ALUOp  ] mem_aluop, 
@@ -35,12 +37,22 @@ module MEM_WB
             wb_wreg    <= `false;
         end
         else begin
-            wb_pc      <= mem_pc;
-            wb_aluop   <= mem_aluop;
-            wb_alures  <= mem_alures;
-            wb_memdata <= mem_memdata;
-            wb_wraddr  <= mem_wraddr;
-            wb_wreg    <= mem_wreg;
+            if(flush) begin
+                wb_pc      <= `ZeroWord;
+                wb_aluop   <= `ALU_NOP;
+                wb_alures  <= `ZeroWord;
+                wb_memdata <= `ZeroWord;
+                wb_wraddr  <= `ZeroReg;
+                wb_wreg    <= `false;
+            end
+            else if(!stall) begin
+                wb_pc      <= mem_pc;
+                wb_aluop   <= mem_aluop;
+                wb_alures  <= mem_alures;
+                wb_memdata <= mem_memdata;
+                wb_wraddr  <= mem_wraddr;
+                wb_wreg    <= mem_wreg;
+            end
         end
     end
 

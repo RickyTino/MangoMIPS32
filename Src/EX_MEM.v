@@ -9,6 +9,8 @@ module EX_MEM
 (
     input  wire            clk,
     input  wire            rst,
+    input  wire            stall,
+    input  wire            flush,
 
     input  wire [`AddrBus] ex_pc,
     input  wire [`ALUOp  ] ex_aluop, 
@@ -32,11 +34,20 @@ module EX_MEM
             mem_wreg   <= `false;
         end
         else begin
-            mem_pc     <= ex_pc;
-            mem_aluop  <= ex_aluop;
-            mem_alures <= ex_alures;
-            mem_wraddr <= ex_wraddr;
-            mem_wreg   <= ex_wreg;
+            if(flush) begin
+                mem_pc     <= `ZeroWord;
+                mem_aluop  <= `ALU_NOP;
+                mem_alures <= `ZeroWord;
+                mem_wraddr <= `ZeroReg;
+                mem_wreg   <= `false;
+            end
+            else if(!stall) begin
+                mem_pc     <= ex_pc;
+                mem_aluop  <= ex_aluop;
+                mem_alures <= ex_alures;
+                mem_wraddr <= ex_wraddr;
+                mem_wreg   <= ex_wreg;
+            end
         end
     end
 

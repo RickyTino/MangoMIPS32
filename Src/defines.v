@@ -3,19 +3,29 @@ Filename:	defines.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
+`include "config.v"
 
 /*--------------------Constant--------------------*/
 //Width constant
 `define     ALUOp_W 			    8
+`define     Excp_W                  8
 
 //Global constant
 `define		true				 1'b1
 `define     false                1'b0
+`define     Zero                 1'b0
 `define     ZeroReg				 5'h0
 `define     ZeroWord			32'h0
 `define     ZeroDWord           64'h0
 `define     WrDisable            4'h0
 `define     PC_Incr             32'd4
+
+//Pipeline stage identifier
+`define     IF                      0
+`define     ID                      1
+`define     EX                      2
+`define     MEM                     3
+`define     WB                      4
 
 //Entrance address
 `define     Entr_Start           32'hBFC00000
@@ -28,8 +38,10 @@ Version:	Unreleased
 `define     DataBus             31:0
 `define		HardInt              5:0
 `define     RegAddr              4:0
+`define     Stages               4:0
 `define     ByteWEn              3:0
 `define		ALUOp				`ALUOp_W-1:0
+`define     Excp                `Excp_W -1:0
 
 //Partial Select
 `define     Hi                  63:32
@@ -170,23 +182,20 @@ Version:	Unreleased
 `define     ALU_CLZ				`ALUOp_W'h0E
 `define     ALU_CLO				`ALUOp_W'h0F
 
-`define     ALU_MOVZ			`ALUOp_W'h10
-`define     ALU_MOVN			`ALUOp_W'h11
-`define     ALU_MFHI			`ALUOp_W'h12
-`define     ALU_MTHI			`ALUOp_W'h13
-`define     ALU_MFLO			`ALUOp_W'h14
-`define     ALU_MTLO			`ALUOp_W'h15
+`define     ALU_MOV 			`ALUOp_W'h10
+`define     ALU_MFHI			`ALUOp_W'h11
+`define     ALU_MTHI			`ALUOp_W'h12
+`define     ALU_MFLO			`ALUOp_W'h13
+`define     ALU_MTLO			`ALUOp_W'h14
 
-
+`define     ALU_MULT			`ALUOp_W'h15
+`define     ALU_MULTU			`ALUOp_W'h16
+`define     ALU_MUL				`ALUOp_W'h17
+`define     ALU_MADD			`ALUOp_W'h18
+`define     ALU_MADDU			`ALUOp_W'h19
+`define     ALU_MSUB			`ALUOp_W'h1A
+`define     ALU_MSUBU			`ALUOp_W'h1B
 /*
-`define     ALU_MULT			`ALUOp_W'h16
-`define     ALU_MULTU			`ALUOp_W'h17
-`define     ALU_MUL				`ALUOp_W'h18
-`define     ALU_MADD			`ALUOp_W'h19
-`define     ALU_MADDU			`ALUOp_W'h1A
-`define     ALU_MSUB			`ALUOp_W'h1B
-`define     ALU_MSUBU			`ALUOp_W'h1C
-
 `define     ALU_DIV				`ALUOp_W'h1D
 `define     ALU_DIVU			`ALUOp_W'h1E
 
