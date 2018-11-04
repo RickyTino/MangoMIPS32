@@ -17,6 +17,7 @@ module MemAccess
     output wire [`ByteWEn] dbus_wen,
     output wire [`DataBus] dbus_wdata,
 
+    output reg             resnrdy,
     output wire            stallreq
 );
     //Temp

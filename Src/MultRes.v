@@ -8,12 +8,12 @@ Version:	Unreleased
 module MultRes
 (
     input  wire [`ALUOp  ] aluop,
-    input  wire [`DataBus] alures,
+    input  wire [`DataBus] alures_i,
     input  wire [`DWord  ] mulhi,
     input  wire [`DWord  ] mullo,
     input  wire [`DWord  ] hilo_i,
 
-    output reg  [`Word   ] mulres,
+    output reg  [`Word   ] alures_o,
     output reg             whilo,
     output reg  [`DWord  ] hilo_o,
 );

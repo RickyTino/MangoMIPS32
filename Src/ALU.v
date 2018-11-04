@@ -12,6 +12,7 @@ module ALU
     input  wire [`DataBus] opr2,
 
     output reg  [`DataBus] alures,
+    output reg             resnrdy,
     output wire [`DWord  ] mulhi,
     output wire [`DWord  ] mullo,
     output reg             mul_s,
@@ -68,9 +69,9 @@ module ALU
 			`ALU_MULT,
 			`ALU_MADD,
 			`ALU_MSUB: begin
-                mopr1 <= opr1_s ? ~opr1 + 32'd1 : opr1;
-                mopr2 <= opr2_s ? ~opr2 + 32'd1 : opr2;
-                mul_s <= (opr1_s ^ opr2_s);
+                mopr1   <= opr1_s ? ~opr1 + 32'd1 : opr1;
+                mopr2   <= opr2_s ? ~opr2 + 32'd1 : opr2;
+                mul_s   <= (opr1_s ^ opr2_s);
             end
 
             `ALU_MULTU,
@@ -118,6 +119,22 @@ module ALU
             `ALU_CLO:  alures <= clzres;
             `ALU_CLZ:  alures <= clzres;
             default:   alures <= `ZeroWord;
+        endcase
+
+        case (aluop)
+            /*
+            `ALU_LB,
+            `ALU_LBU,
+            `ALU_LH,
+            `ALU_LHU,
+            `ALU_LW,
+            `ALU_LWL,
+            `ALU_LWR,
+            `ALU_LL,
+            */
+            `ALU_MUL: resnrdy <= `true;
+            
+            default:  resnrdy <= `false;
         endcase
     end
 

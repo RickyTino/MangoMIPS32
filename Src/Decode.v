@@ -21,18 +21,18 @@ module Decode
     output  reg [`DataBus] opr1,
     output  reg [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
-    output  reg            resfmem,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
 	input  wire            ex_wreg,
 	input  wire [`RegAddr] ex_wraddr,
 	input  wire [`DataBus] ex_alures,
-    input  wire            ex_resfmem,
+    input  wire            ex_resnrdy,
 
 	input  wire            mem_wreg,
 	input  wire [`RegAddr] mem_wraddr,
-	input  wire [`DataBus] mem_alures,
+	input  wire [`DataBus] mem_alumres,
+    input  wire            mem_resnrdy,
 
     output wire            stallreq
 );
@@ -65,7 +65,7 @@ module Decode
         r2addr    <=  rt;
         wraddr    <=  rd;
         ext_imme  <= `ZeroWord;
-        resfmem   <= `false;
+        resnrdy   <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
@@ -122,7 +122,6 @@ module Decode
                             instvalid <= `true;
                             aluop     <= `ALU_MFHI;
                             wreg      <= `true;
-                            //resfmem   <= `true;
                         end
 
                         `SP_MTHI: begin
@@ -135,7 +134,6 @@ module Decode
                             instvalid <= `true;
                             aluop     <= `ALU_MFLO;
                             wreg      <= `true;
-                            //resfmem   <= `true;
                         end
 
                         `SP_MTLO: begin
@@ -367,7 +365,7 @@ module Decode
         case({r1read, ex_r1_haz, mem_r1_haz})
             3'b110,
             3'b111:  opr1 <= ex_alures;
-            3'b101:  opr1 <= mem_alures;
+            3'b101:  opr1 <= mem_alumres;
             3'b100:  opr1 <= r1data;
             default: opr1 <= ext_imme;
         endcase
@@ -375,14 +373,16 @@ module Decode
         case({r2read, ex_r2_haz, mem_r2_haz})
             3'b110,
             3'b111:  opr2 <= ex_alures;
-            3'b101:  opr2 <= mem_alures;
+            3'b101:  opr2 <= mem_alumres;
             3'b100:  opr2 <= r2data;
             default: opr2 <= ext_imme;
         endcase
 
     end
 
-    assign stallreq = (ex_r1_haz || ex_r2_haz) && ex_resfmem;
+    wire  ex_nrdy = ( ex_r1_haz ||  ex_r2_haz) &&  ex_resnrdy;
+    wire mem_nrdy = (mem_r1_haz || mem_r2_haz) && mem_resnrdy;
+    assign stallreq = ex_nrdy || mem_nrdy;
 
 endmodule
     
