@@ -17,11 +17,12 @@ module MemAccess
     output wire [`ByteWEn] dbus_wen,
     output wire [`DataBus] dbus_wdata,
 
-    output reg             resnrdy,
+    output wire            resnrdy,
     output wire            stallreq
 );
     //Temp
     assign stallreq   = `false;
+    assign resnrdy    = `false;
 
     assign dbus_addr  = `ZeroWord;
     assign dbus_en    = `false;

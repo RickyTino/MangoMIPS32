@@ -49,6 +49,11 @@ module MangoMIPS_Core_Top
     wire            ex_wreg;
     wire [`RegAddr] ex_wraddr;
 
+    wire            div_start;
+    wire            div_signed;
+    wire            div_ready;
+    wire [`DWord  ] div_res;
+
     wire [`DataBus] ex_alures;
     wire            ex_resnrdy;
     wire [`DWord  ] ex_mulhi;
@@ -61,6 +66,7 @@ module MangoMIPS_Core_Top
     wire [`DWord  ] mem_mulhi;
     wire [`DWord  ] mem_mullo;
     wire            mem_mul_s;
+    wire [`DWord  ] mem_divres; 
     wire            mem_wreg;
     wire [`RegAddr] mem_wraddr;
 
@@ -185,9 +191,12 @@ module MangoMIPS_Core_Top
         .opr1   (ex_opr1  ),
         .opr2   (ex_opr2  ),
 
-        .hilo (hilo),
-        .mem_whilo (mem_whilo),
-        .mem_hilo  (mem_hilo),
+        //.hilo (hilo),
+        //.mem_whilo (mem_whilo),
+        //.mem_hilo  (mem_hilo),
+        .div_start  (div_start),
+        .div_signed (div_signed),
+        .div_ready  (div_ready),
 
         .alures (ex_alures),
         .resnrdy (ex_resnrdy),
@@ -196,6 +205,18 @@ module MangoMIPS_Core_Top
         .mul_s (ex_mul_s),
 
         .stallreq (stallreq[`EX])
+    );
+
+    Divider divider (
+        .clk (clk),
+        .rst (rst),
+        .start (div_start),
+        .abandon (flush[`EX]),
+        .signdiv (div_signed),
+        .opr1 (ex_opr1),
+        .opr2 (ex_opr2),
+        .ready (div_ready),
+        .res   (div_res)
     );
 
     EX_MEM ex_mem (
@@ -210,6 +231,7 @@ module MangoMIPS_Core_Top
         .ex_mulhi (ex_mulhi),
         .ex_mullo (ex_mullo),
         .ex_mul_s (ex_mul_s),
+        .ex_divres (div_res),
         .ex_wreg    (ex_wreg    ),
         .ex_wraddr  (ex_wraddr  ),
         
@@ -219,6 +241,7 @@ module MangoMIPS_Core_Top
         .mem_mulhi (mem_mulhi),
         .mem_mullo (mem_mullo),
         .mem_mul_s (mem_mul_s),
+        .mem_divres (mem_divres),
         .mem_wreg   (mem_wreg   ),
         .mem_wraddr (mem_wraddr )
     );
@@ -238,12 +261,13 @@ module MangoMIPS_Core_Top
         .stallreq (stallreq[`MEM])
     );
     
-    MultRes multres (
+    MultDivRes mdres (
         .aluop (mem_aluop),
         .alures_i (mem_alures_i),
         .mulhi (mem_mulhi),
         .mullo (mem_mullo),
         .mul_s (mem_mul_s),
+        .divres (mem_divres),
         .hilo_i (hilo),
 
         .alures_o (mem_alures_o),

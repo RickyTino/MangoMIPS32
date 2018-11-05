@@ -11,9 +11,9 @@ module ALU
     input  wire [`DataBus] opr1,
     input  wire [`DataBus] opr2,
 
-    input  wire [`DWord  ] hilo,
-    input  wire            mem_whilo,
-    input  wire [`DWord  ] mem_hilo,
+    output reg             div_start,
+    output reg             div_signed,
+    input  wire            div_ready,
 
     output reg  [`DataBus] alures,
     output reg             resnrdy,
@@ -23,13 +23,16 @@ module ALU
 
     output wire            stallreq
 );
-    //Temp
-    assign stallreq = `false;
+
+    assign stallreq = div_start;
 
     //Signs
     wire opr1_s = opr1[31];
     wire opr2_s = opr2[31];
     wire res_s  = alures[31]; 
+
+    wire [`Word] abs_opr1 = opr1_s ? ~opr1 + 32'd1 : opr1;
+    wire [`Word] abs_opr2 = opr2_s ? ~opr2 + 32'd1 : opr2;
 
     //CLO/CLZ
     reg  [`Word] clzopr;
@@ -70,9 +73,9 @@ module ALU
 			`ALU_MULT,
 			`ALU_MADD,
 			`ALU_MSUB: begin
-                mopr1   <= opr1_s ? ~opr1 + 32'd1 : opr1;
-                mopr2   <= opr2_s ? ~opr2 + 32'd1 : opr2;
-                mul_s   <= (opr1_s ^ opr2_s);
+                mopr1   <= abs_opr1;
+                mopr2   <= abs_opr2;
+                mul_s   <= opr1_s ^ opr2_s;
             end
 
             `ALU_MULTU,
@@ -90,11 +93,38 @@ module ALU
             end
         endcase
     end
-
+    
     assign mullo[31: 0] = mopr1[15: 0] * mopr2[15: 0];
     assign mullo[63:32] = mopr1[31:16] * mopr2[15: 0];
     assign mulhi[31: 0] = mopr1[15: 0] * mopr2[31:16];
     assign mulhi[63:32] = mopr1[31:16] * mopr2[31:16]; 
+/*
+    wire [`Word] mul_ll = mopr1[15: 0] * mopr2[15: 0];
+    wire [`Word] mul_hl = mopr1[31:16] * mopr2[15: 0];
+    wire [`Word] mul_lh = mopr1[15: 0] * mopr2[31:16];
+    wire [`Word] mul_hh = mopr1[31:16] * mopr2[31:16]; 
+    assign mullo = mul_ll + (mul_hl << 16);
+    assign mulhi = mul_lh + (mul_hh << 16);
+*/
+    //Divider
+    always @(*) begin
+        case (aluop)
+            `ALU_DIV: begin
+                div_signed <= `true;
+				div_start  <= !div_ready;
+            end
+
+            `ALU_DIVU: begin
+                div_signed <= `false;
+				div_start  <= !div_ready;
+            end
+
+            default: begin
+                div_signed <= `false;
+				div_start  <= `false;
+            end
+        endcase
+    end
 
     //General
     always @(*) begin
@@ -115,8 +145,8 @@ module ALU
             `ALU_MOV,
             `ALU_MTHI,
             `ALU_MTLO: alures <= opr1;
-            `ALU_MFHI: alures <= mem_whilo ? mem_hilo[`Hi] : hilo[`Hi];
-            `ALU_MFLO: alures <= mem_whilo ? mem_hilo[`Lo] : hilo[`Lo];
+            //`ALU_MFHI: alures <= mem_whilo ? mem_hilo[`Hi] : hilo[`Hi];
+            //`ALU_MFLO: alures <= mem_whilo ? mem_hilo[`Lo] : hilo[`Lo];
             `ALU_CLO:  alures <= clzres;
             `ALU_CLZ:  alures <= clzres;
             default:   alures <= `ZeroWord;
@@ -133,6 +163,8 @@ module ALU
             `ALU_LWR,
             `ALU_LL,
             */
+            `ALU_MFHI,
+            `ALU_MFLO,
             `ALU_MUL: resnrdy <= `true;
             
             default:  resnrdy <= `false;

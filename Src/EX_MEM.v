@@ -18,6 +18,7 @@ module EX_MEM
     input  wire [`DWord  ] ex_mulhi,
     input  wire [`DWord  ] ex_mullo,
     input  wire            ex_mul_s,
+    input  wire [`DWord  ] ex_divres,
     input  wire            ex_wreg,
     input  wire [`RegAddr] ex_wraddr,
     
@@ -27,6 +28,7 @@ module EX_MEM
     output reg  [`DWord  ] mem_mulhi,
     output reg  [`DWord  ] mem_mullo,
     output reg             mem_mul_s,
+    output reg  [`DWord  ] mem_divres,
     output reg             mem_wreg,
     output reg  [`RegAddr] mem_wraddr
 );
@@ -39,6 +41,7 @@ module EX_MEM
             mem_mulhi  <= `ZeroDWord;
             mem_mullo  <= `ZeroDWord;
             mem_mul_s  <= `Zero;
+            mem_divres <= `ZeroDWord;
             mem_wreg   <= `false;
             mem_wraddr <= `ZeroReg;
         end
@@ -50,6 +53,7 @@ module EX_MEM
                 mem_mulhi  <= `ZeroDWord;
                 mem_mullo  <= `ZeroDWord;
                 mem_mul_s  <= `Zero;
+                mem_divres <= `ZeroDWord;
                 mem_wreg   <= `false;
                 mem_wraddr <= `ZeroReg;
             end
@@ -60,6 +64,7 @@ module EX_MEM
                 mem_mulhi  <= ex_mulhi;
                 mem_mullo  <= ex_mullo;
                 mem_mul_s  <= ex_mul_s;
+                mem_divres <= ex_divres;
                 mem_wreg   <= ex_wreg;
                 mem_wraddr <= ex_wraddr;
             end

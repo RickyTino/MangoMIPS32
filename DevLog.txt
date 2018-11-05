@@ -83,3 +83,7 @@
 - T: 测试发现MFHI、MFLO读的回送路径超长，主要是MultRes对于hilo的长路径运算被回送
 - 微调Decode.v格式，添加了遗漏的乘法指令译码
 - T: SYNC和PREF都有比想象中更复杂的机制。它们的实现可以无限延后。
+- 除法以外的第二批指令全部通过测试
+- T: 要看最终完成后的Timing，所以目前100MHz下只要WNS为正都忽略
+- MultRes.v更名MultDivRes.v
+- 
