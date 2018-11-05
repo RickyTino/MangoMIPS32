@@ -11,24 +11,25 @@ module ALU
     input  wire [`DataBus] opr1,
     input  wire [`DataBus] opr2,
 
+    input  wire [`DWord  ] hilo,
+    input  wire            mem_whilo,
+    input  wire [`DWord  ] mem_hilo,
+
     output reg  [`DataBus] alures,
     output reg             resnrdy,
     output wire [`DWord  ] mulhi,
     output wire [`DWord  ] mullo,
     output reg             mul_s,
 
-    input  wire [`DWord  ] hilo,
-    input  wire            mem_whilo,
-    input  wire [`DWord  ] mem_hilo,
-
     output wire            stallreq
 );
     //Temp
     assign stallreq = `false;
 
+    //Signs
     wire opr1_s = opr1[31];
     wire opr2_s = opr2[31];
-    wire res_s = alures[31]; 
+    wire res_s  = alures[31]; 
 
     //CLO/CLZ
     reg  [`Word] clzopr;
@@ -60,7 +61,7 @@ module ALU
 		end
 	end
 
-    //Multiply
+    //Multiply first stage
     reg [`Word] mopr1, mopr2;
 
     always @(*) begin
@@ -90,10 +91,10 @@ module ALU
         endcase
     end
 
-    assign mullo[`Lo] = mopr1[15: 0] * mopr2[15: 0];
-    assign mullo[`Hi] = mopr1[31:16] * mopr2[15: 0];
-    assign mulhi[`Lo] = mopr1[15: 0] * mopr2[31:16];
-    assign mulhi[`Hi] = mopr1[31:16] * mopr2[31:16]; 
+    assign mullo[31: 0] = mopr1[15: 0] * mopr2[15: 0];
+    assign mullo[63:32] = mopr1[31:16] * mopr2[15: 0];
+    assign mulhi[31: 0] = mopr1[15: 0] * mopr2[31:16];
+    assign mulhi[63:32] = mopr1[31:16] * mopr2[31:16]; 
 
     //General
     always @(*) begin

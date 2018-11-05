@@ -111,7 +111,7 @@ module Decode
                             wreg      <= (opr2 != `ZeroWord);
                         end
 
-                        `SP_SYNC: begin
+                        `SP_SYNC: begin //Temporarily decode as nop
                             if(inst[25:6] == 20'b1) begin
                                 instvalid <= `true;
                                 aluop     <= `ALU_NOP;
@@ -353,6 +353,11 @@ module Decode
                     ext_imme  <=  lui_ext;
                 end
             end
+
+            `OP_PREF: begin //Temporarily decode as nop
+                instvalid <= `true;
+            end
+
         endcase
     end
 
@@ -380,8 +385,8 @@ module Decode
 
     end
 
-    wire  ex_nrdy = ( ex_r1_haz ||  ex_r2_haz) &&  ex_resnrdy;
-    wire mem_nrdy = (mem_r1_haz || mem_r2_haz) && mem_resnrdy;
+    wire    ex_nrdy = ( ex_r1_haz ||  ex_r2_haz) &&  ex_resnrdy;
+    wire   mem_nrdy = (mem_r1_haz || mem_r2_haz) && mem_resnrdy;
     assign stallreq = ex_nrdy || mem_nrdy;
 
 endmodule
