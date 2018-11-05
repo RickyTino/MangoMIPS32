@@ -20,7 +20,7 @@ module Divider
 	input  wire [`DataBus] opr2,
 	
 	output reg             ready,
-	output reg  [`DblData] res
+	output reg  [`DWord  ] res
 );
 	
 	wire [32:0] temp;

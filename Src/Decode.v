@@ -148,6 +148,20 @@ module Decode
                             r2read    <= `true;
                         end
 
+                        `SP_DIV: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_DIV;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP_DIVU: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_DIVU;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
                         `SP_ADD: begin
                             instvalid <= `true;
                             aluop     <= `ALU_ADD;

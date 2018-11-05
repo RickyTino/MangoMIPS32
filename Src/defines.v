@@ -7,7 +7,7 @@ Version:	Unreleased
 
 /*--------------------Constant--------------------*/
 //Width constant
-`define     ALUOp_W 			    8
+`define     ALUOp_W 			    6
 `define     Excp_W                  8
 
 //Global constant
@@ -77,7 +77,7 @@ Version:	Unreleased
 `define		OP_SB				6'b101000
 `define		OP_SH				6'b101001
 `define		OP_SWL				6'b101010
-`define		OP_SWL				6'b101011
+`define		OP_SW				6'b101011
 `define		OP_SWR				6'b101110
 `define		OP_CACHE			6'b101111
 `define		OP_LL				6'b110000
@@ -195,10 +195,10 @@ Version:	Unreleased
 `define     ALU_MADDU			`ALUOp_W'h19
 `define     ALU_MSUB			`ALUOp_W'h1A
 `define     ALU_MSUBU			`ALUOp_W'h1B
-/*
-`define     ALU_DIV				`ALUOp_W'h1D
-`define     ALU_DIVU			`ALUOp_W'h1E
 
+`define     ALU_DIV				`ALUOp_W'h1C
+`define     ALU_DIVU			`ALUOp_W'h1D
+/*
 `define     ALU_JR				`ALUOp_W'h1F
 `define     ALU_JALR			`ALUOp_W'h20
 `define     ALU_J				`ALUOp_W'h21
