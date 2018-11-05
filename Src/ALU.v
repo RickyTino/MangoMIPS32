@@ -35,9 +35,9 @@ module ALU
     reg  [`Word] clzopr;
     reg  [`Word] clzres;
 
-	wire [15:0] part1 = clzres[4] ? clzopr[31:16] : clzopr[15:0];
-	wire [ 7:0] part2 = clzres[3] ? part1 [15: 8] : part1 [ 7:0];
-	wire [ 3:0] part3 = clzres[2] ? part2 [ 7: 4] : part2 [ 3:0];
+	wire [15:0] part1 = clzres[4] ? clzopr[15: 0] : clzopr[31:16];
+	wire [ 7:0] part2 = clzres[3] ? part1 [ 7: 0] : part1 [15: 8];
+	wire [ 3:0] part3 = clzres[2] ? part2 [ 3: 0] : part2 [ 7: 4];
 	
 	always @(*) begin
         case (aluop)

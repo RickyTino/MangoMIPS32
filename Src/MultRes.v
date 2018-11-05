@@ -16,25 +16,25 @@ module MultRes
 
     output reg  [`Word   ] alures_o,
     output reg             whilo,
-    output reg  [`DWord  ] hilo_o,
+    output reg  [`DWord  ] hilo_o
 );
 
     wire [47:0  ] reslo = mullo[31:0] + (mullo[63:32] << 16);
     wire [47:0  ] reshi = mulhi[31:0] + (mulhi[63:32] << 16);
     wire [`DWord] umres = reslo + (reshi << 16);
-    wire [`DWord] smres = mul_s ? ~mres + 64'b1 : mres;
+    wire [`DWord] smres = mul_s ? ~umres + 64'b1 : umres;
 
     always @(*) begin
         case (aluop)
             `ALU_MTHI: begin
                 whilo    <= `true;
-                hilo_o   <= {alures, hilo_i[`Lo]};
+                hilo_o   <= {alures_i, hilo_i[`Lo]};
                 alures_o <= `ZeroWord;
             end
 
             `ALU_MTLO: begin
                 whilo    <= `true;
-                hilo_o   <= {hilo_i[`Hi], alures};
+                hilo_o   <= {hilo_i[`Hi], alures_i};
                 alures_o <= `ZeroWord;
             end
 

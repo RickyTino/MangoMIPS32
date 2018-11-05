@@ -66,7 +66,7 @@ Version:	Unreleased
 `define		OP_XORI				6'b001110
 `define		OP_LUI				6'b001111
 `define		OP_COP0				6'b010000
-`define		OP_SPECIAL2			6'b010100
+`define		OP_SPECIAL2			6'b011100
 `define		OP_LB				6'b100000
 `define		OP_LH				6'b100001
 `define		OP_LWL				6'b100010

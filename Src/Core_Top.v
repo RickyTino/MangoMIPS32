@@ -190,7 +190,7 @@ module MangoMIPS_Core_Top
         .mem_hilo  (mem_hilo),
 
         .alures (ex_alures),
-        .ex_resnrdy (ex_resnrdy),
+        .resnrdy (ex_resnrdy),
         .mulhi (ex_mulhi),
         .mullo (ex_mullo),
         .mul_s (ex_mul_s),
@@ -249,7 +249,7 @@ module MangoMIPS_Core_Top
         .alures_o (mem_alures_o),
         .whilo  (mem_whilo),
         .hilo_o (mem_hilo)
-    )
+    );
 
     MEM_WB mem_wb (
         .clk         (clk       ),
@@ -279,13 +279,15 @@ module MangoMIPS_Core_Top
         .wrdata (wb_wrdata)
     );
     
-    HiLo hilo (
+    HiLo hilounit (
         .clk (clk),
         .rst (rst),
         .whilo (wb_whilo),
         .wdata (wb_hilo),
-        .rdtat (hilo)
+        .rdata (hilo)
     );
+    
+    assign stallreq[`WB] = `false;
     
     Control control (
         .stallreq (stallreq),

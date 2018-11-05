@@ -31,7 +31,7 @@ module Decode
 
 	input  wire            mem_wreg,
 	input  wire [`RegAddr] mem_wraddr,
-	input  wire [`DataBus] mem_alumres,
+	input  wire [`DataBus] mem_alures,
     input  wire            mem_resnrdy,
 
     output wire            stallreq
@@ -65,11 +65,10 @@ module Decode
         r2addr    <=  rt;
         wraddr    <=  rd;
         ext_imme  <= `ZeroWord;
-        resnrdy   <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
-                if(sa == 5'b00000) begin
+                if(sa == 5'b0) begin
                     case (funct)
                         `SP_SLLV: begin
                             instvalid <= `true;
@@ -111,13 +110,6 @@ module Decode
                             wreg      <= (opr2 != `ZeroWord);
                         end
 
-                        `SP_SYNC: begin //Temporarily decode as nop
-                            if(inst[25:6] == 20'b1) begin
-                                instvalid <= `true;
-                                aluop     <= `ALU_NOP;
-                            end
-                        end
-
                         `SP_MFHI: begin
                             instvalid <= `true;
                             aluop     <= `ALU_MFHI;
@@ -140,6 +132,20 @@ module Decode
                             instvalid <= `true;
                             aluop     <= `ALU_MTLO;
                             r1read    <= `true;
+                        end
+
+                        `SP_MULT: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MULT;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP_MULTU: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MULTU;
+                            r1read    <= `true;
+                            r2read    <= `true;
                         end
 
                         `SP_ADD: begin
@@ -223,7 +229,7 @@ module Decode
                         end
                     endcase
                 end
-                else if(rs == 5'b00000) begin
+                else if(rs == 5'b0) begin
                     case (funct)
                         `SP_SLL: begin
                             instvalid <= `true;
@@ -248,6 +254,12 @@ module Decode
                             wreg      <= `true;
                             ext_imme  <=  sa;
                         end
+
+                        //SYNC temporarily decode as nop
+                        `SP_SYNC: if(inst[20:11] == 10'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_NOP;
+                        end
                     endcase
                 end
             end
@@ -263,6 +275,42 @@ module Decode
             `OP_SPECIAL2: begin
                 if(sa == 5'b00000) begin
                     case (funct)
+                        `SP2_MADD: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MADD;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_MADDU: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MADDU;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_MUL: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MUL;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                            wreg      <= `true;
+                        end
+
+                        `SP2_MSUB: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MSUB;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_MSUBU: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MSUBU;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
                         `SP2_CLZ: begin
                             instvalid <= `true;
                             aluop     <= `ALU_CLZ;
@@ -343,15 +391,13 @@ module Decode
                 ext_imme  <=  zero_ext;
             end
 
-            `OP_LUI: begin
-                if(rs == 5'b00000) begin
-                    instvalid <= `true;
-                    aluop     <= `ALU_OR;
-                    r1read    <= `true;
-                    wreg      <= `true;
-                    wraddr    <=  rt;
-                    ext_imme  <=  lui_ext;
-                end
+            `OP_LUI: if(rs == 5'b0) begin
+                instvalid <= `true;
+                aluop     <= `ALU_OR;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <=  rt;
+                ext_imme  <=  lui_ext;
             end
 
             `OP_PREF: begin //Temporarily decode as nop
@@ -370,7 +416,7 @@ module Decode
         case({r1read, ex_r1_haz, mem_r1_haz})
             3'b110,
             3'b111:  opr1 <= ex_alures;
-            3'b101:  opr1 <= mem_alumres;
+            3'b101:  opr1 <= mem_alures;
             3'b100:  opr1 <= r1data;
             default: opr1 <= ext_imme;
         endcase
@@ -378,7 +424,7 @@ module Decode
         case({r2read, ex_r2_haz, mem_r2_haz})
             3'b110,
             3'b111:  opr2 <= ex_alures;
-            3'b101:  opr2 <= mem_alumres;
+            3'b101:  opr2 <= mem_alures;
             3'b100:  opr2 <= r2data;
             default: opr2 <= ext_imme;
         endcase
