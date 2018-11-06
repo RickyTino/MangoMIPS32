@@ -34,6 +34,13 @@ module Decode
 	input  wire [`DataBus] mem_alures,
     input  wire            mem_resnrdy,
 
+`ifdef Branch_In_ID
+    output reg             branch,
+    output reg  [`AddrBus] br_addr,
+`else
+
+`endif
+
     output wire            stallreq
 );
 
