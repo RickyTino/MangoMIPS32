@@ -1,11 +1,11 @@
 /********************MangoMIPS32*******************
-Filename:	MEM_WB.v
+Filename:	Reg_MEM_WB.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module MEM_WB
+module Reg_MEM_WB
 (
     input  wire            clk,
     input  wire            rst,

@@ -1,11 +1,11 @@
 /********************MangoMIPS32*******************
-Filename:	ALU.v
+Filename:	ALU_EX.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module ALU
+module ALU_EX
 (
     input  wire [`ALUOp  ] aluop,
     input  wire [`DataBus] opr1,

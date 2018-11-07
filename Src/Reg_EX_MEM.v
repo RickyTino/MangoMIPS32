@@ -1,11 +1,11 @@
 /********************MangoMIPS32*******************
-Filename:	EX_MEM.v
+Filename:	Reg_EX_MEM.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module EX_MEM
+module Reg_EX_MEM
 (
     input  wire            clk,
     input  wire            rst,

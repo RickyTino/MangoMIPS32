@@ -1,11 +1,11 @@
 /********************MangoMIPS32*******************
-Filename:	ID_EX.v
+Filename:	Reg_ID_EX.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module ID_EX
+module Reg_ID_EX
 (
     input  wire            clk,
     input  wire            rst,

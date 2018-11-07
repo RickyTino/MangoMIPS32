@@ -1,11 +1,11 @@
 /********************MangoMIPS32*******************
-Filename:	IF_ID.v
+Filename:	Reg_IF_ID.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module IF_ID
+module Reg_IF_ID
 (
     input  wire         clk,
     input  wire         rst,

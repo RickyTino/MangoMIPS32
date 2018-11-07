@@ -19,16 +19,16 @@ module PC
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            pc      <= `Entr_Start;
+            pc      <= `ZeroWord;
             inst_en <= `false;
         end
         else begin
             if(flush) begin
                 pc      <= flush_pc;  //Reserved for exception
-                inst_en <= `false;
+                inst_en <= `true;
             end
             else if(!stall) begin
-                pc      <= inst_en ? pc + `PC_Incr : pc;
+                pc      <= inst_en ? pc + 4 : `Entr_Start;
                 inst_en <= `true;
             end
         end

@@ -1,11 +1,11 @@
 /********************MangoMIPS32*******************
-Filename:	MultDivRes.v
+Filename:	ALU_MEM.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
 `include "defines.v"
 
-module MultDivRes
+module ALU_MEM
 (
     input  wire [`ALUOp  ] aluop,
     input  wire [`DataBus] alures_i,

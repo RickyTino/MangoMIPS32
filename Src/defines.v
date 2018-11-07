@@ -18,7 +18,6 @@ Version:	Unreleased
 `define     ZeroWord			32'h0
 `define     ZeroDWord           64'h0
 `define     WrDisable            4'h0
-`define     PC_Incr             32'd4
 
 //Pipeline stage identifier
 `define     IF                      0
