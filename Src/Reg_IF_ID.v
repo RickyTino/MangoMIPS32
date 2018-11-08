@@ -13,25 +13,35 @@ module Reg_IF_ID
     input  wire         flush,
 
     input  wire [`AddrBus] if_pc,
+    input  wire [`AddrBus] if_pcp4,
     input  wire [`DataBus] if_inst,
+    input  wire            id_isbranch,
 
     output reg  [`AddrBus] id_pc,
-    output reg  [`DataBus] id_inst
+    output reg  [`AddrBus] id_pcp4,
+    output reg  [`DataBus] id_inst,
+    output reg             id_inslot
 );
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            id_pc   <= `ZeroWord;
-            id_inst <= `ZeroWord;
+            id_pc     <= `ZeroWord;
+            id_pcp4   <= `ZeroWord;
+            id_inst   <= `ZeroWord;
+            id_inslot <= `false;
         end
         else begin
             if(flush) begin
-                id_pc   <= `ZeroWord;
-                id_inst <= `ZeroWord;
+                id_pc     <= `ZeroWord;
+                id_pcp4   <= `ZeroWord;
+                id_inst   <= `ZeroWord;
+                id_inslot <= `false;
             end
             else if(!stall) begin
-                id_pc   <= if_pc;
-                id_inst <= if_inst;
+                id_pc     <= if_pc;
+                id_pcp4   <= if_pcp4;
+                id_inst   <= if_inst;
+                id_inslot <= id_isbranch;
             end
         end
     end

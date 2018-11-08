@@ -8,6 +8,7 @@ Version:	Unreleased
 module Decode
 (
     input  wire [`AddrBus] pc,
+    input  wire [`AddrBus] pcp4,
     input  wire [`DataBus] inst,
 
     output reg             r1read,
@@ -34,12 +35,10 @@ module Decode
 	input  wire [`DataBus] mem_alures,
     input  wire            mem_resnrdy,
 
-`ifdef Branch_In_ID
-    output reg             branch,
+    output reg             isbranch,
+    input  wire            inslot,
+    output reg             br_flag,
     output reg  [`AddrBus] br_addr,
-`else
-
-`endif
 
     output wire            stallreq
 );
@@ -57,6 +56,9 @@ module Decode
     wire [`Word] sign_ext = {{16{immediate[15]}}, immediate};
     wire [`Word] lui_ext  = {immediate, 16'b0};
 
+    wire opr1_lez = opr1[31] || (opr1 == `ZeroWord);
+    wire [`Word] br_target = pcp4 + (sign_ext << 2); 
+
     reg instvalid;
     reg [`Word] ext_imme;
 
@@ -72,6 +74,9 @@ module Decode
         r2addr    <=  rt;
         wraddr    <=  rd;
         ext_imme  <= `ZeroWord;
+        isbranch  <= `false;
+        br_flag   <= `false;
+        br_addr   <= `ZeroWord;
 
         case (opcode)
             `OP_SPECIAL: begin
@@ -101,6 +106,25 @@ module Decode
                             wreg      <= `true;
                         end
 
+                        `SP_JR: if(inst[25:16] == 10'b0) begin
+                            instvalid <= `true;
+                            r1read    <= `true;
+                            isbranch  <= `true;
+                            br_flag   <= `true;
+                            br_addr   <= opr1;
+                        end
+
+                        `SP_JALR: if(rt == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_JAL;
+                            r1read    <= `true;
+                            wreg      <= `true;
+                            wraddr    <= (rd == `ZeroReg) ? 5'd31 : rd;
+                            isbranch  <= `true;
+                            br_flag   <= `true;
+                            br_addr   <= opr1;
+                        end
+
                         `SP_MOVZ: begin
                             instvalid <= `true;
                             aluop     <= `ALU_MOV;
@@ -117,25 +141,25 @@ module Decode
                             wreg      <= (opr2 != `ZeroWord);
                         end
 
-                        `SP_MFHI: begin
+                        `SP_MFHI: if(inst[25:16] == 10'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MFHI;
                             wreg      <= `true;
                         end
 
-                        `SP_MTHI: begin
+                        `SP_MTHI: if(inst[20:11] == 10'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MTHI;
                             r1read    <= `true;
                         end
 
-                        `SP_MFLO: begin
+                        `SP_MFLO: if(inst[25:16] == 10'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MFLO;
                             wreg      <= `true;
                         end
 
-                        `SP_MTLO: begin
+                        `SP_MTLO: if(inst[20:11] == 10'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MTLO;
                             r1read    <= `true;
@@ -293,60 +317,54 @@ module Decode
                 */
             end
 
-            `OP_SPECIAL2: begin
-                if(sa == 5'b00000) begin
-                    case (funct)
-                        `SP2_MADD: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MADD;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+            `OP_J: begin
+                instvalid <= `true;
+                isbranch  <= `true;
+                br_flag   <= `true;
+                br_addr   <= {pcp4[31:28], j_offset, 2'b00};
+            end
 
-                        `SP2_MADDU: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MADDU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+            `OP_JAL: begin
+                instvalid <= `true;
+                wreg      <= `true;
+                wraddr    <= 5'd31;
+                isbranch  <= `true;
+                br_flag   <= `true;
+                br_addr   <= {pcp4[31:28], j_offset, 2'b00};
+            end
 
-                        `SP2_MUL: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MUL;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+            `OP_BEQ: begin
+                instvalid <= `true;
+                r1read    <= `true;
+                r2read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= (opr1 == opr2);
+                br_addr   <= br_target;
+            end
 
-                        `SP2_MSUB: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MSUB;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+            `OP_BNE: begin
+                instvalid <= `true;
+                r1read    <= `true;
+                r2read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= (opr1 != opr2);
+                br_addr   <= br_target;
+            end
 
-                        `SP2_MSUBU: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MSUBU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+            `OP_BLEZ: if(rt == 5'b0) begin
+                instvalid <= `true;
+                r1read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= opr1_lez;
+                br_addr   <= br_target;
+            end
 
-                        `SP2_CLZ: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_CLZ;
-                            r1read    <= `true;
-                            wreg      <= `true;
-                        end
-
-                        `SP2_CLO: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_CLO;
-                            r1read    <= `true;
-                            wreg      <= `true;
-                        end
-                    endcase
-                end
+            `OP_BGTZ: if(rt == 5'b0) begin
+                instvalid <= `true;
+                r1read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= !opr1_lez;
+                br_addr   <= br_target;
             end
 
             `OP_ADDI: begin
@@ -419,6 +437,62 @@ module Decode
                 wreg      <= `true;
                 wraddr    <=  rt;
                 ext_imme  <=  lui_ext;
+            end
+
+            `OP_SPECIAL2: begin
+                if(sa == 5'b00000) begin
+                    case (funct)
+                        `SP2_MADD: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MADD;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_MADDU: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MADDU;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_MUL: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MUL;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                            wreg      <= `true;
+                        end
+
+                        `SP2_MSUB: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MSUB;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_MSUBU: if(rd == 5'b0) begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MSUBU;
+                            r1read    <= `true;
+                            r2read    <= `true;
+                        end
+
+                        `SP2_CLZ: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_CLZ;
+                            r1read    <= `true;
+                            wreg      <= `true;
+                        end
+
+                        `SP2_CLO: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_CLO;
+                            r1read    <= `true;
+                            wreg      <= `true;
+                        end
+                    endcase
+                end
             end
 
             `OP_PREF: begin //Temporarily decode as nop

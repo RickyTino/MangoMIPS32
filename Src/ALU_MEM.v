@@ -15,7 +15,7 @@ module ALU_MEM
     input  wire [`DWord  ] divres,
     input  wire [`DWord  ] hilo_i,
 
-    output reg  [`Word   ] alures_o,
+    output reg  [`DataBus] alures_o,
     output reg             whilo,
     output reg  [`DWord  ] hilo_o
 );
