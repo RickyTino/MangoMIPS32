@@ -10,10 +10,10 @@ module PC
     input  wire            clk,
     input  wire            rst,
     input  wire            stall,
-    input  wire            br_flag,
-    input  wire            br_addr,
     input  wire            flush,
     input  wire [`AddrBus] flush_pc,
+    input  wire            br_flag,
+    input  wire [`AddrBus] br_addr,
     
     output reg  [`AddrBus] pc,
     output wire [`AddrBus] pcp4,
@@ -28,9 +28,10 @@ module PC
             inst_en <= `false;
         end
         else begin
+            inst_en <= `true;
             casez ({stall, br_flag, flush})
-				3'b000: pc <= pcp4;
-				3'b010: pc <= br_ addr;
+				3'b000: pc <= inst_en ? pcp4 : `Entr_Start;
+				3'b010: pc <= br_addr;
 				3'b??1: pc <= flush_pc;
 			endcase
         end

@@ -7,6 +7,7 @@ Version:	Unreleased
 
 module ALU_EX
 (
+    input  wire [`AddrBus] pc,
     input  wire [`ALUOp  ] aluop,
     input  wire [`DataBus] opr1,
     input  wire [`DataBus] opr2,
@@ -149,6 +150,7 @@ module ALU_EX
             //`ALU_MFLO: alures <= mem_whilo ? mem_hilo[`Lo] : hilo[`Lo];
             `ALU_CLO:  alures <= clzres;
             `ALU_CLZ:  alures <= clzres;
+            `ALU_BAL:  alures <= pc + 32'd8;
             default:   alures <= `ZeroWord;
         endcase
 

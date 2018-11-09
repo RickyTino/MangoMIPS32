@@ -7,15 +7,17 @@ Version:	Unreleased
 
 module Reg_IF_ID
 (
-    input  wire         clk,
-    input  wire         rst,
-    input  wire         stall,
-    input  wire         flush,
+    input  wire            clk,
+    input  wire            rst,
+    input  wire            stall,
+    input  wire            flush,
+    input  wire            clrslot,
 
     input  wire [`AddrBus] if_pc,
     input  wire [`AddrBus] if_pcp4,
     input  wire [`DataBus] if_inst,
     input  wire            id_isbranch,
+
 
     output reg  [`AddrBus] id_pc,
     output reg  [`AddrBus] id_pcp4,
@@ -31,18 +33,20 @@ module Reg_IF_ID
             id_inslot <= `false;
         end
         else begin
-            if(flush) begin
-                id_pc     <= `ZeroWord;
-                id_pcp4   <= `ZeroWord;
-                id_inst   <= `ZeroWord;
-                id_inslot <= `false;
-            end
-            else if(!stall) begin
-                id_pc     <= if_pc;
-                id_pcp4   <= if_pcp4;
-                id_inst   <= if_inst;
-                id_inslot <= id_isbranch;
-            end
+            casez ({flush, stall, clrslot})
+                3'b1??, 3'b001: begin
+                    id_pc     <= `ZeroWord;
+                    id_pcp4   <= `ZeroWord;
+                    id_inst   <= `ZeroWord;
+                    id_inslot <= `false;
+                end
+                3'b000: begin
+                    id_pc     <= if_pc;
+                    id_pcp4   <= if_pcp4;
+                    id_inst   <= if_inst;
+                    id_inslot <= id_isbranch;
+                end
+            endcase
         end
     end
 

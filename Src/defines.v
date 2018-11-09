@@ -18,6 +18,7 @@ Version:	Unreleased
 `define     ZeroWord			32'h0
 `define     ZeroDWord           64'h0
 `define     WrDisable            4'h0
+`define     GPR_ra               5'd31
 
 //Pipeline stage identifier
 `define     IF                      0
@@ -201,20 +202,10 @@ Version:	Unreleased
 
 `define     ALU_DIV				`ALUOp_W'h1C
 `define     ALU_DIVU			`ALUOp_W'h1D
-/*
-`define     ALU_JR				`ALUOp_W'h1F
-`define     ALU_JALR			`ALUOp_W'h20
-`define     ALU_J				`ALUOp_W'h21
-`define     ALU_JAL				`ALUOp_W'h22
-`define     ALU_BEQ				`ALUOp_W'h23
-`define     ALU_BNE				`ALUOp_W'h24
-`define     ALU_BGTZ			`ALUOp_W'h25
-`define     ALU_BLEZ			`ALUOp_W'h26
-`define     ALU_BGEZ			`ALUOp_W'h27
-`define     ALU_BGEZAL			`ALUOp_W'h28
-`define     ALU_BLTZ			`ALUOp_W'h29
-`define     ALU_BLTZAL			`ALUOp_W'h2A
 
+`define     ALU_BAL             `ALUOp_W'h1E
+
+/*
 `define     ALU_LB				`ALUOp_W'h2B
 `define     ALU_LBU				`ALUOp_W'h2C
 `define     ALU_LH				`ALUOp_W'h2D

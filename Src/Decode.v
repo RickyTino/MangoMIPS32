@@ -37,6 +37,7 @@ module Decode
 
     output reg             isbranch,
     input  wire            inslot,
+    output reg             clrslot,
     output reg             br_flag,
     output reg  [`AddrBus] br_addr,
 
@@ -57,6 +58,7 @@ module Decode
     wire [`Word] lui_ext  = {immediate, 16'b0};
 
     wire opr1_lez = opr1[31] || (opr1 == `ZeroWord);
+    wire opr_eq   = (opr1 & ~opr2) == `ZeroWord;
     wire [`Word] br_target = pcp4 + (sign_ext << 2); 
 
     reg instvalid;
@@ -77,244 +79,316 @@ module Decode
         isbranch  <= `false;
         br_flag   <= `false;
         br_addr   <= `ZeroWord;
+        clrslot   <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
-                if(sa == 5'b0) begin
-                    case (funct)
-                        `SP_SLLV: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SLL;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                case (funct)
+                    `SP_SLLV: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SLL;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SRLV: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SRL;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_SRLV: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRL;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SRAV: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SRA;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_SRAV: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRA;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_JR: if(inst[25:16] == 10'b0) begin
-                            instvalid <= `true;
-                            r1read    <= `true;
-                            isbranch  <= `true;
-                            br_flag   <= `true;
-                            br_addr   <= opr1;
-                        end
+                    `SP_JR: if({rt, rd, sa} == 15'b0) begin
+                        instvalid <= `true;
+                        r1read    <= `true;
+                        isbranch  <= `true;
+                        br_flag   <= `true;
+                        br_addr   <= opr1;
+                    end
 
-                        `SP_JALR: if(rt == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_JAL;
-                            r1read    <= `true;
-                            wreg      <= `true;
-                            wraddr    <= (rd == `ZeroReg) ? 5'd31 : rd;
-                            isbranch  <= `true;
-                            br_flag   <= `true;
-                            br_addr   <= opr1;
-                        end
+                    `SP_JALR: if({rt, sa} == 10'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_BAL;
+                        r1read    <= `true;
+                        wreg      <= `true;
+                        wraddr    <= (rd == `ZeroReg) ? `GPR_ra : rd;
+                        isbranch  <= `true;
+                        br_flag   <= `true;
+                        br_addr   <= opr1;
+                    end
 
-                        `SP_MOVZ: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MOV;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= (opr2 == `ZeroWord);
-                        end
+                    `SP_MOVZ: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MOV;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= (opr2 == `ZeroWord);
+                    end
 
-                        `SP_MOVN: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MOV;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= (opr2 != `ZeroWord);
-                        end
+                    `SP_MOVN: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MOV;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= (opr2 != `ZeroWord);
+                    end
 
-                        `SP_MFHI: if(inst[25:16] == 10'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MFHI;
-                            wreg      <= `true;
-                        end
+                    `SP_MFHI: if({rs, rt, sa} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MFHI;
+                        wreg      <= `true;
+                    end
 
-                        `SP_MTHI: if(inst[20:11] == 10'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MTHI;
-                            r1read    <= `true;
-                        end
+                    `SP_MTHI: if({rt, rd, sa} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MTHI;
+                        r1read    <= `true;
+                    end
 
-                        `SP_MFLO: if(inst[25:16] == 10'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MFLO;
-                            wreg      <= `true;
-                        end
+                    `SP_MFLO: if({rs, rt, sa} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MFLO;
+                        wreg      <= `true;
+                    end
 
-                        `SP_MTLO: if(inst[20:11] == 10'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MTLO;
-                            r1read    <= `true;
-                        end
+                    `SP_MTLO: if({rt, rd, sa} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MTLO;
+                        r1read    <= `true;
+                    end
 
-                        `SP_MULT: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MULT;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+                    `SP_MULT: if({rd, sa} == 10'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MULT;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
 
-                        `SP_MULTU: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_MULTU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+                    `SP_MULTU: if({rd, sa} == 10'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MULTU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
 
-                        `SP_DIV: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_DIV;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+                    `SP_DIV: if({rd, sa} == 10'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_DIV;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
 
-                        `SP_DIVU: if(rd == 5'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_DIVU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                        end
+                    `SP_DIVU: if({rd, sa} == 10'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_DIVU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
 
-                        `SP_ADD: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_ADD;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_ADD: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_ADD;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_ADDU: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_ADDU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_ADDU: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_ADDU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SUB: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SUB;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_SUB: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SUB;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SUBU: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SUBU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_SUBU: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SUBU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_AND: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_AND;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_AND: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_AND;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_OR: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_OR;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_OR: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_OR;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_XOR: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_XOR;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_XOR: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_XOR;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_NOR: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_NOR;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_NOR: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_NOR;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SLT: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SLT;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
+                    `SP_SLT: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SLT;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SLTU: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SLTU;
-                            r1read    <= `true;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                        end
-                    endcase
-                end
-                else if(rs == 5'b0) begin
-                    case (funct)
-                        `SP_SLL: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SLL;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                            ext_imme  <=  sa;
-                        end
+                    `SP_SLTU: if(sa == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SLTU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                    end
 
-                        `SP_SRL: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SRL;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                            ext_imme  <=  sa;
-                        end
+                    `SP_SLL: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SLL;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
 
-                        `SP_SRA: begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_SRA;
-                            r2read    <= `true;
-                            wreg      <= `true;
-                            ext_imme  <=  sa;
-                        end
+                    `SP_SRL: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRL;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
 
-                        //SYNC temporarily decode as nop
-                        `SP_SYNC: if(inst[20:11] == 10'b0) begin
-                            instvalid <= `true;
-                            aluop     <= `ALU_NOP;
-                        end
-                    endcase
-                end
+                    `SP_SRA: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRA;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
+                    //SYNC temporarily decode as nop
+                    `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_NOP;
+                    end
+                endcase
             end
 
             `OP_REGIMM: begin
-                /*
-                case (rt) begin
+                case (rt)
+                    `RI_BLTZ: begin
+                        instvalid <= `true;
+                        r1read    <= `true;
+                        isbranch  <= `true;
+                        br_flag   <= opr1[31];
+                        br_addr   <= br_target;
+                    end
 
+                    `RI_BGEZ: begin
+                        instvalid <= `true;
+                        r1read    <= `true;
+                        isbranch  <= `true;
+                        br_flag   <= !opr1[31];
+                        br_addr   <= br_target;
+                    end
+
+                    `RI_BLTZL: begin
+                        instvalid <= `true;
+                        r1read    <= `true;
+                        isbranch  <= `true;
+                        br_flag   <= opr1[31];
+                        br_addr   <= br_target;
+                        clrslot   <= opr1[31];
+                    end
+
+                    `RI_BGEZL: begin
+                        instvalid <= `true;
+                        r1read    <= `true;
+                        isbranch  <= `true;
+                        br_flag   <= !opr1[31];
+                        br_addr   <= br_target;
+                        clrslot   <= !opr1[31];
+                    end
+
+                    `RI_BLTZAL: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_BAL;
+                        r1read    <= `true;
+                        wreg      <= `true;
+                        wraddr    <= `GPR_ra;
+                        isbranch  <= `true;
+                        br_flag   <= opr1[31];
+                        br_addr   <= br_target;
+                    end
+
+                    `RI_BGEZAL: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_BAL;
+                        r1read    <= `true;
+                        wreg      <= `true;
+                        wraddr    <= `GPR_ra;
+                        isbranch  <= `true;
+                        br_flag   <= !opr1[31];
+                        br_addr   <= br_target;
+                    end
+
+                    `RI_BLTZALL: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_BAL;
+                        r1read    <= `true;
+                        wreg      <= `true;
+                        wraddr    <= `GPR_ra;
+                        isbranch  <= `true;
+                        br_flag   <= opr1[31];
+                        br_addr   <= br_target;
+                        clrslot   <= opr1[31];
+                    end
+
+                    `RI_BGEZALL: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_BAL;
+                        r1read    <= `true;
+                        wreg      <= `true;
+                        wraddr    <= `GPR_ra;
+                        isbranch  <= `true;
+                        br_flag   <= !opr1[31];
+                        br_addr   <= br_target;
+                        clrslot   <= !opr1[31];
+                    end
                 endcase
-                */
             end
 
             `OP_J: begin
@@ -326,8 +400,9 @@ module Decode
 
             `OP_JAL: begin
                 instvalid <= `true;
+                aluop     <= `ALU_BAL;
                 wreg      <= `true;
-                wraddr    <= 5'd31;
+                wraddr    <= `GPR_ra;
                 isbranch  <= `true;
                 br_flag   <= `true;
                 br_addr   <= {pcp4[31:28], j_offset, 2'b00};
@@ -338,7 +413,7 @@ module Decode
                 r1read    <= `true;
                 r2read    <= `true;
                 isbranch  <= `true;
-                br_flag   <= (opr1 == opr2);
+                br_flag   <= opr_eq;
                 br_addr   <= br_target;
             end
 
@@ -347,7 +422,7 @@ module Decode
                 r1read    <= `true;
                 r2read    <= `true;
                 isbranch  <= `true;
-                br_flag   <= (opr1 != opr2);
+                br_flag   <= opr_eq;
                 br_addr   <= br_target;
             end
 
@@ -439,8 +514,50 @@ module Decode
                 ext_imme  <=  lui_ext;
             end
 
+            `OP_COP0: begin
+
+            end
+            
+            `OP_BEQL: begin
+                instvalid <= `true;
+                r1read    <= `true;
+                r2read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= opr_eq;
+                br_addr   <= br_target;
+                clrslot   <= opr_eq;
+            end
+
+            `OP_BNEL: begin
+                instvalid <= `true;
+                r1read    <= `true;
+                r2read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= !opr_eq;
+                br_addr   <= br_target;
+                clrslot   <= !opr_eq;
+            end
+
+            `OP_BLEZL: if(rt == 5'b0) begin
+                instvalid <= `true;
+                r1read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= opr1_lez;
+                br_addr   <= br_target;
+                clrslot   <= opr1_lez;
+            end
+
+            `OP_BGTZL: if(rt == 5'b0) begin
+                instvalid <= `true;
+                r1read    <= `true;
+                isbranch  <= `true;
+                br_flag   <= !opr1_lez;
+                br_addr   <= br_target;
+                clrslot   <= !opr1_lez;
+            end
+
             `OP_SPECIAL2: begin
-                if(sa == 5'b00000) begin
+                if(sa == 5'b0) begin
                     case (funct)
                         `SP2_MADD: if(rd == 5'b0) begin
                             instvalid <= `true;
@@ -499,6 +616,9 @@ module Decode
                 instvalid <= `true;
             end
 
+            `OP_CACHE: begin //Temporarily decode as nop
+                instvalid <= `true;
+            end
         endcase
     end
 

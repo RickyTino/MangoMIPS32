@@ -43,26 +43,28 @@ module Reg_MEM_WB
             wb_hilo    <= `ZeroDWord;
         end
         else begin
-            if(flush) begin
-                wb_pc      <= `ZeroWord;
-                wb_aluop   <= `ALU_NOP;
-                wb_alures  <= `ZeroWord;
-                wb_memdata <= `ZeroWord;
-                wb_wreg    <= `false;
-                wb_wraddr  <= `ZeroReg;
-                wb_whilo   <= `false;
-                wb_hilo    <= `ZeroDWord;
-            end
-            else if(!stall) begin
-                wb_pc      <= mem_pc;
-                wb_aluop   <= mem_aluop;
-                wb_alures  <= mem_alures;
-                wb_memdata <= mem_memdata;
-                wb_wreg    <= mem_wreg;
-                wb_wraddr  <= mem_wraddr;
-                wb_whilo   <= mem_whilo;
-                wb_hilo    <= mem_hilo;
-            end
+            case ({flush, stall})
+                2'b10, 2'b11: begin
+                    wb_pc      <= `ZeroWord;
+                    wb_aluop   <= `ALU_NOP;
+                    wb_alures  <= `ZeroWord;
+                    wb_memdata <= `ZeroWord;
+                    wb_wreg    <= `false;
+                    wb_wraddr  <= `ZeroReg;
+                    wb_whilo   <= `false;
+                    wb_hilo    <= `ZeroDWord;
+                end
+                2'b00: begin
+                    wb_pc      <= mem_pc;
+                    wb_aluop   <= mem_aluop;
+                    wb_alures  <= mem_alures;
+                    wb_memdata <= mem_memdata;
+                    wb_wreg    <= mem_wreg;
+                    wb_wraddr  <= mem_wraddr;
+                    wb_whilo   <= mem_whilo;
+                    wb_hilo    <= mem_hilo;
+                end
+            endcase
         end
     end
 

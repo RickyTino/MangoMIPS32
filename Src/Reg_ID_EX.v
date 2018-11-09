@@ -37,22 +37,24 @@ module Reg_ID_EX
             ex_wreg    <= `false;
         end
         else begin
-            if(flush) begin
-                ex_pc      <= `ZeroWord;
-                ex_aluop   <= `ALU_NOP;
-                ex_opr1    <= `ZeroWord;
-                ex_opr2    <= `ZeroWord;
-                ex_wraddr  <= `ZeroReg;
-                ex_wreg    <= `false;
-            end
-            else if(!stall) begin
-                ex_pc      <= id_pc;
-                ex_aluop   <= id_aluop;
-                ex_opr1    <= id_opr1;
-                ex_opr2    <= id_opr2;
-                ex_wraddr  <= id_wraddr;
-                ex_wreg    <= id_wreg;
-            end
+            case ({flush, stall})
+                2'b10, 2'b11: begin
+                    ex_pc      <= `ZeroWord;
+                    ex_aluop   <= `ALU_NOP;
+                    ex_opr1    <= `ZeroWord;
+                    ex_opr2    <= `ZeroWord;
+                    ex_wraddr  <= `ZeroReg;
+                    ex_wreg    <= `false;
+                end
+                2'b00: begin
+                    ex_pc      <= id_pc;
+                    ex_aluop   <= id_aluop;
+                    ex_opr1    <= id_opr1;
+                    ex_opr2    <= id_opr2;
+                    ex_wraddr  <= id_wraddr;
+                    ex_wreg    <= id_wreg;
+                end
+            endcase
         end
     end
 
