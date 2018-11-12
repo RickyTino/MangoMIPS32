@@ -3,7 +3,7 @@ Filename:	MemAccess.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
-`include "defines.v"
+`include "Defines.v"
 
 module MemAccess
 (   

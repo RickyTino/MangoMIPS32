@@ -3,7 +3,7 @@ Filename:	Core_Top.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
-`include "defines.v"
+`include "Defines.v"
 
 module MangoMIPS_Core_Top
 (

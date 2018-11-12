@@ -3,7 +3,7 @@ Filename:	Reg_MEM_WB.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
-`include "defines.v"
+`include "Defines.v"
 
 module Reg_MEM_WB
 (

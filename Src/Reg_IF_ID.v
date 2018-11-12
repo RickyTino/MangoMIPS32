@@ -3,7 +3,7 @@ Filename:	Reg_IF_ID.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
-`include "defines.v"
+`include "Defines.v"
 
 module Reg_IF_ID
 (

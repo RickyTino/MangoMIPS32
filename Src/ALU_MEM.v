@@ -3,7 +3,7 @@ Filename:	ALU_MEM.v
 Author:		RickyTino
 Version:	Unreleased
 **************************************************/
-`include "defines.v"
+`include "Defines.v"
 
 module ALU_MEM
 (
