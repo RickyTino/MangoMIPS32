@@ -22,6 +22,7 @@ module Decode
     output  reg [`DataBus] opr1,
     output  reg [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
+    output wire [`DataBus] offset,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
@@ -64,7 +65,7 @@ module Decode
     reg instvalid;
     reg [`Word] ext_imme;
 
-    //TODO: pcp4/pcp8, 
+    assign offset = sign_ext;
 
     always @(*) begin
         instvalid <= `false;
@@ -610,6 +611,97 @@ module Decode
                         end
                     endcase
                 end
+            end
+
+            `OP_LB: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LB;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+
+            `OP_LBU: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LBU;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+            
+            `OP_LH: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LH;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+            
+            `OP_LHU: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LHU;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+            
+            `OP_LW: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LW;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+            
+            `OP_LWL: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LWL;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+            
+            `OP_LWR: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LWR;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
+
+            `OP_SB: begin
+                instvalid <= `true;
+                aluop     <= `ALU_SB;
+                r1read    <= `true;
+                r2read    <= `true;
+            end
+
+            `OP_SH: begin
+                instvalid <= `true;
+                aluop     <= `ALU_SH;
+                r1read    <= `true;
+                r2read    <= `true;
+            end
+
+            `OP_SW: begin
+                instvalid <= `true;
+                aluop     <= `ALU_SW;
+                r1read    <= `true;
+                r2read    <= `true;
+            end
+
+            `OP_SWL: begin
+                instvalid <= `true;
+                aluop     <= `ALU_SWL;
+                r1read    <= `true;
+                r2read    <= `true;
+            end
+
+            `OP_SWR: begin
+                instvalid <= `true;
+                aluop     <= `ALU_SWR;
+                r1read    <= `true;
+                r2read    <= `true;
             end
 
             `OP_PREF: begin //Temporarily decode as nop
