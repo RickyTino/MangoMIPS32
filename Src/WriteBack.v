@@ -19,7 +19,7 @@ module WriteBack
     assign stallreq = `false;
 
     reg [`Word] memdata;
-    wire        memtoreg;
+    reg         memtoreg;
 
     always @(*) begin
 		case (aluop)

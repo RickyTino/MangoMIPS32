@@ -185,7 +185,7 @@ module ALU_EX
                 case (sl_addr[1:0])
                     2'b00:   m_wen <= 4'b0011;
                     2'b10:   m_wen <= 4'b1100;
-                    default: dram_wen <= `WrDisable;
+                    default: m_wen <= `WrDisable;
                 endcase
                 //if(sl_addr[0]) begin
                 //Reserved for exception
@@ -201,7 +201,7 @@ module ALU_EX
 
             `ALU_SWL: begin
                 m_en    <= `true;
-                m_vaddr <= {sl_addr[31:2], 2'b00}
+                m_vaddr <= {sl_addr[31:2], 2'b00};
                 case (sl_addr[1:0])
                     2'b00: begin
                         m_wen   <= 4'b0001;

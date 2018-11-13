@@ -657,6 +657,7 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWL;
                 r1read    <= `true;
+                r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -665,6 +666,7 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWR;
                 r1read    <= `true;
+                r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -714,10 +716,10 @@ module Decode
         endcase
     end
 
-    wire ex_r1_haz  = ex_wreg  && ( ex_wraddr == r1addr);
-    wire ex_r2_haz  = ex_wreg  && ( ex_wraddr == r2addr);
-    wire mem_r1_haz = mem_wreg && (mem_wraddr == r1addr);
-    wire mem_r2_haz = mem_wreg && (mem_wraddr == r2addr);
+    wire ex_r1_haz  = ex_wreg  && ( ex_wraddr == r1addr) && (r1addr != `ZeroWord);
+    wire ex_r2_haz  = ex_wreg  && ( ex_wraddr == r2addr) && (r2addr != `ZeroWord);
+    wire mem_r1_haz = mem_wreg && (mem_wraddr == r1addr) && (r1addr != `ZeroWord);
+    wire mem_r2_haz = mem_wreg && (mem_wraddr == r2addr) && (r2addr != `ZeroWord);
 
     always @(*) begin
         case({r1read, ex_r1_haz, mem_r1_haz})
@@ -738,8 +740,8 @@ module Decode
 
     end
 
-    wire    ex_nrdy = ( ex_r1_haz ||  ex_r2_haz) &&  ex_resnrdy;
-    wire   mem_nrdy = (mem_r1_haz || mem_r2_haz) && mem_resnrdy;
+    wire    ex_nrdy = (( ex_r1_haz && r1read) || ( ex_r2_haz && r2read)) && ex_resnrdy;
+    wire   mem_nrdy = ((mem_r1_haz && r1read) || (mem_r2_haz && r2read)) && mem_resnrdy;
     assign stallreq = ex_nrdy || mem_nrdy;
 
 endmodule

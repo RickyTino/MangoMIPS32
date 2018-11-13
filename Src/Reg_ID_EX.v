@@ -16,6 +16,7 @@ module Reg_ID_EX
     input  wire [`ALUOp  ] id_aluop,
     input  wire [`DataBus] id_opr1,
     input  wire [`DataBus] id_opr2,
+    input  wire [`DataBus] id_offset,
     input  wire [`RegAddr] id_wraddr,
     input  wire            id_wreg,
 
@@ -23,6 +24,7 @@ module Reg_ID_EX
     output reg  [`ALUOp  ] ex_aluop,
     output reg  [`DataBus] ex_opr1,
     output reg  [`DataBus] ex_opr2,
+    output reg  [`DataBus] ex_offset,
     output reg  [`RegAddr] ex_wraddr,
     output reg             ex_wreg
 );
@@ -33,6 +35,7 @@ module Reg_ID_EX
             ex_aluop   <= `ALU_NOP;
             ex_opr1    <= `ZeroWord;
             ex_opr2    <= `ZeroWord;
+            ex_offset  <= `ZeroWord;
             ex_wraddr  <= `ZeroReg;
             ex_wreg    <= `false;
         end
@@ -43,6 +46,7 @@ module Reg_ID_EX
                     ex_aluop   <= `ALU_NOP;
                     ex_opr1    <= `ZeroWord;
                     ex_opr2    <= `ZeroWord;
+                    ex_offset  <= `ZeroWord;
                     ex_wraddr  <= `ZeroReg;
                     ex_wreg    <= `false;
                 end
@@ -51,6 +55,7 @@ module Reg_ID_EX
                     ex_aluop   <= id_aluop;
                     ex_opr1    <= id_opr1;
                     ex_opr2    <= id_opr2;
+                    ex_offset  <= id_offset;
                     ex_wraddr  <= id_wraddr;
                     ex_wreg    <= id_wreg;
                 end

@@ -25,6 +25,15 @@ module MangoMIPS_Core_Top
     output wire [`RegAddr] debug_wb_wraddr,
     output wire [`DataBus] debug_wb_wrdata
 );
+    wire [`AddrBus] if_pcp4;
+    wire            if_i_en;
+    wire [`AddrBus] if_i_vaddr;
+    wire [`DataBus] if_i_rdata; 
+
+    wire [`AddrBus] id_pc;
+    wire [`AddrBus] id_pcp4;
+    wire [`DataBus] id_inst;
+    wire            id_inslot;
 
     wire            r1read;
     wire [`RegAddr] r1addr;
@@ -35,15 +44,9 @@ module MangoMIPS_Core_Top
 
     wire            br_flag;
     wire [`AddrBus] br_addr;
-    wire [`AddrBus] if_pcp4;
-
-    wire [`AddrBus] id_pc;
-    wire [`AddrBus] id_pcp4;
-    wire [`DataBus] id_inst;
-    wire            id_inslot;
-
     wire [`DataBus] id_opr1;
     wire [`DataBus] id_opr2;
+    wire [`DataBus] id_offset;
     wire [`ALUOp  ] id_aluop;
     wire            id_wreg;
     wire [`RegAddr] id_wraddr;
@@ -54,6 +57,7 @@ module MangoMIPS_Core_Top
     wire [`ALUOp  ] ex_aluop;
     wire [`DataBus] ex_opr1;
     wire [`DataBus] ex_opr2;
+    wire [`DataBus] ex_offset;
     wire            ex_wreg;
     wire [`RegAddr] ex_wraddr;
 
@@ -67,16 +71,28 @@ module MangoMIPS_Core_Top
     wire [`DWord  ] ex_mulhi;
     wire [`DWord  ] ex_mullo;
     wire            ex_mul_s;
+
+    wire            ex_m_en;
+    wire [`ByteWEn] ex_m_wen;
+    wire [`AddrBus] ex_m_vaddr;
+    wire [`DataBus] ex_m_wdata;
     
     wire [`AddrBus] mem_pc;
     wire [`ALUOp  ] mem_aluop;
     wire [`DataBus] mem_alures_i;
+    wire [`DataBus] mem_opr2;
     wire [`DWord  ] mem_mulhi;
     wire [`DWord  ] mem_mullo;
     wire            mem_mul_s;
     wire [`DWord  ] mem_divres; 
     wire            mem_wreg;
     wire [`RegAddr] mem_wraddr;
+
+    wire            mem_m_en;
+    wire [`ByteWEn] mem_m_wen;
+    wire [`AddrBus] mem_m_vaddr;
+    wire [`DataBus] mem_m_wdata;
+    wire [`DataBus] mem_m_rdata;
 
     wire [`DataBus] mem_alures_o;
     wire            mem_resnrdy;
@@ -86,6 +102,9 @@ module MangoMIPS_Core_Top
     wire [`AddrBus] wb_pc;
     wire [`ALUOp  ] wb_aluop;
     wire [`DataBus] wb_alures;
+    wire [`DataBus] wb_opr2;
+    wire [`AddrBus] wb_m_vaddr;
+    wire [`DataBus] wb_m_rdata; 
     wire            wb_wreg;
     wire [`RegAddr] wb_wraddr;
     wire            wb_whilo;
@@ -107,13 +126,22 @@ module MangoMIPS_Core_Top
         .br_flag  (br_flag),
         .br_addr  (br_addr),
 
-        .pc      (ibus_addr ),
+        .pc      (if_i_vaddr ),
         .pcp4    (if_pcp4   ),
-        .inst_en (ibus_en   )
+        .i_en    (if_i_en   )
     );
     
-    //Temp
-    assign stallreq[`IF] = `false;
+    MMU_Inst mmu_inst (
+        .i_en    (if_i_en),
+        .i_vaddr (if_i_vaddr),
+        .i_rdata (if_i_rdata),
+
+        .ibus_en    (ibus_en),
+        .ibus_paddr (ibus_addr),
+        .ibus_rdata (ibus_rdata),
+
+        .stallreq (stallreq[`IF])
+    );
 
     Reg_IF_ID reg_if_id (
         .clk     (clk       ),
@@ -147,6 +175,7 @@ module MangoMIPS_Core_Top
         .opr1       (id_opr1   ),
         .opr2       (id_opr2   ),
         .aluop      (id_aluop  ),
+        .offset     (id_offset ),
         .wreg       (id_wreg   ),
         .wraddr     (id_wraddr ),
 
@@ -197,6 +226,7 @@ module MangoMIPS_Core_Top
         .id_aluop  (id_aluop  ),
         .id_opr1   (id_opr1   ),
         .id_opr2   (id_opr2   ),
+        .id_offset (id_offset ),
         .id_wreg   (id_wreg   ),
         .id_wraddr (id_wraddr ),
         
@@ -205,6 +235,7 @@ module MangoMIPS_Core_Top
         .ex_aluop  (ex_aluop  ),
         .ex_opr1   (ex_opr1   ),
         .ex_opr2   (ex_opr2   ),
+        .ex_offset (ex_offset ),
         .ex_wreg   (ex_wreg   ),
         .ex_wraddr (ex_wraddr )
     );
@@ -214,10 +245,7 @@ module MangoMIPS_Core_Top
         .aluop  (ex_aluop ),
         .opr1   (ex_opr1  ),
         .opr2   (ex_opr2  ),
-
-        //.hilo (hilo),
-        //.mem_whilo (mem_whilo),
-        //.mem_hilo  (mem_hilo),
+        .offset (ex_offset),
         .div_start  (div_start),
         .div_signed (div_signed),
         .div_ready  (div_ready),
@@ -227,6 +255,11 @@ module MangoMIPS_Core_Top
         .mulhi (ex_mulhi),
         .mullo (ex_mullo),
         .mul_s (ex_mul_s),
+
+        .m_en (ex_m_en),
+        .m_wen (ex_m_wen),
+        .m_vaddr (ex_m_vaddr),
+        .m_wdata (ex_m_wdata),
 
         .stallreq (stallreq[`EX])
     );
@@ -252,36 +285,47 @@ module MangoMIPS_Core_Top
         .ex_pc      (ex_pc      ),
         .ex_aluop   (ex_aluop   ),
         .ex_alures  (ex_alures  ),
+        .ex_opr2    (ex_opr2),
         .ex_mulhi (ex_mulhi),
         .ex_mullo (ex_mullo),
         .ex_mul_s (ex_mul_s),
         .ex_divres (div_res),
+        .ex_m_en (ex_m_en),
+        .ex_m_wen (ex_m_wen),
+        .ex_m_vaddr (ex_m_vaddr),
+        .ex_m_wdata (ex_m_wdata),
         .ex_wreg    (ex_wreg    ),
         .ex_wraddr  (ex_wraddr  ),
         
         .mem_pc     (mem_pc     ),
         .mem_aluop  (mem_aluop  ),
         .mem_alures (mem_alures_i ),
+        .mem_opr2   (mem_opr2),
         .mem_mulhi (mem_mulhi),
         .mem_mullo (mem_mullo),
         .mem_mul_s (mem_mul_s),
         .mem_divres (mem_divres),
+        .mem_m_en (mem_m_en),
+        .mem_m_wen (mem_m_wen),
+        .mem_m_vaddr (mem_m_vaddr),
+        .mem_m_wdata (mem_m_wdata),
         .mem_wreg   (mem_wreg   ),
         .mem_wraddr (mem_wraddr )
     );
     
-    MemAccess memaccess (
-        .pc         (mem_pc    ),
-        .aluop      (mem_aluop ),
-        .alures     (mem_alures_i),
+    MMU_Data mmu_data (
+        .m_en (mem_m_en),
+        .m_wen (mem_m_wen),
+        .m_vaddr (mem_m_vaddr),
+        .m_wdata (mem_m_wdata),
+        .m_rdata (mem_m_rdata),
         
         .dbus_en    (dbus_en   ),
-        .dbus_addr  (dbus_addr ),
+        .dbus_paddr  (dbus_addr ),
         .dbus_rdata (dbus_rdata),
         .dbus_wen   (dbus_wen  ),
         .dbus_wdata (dbus_wdata),
 
-        .resnrdy (mem_resnrdy),
         .stallreq (stallreq[`MEM])
     );
     
@@ -296,7 +340,8 @@ module MangoMIPS_Core_Top
 
         .alures_o (mem_alures_o),
         .whilo  (mem_whilo),
-        .hilo_o (mem_hilo)
+        .hilo_o (mem_hilo),
+        .resnrdy (mem_resnrdy)
     );
 
     Reg_MEM_WB reg_mem_wb (
@@ -308,6 +353,9 @@ module MangoMIPS_Core_Top
         .mem_pc      (mem_pc    ),
         .mem_aluop   (mem_aluop ),
         .mem_alures  (mem_alures_o),
+        .mem_opr2    (mem_opr2),
+        .mem_m_vaddr (mem_m_vaddr),
+        .mem_m_rdata (mem_m_rdata),
         .mem_wreg    (mem_wreg  ),
         .mem_wraddr  (mem_wraddr),
         .mem_whilo  (mem_whilo),
@@ -316,6 +364,9 @@ module MangoMIPS_Core_Top
         .wb_pc      (wb_pc      ),
         .wb_aluop   (wb_aluop   ),
         .wb_alures  (wb_alures  ),
+        .wb_opr2    (wb_opr2),
+        .wb_m_vaddr (wb_m_vaddr),
+        .wb_m_rdata (wb_m_rdata),
         .wb_wreg    (wb_wreg    ),
         .wb_wraddr  (wb_wraddr  ),
         .wb_whilo  (wb_whilo),
@@ -323,8 +374,13 @@ module MangoMIPS_Core_Top
     );
 
     WriteBack writeback (
+        .aluop  (wb_aluop),
         .alures (wb_alures),
-        .wrdata (wb_wrdata)
+        .opr2   (wb_opr2),
+        .m_vaddr (wb_m_vaddr),
+        .m_rdata (wb_m_rdata),
+        .wrdata (wb_wrdata),
+        .stallreq (stallreq[`WB])
     );
     
     HiLo hiloreg (
@@ -334,8 +390,6 @@ module MangoMIPS_Core_Top
         .wdata (wb_hilo),
         .rdata (hilo)
     );
-    
-    assign stallreq[`WB] = `false;
     
     Control control (
         .stallreq (stallreq),

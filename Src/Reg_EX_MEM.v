@@ -20,12 +20,12 @@ module Reg_EX_MEM
     input  wire [`DWord  ] ex_mullo,
     input  wire            ex_mul_s,
     input  wire [`DWord  ] ex_divres,
-    input  wire            ex_wreg,
-    input  wire [`RegAddr] ex_wraddr,
     input  wire            ex_m_en,
     input  wire [`ByteWEn] ex_m_wen,
     input  wire [`AddrBus] ex_m_vaddr,
     input  wire [`DataBus] ex_m_wdata,
+    input  wire            ex_wreg,
+    input  wire [`RegAddr] ex_wraddr,
     
     output reg  [`AddrBus] mem_pc,
     output reg  [`ALUOp  ] mem_aluop, 
@@ -35,12 +35,12 @@ module Reg_EX_MEM
     output reg  [`DWord  ] mem_mullo,
     output reg             mem_mul_s,
     output reg  [`DWord  ] mem_divres,
-    output reg             mem_wreg,
-    output reg  [`RegAddr] mem_wraddr,
     output reg             mem_m_en,
     output reg  [`ByteWEn] mem_m_wen,
     output reg  [`AddrBus] mem_m_vaddr,
     output reg  [`DataBus] mem_m_wdata,
+    output reg             mem_wreg,
+    output reg  [`RegAddr] mem_wraddr
 );
 
     always @(posedge clk, posedge rst) begin
@@ -53,12 +53,12 @@ module Reg_EX_MEM
             mem_mullo   <= `ZeroDWord;
             mem_mul_s   <= `Zero;
             mem_divres  <= `ZeroDWord;
-            mem_wreg    <= `false;
-            mem_wraddr  <= `ZeroReg;
             mem_m_en    <= `false;
             mem_m_wen   <= `WrDisable;
             mem_m_vaddr <= `ZeroWord;
             mem_m_wdata <= `ZeroWord;
+            mem_wreg    <= `false;
+            mem_wraddr  <= `ZeroReg;
         end
         else begin
             case ({flush, stall})
@@ -71,12 +71,12 @@ module Reg_EX_MEM
                     mem_mullo  <= `ZeroDWord;
                     mem_mul_s  <= `Zero;
                     mem_divres <= `ZeroDWord;
-                    mem_wreg   <= `false;
-                    mem_wraddr <= `ZeroReg;
                     mem_m_en    <= `false;
                     mem_m_wen   <= `WrDisable;
                     mem_m_vaddr <= `ZeroWord;
                     mem_m_wdata <= `ZeroWord;
+                    mem_wreg   <= `false;
+                    mem_wraddr <= `ZeroReg;
                 end
                 2'b00: begin
                     mem_pc      <= ex_pc;
@@ -87,12 +87,12 @@ module Reg_EX_MEM
                     mem_mullo   <= ex_mullo;
                     mem_mul_s   <= ex_mul_s;
                     mem_divres  <= ex_divres;
-                    mem_wreg    <= ex_wreg;
-                    mem_wraddr  <= ex_wraddr;
                     mem_m_en    <= ex_m_en;
                     mem_m_wen   <= ex_m_wen;
                     mem_m_vaddr <= ex_m_vaddr;
                     mem_m_wdata <= ex_m_wdata;
+                    mem_wreg    <= ex_wreg;
+                    mem_wraddr  <= ex_wraddr;
                 end
             endcase
         end

@@ -20,8 +20,6 @@ module MMU_Inst
     //Temp
     assign stallreq   = `false;
 
-    assign ibus_wdata = i_wdata;
-
     always @(*) begin
         case (i_vaddr[31:28])
 			//kseg0: unmapped, cached
