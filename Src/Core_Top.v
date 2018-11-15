@@ -13,18 +13,21 @@ module MangoMIPS_Core_Top
     output wire            ibus_en,
     output wire [`AddrBus] ibus_addr,
     input  wire [`DataBus] ibus_rdata,
+    input  wire            ibus_streq,
 
     output wire            dbus_en,
     output wire [`AddrBus] dbus_addr,
     input  wire [`DataBus] dbus_rdata,
     output wire [`ByteWEn] dbus_wen,
     output wire [`DataBus] dbus_wdata,
+    input  wire            dbus_streq,
 
     output wire [`AddrBus] debug_wb_pc,
-    output wire            debug_wb_wreg,
+    output wire [`ByteWEn] debug_wb_wreg,
     output wire [`RegAddr] debug_wb_wraddr,
     output wire [`DataBus] debug_wb_wrdata
 );
+
     wire [`AddrBus] if_pcp4;
     wire            if_i_en;
     wire [`AddrBus] if_i_vaddr;
@@ -142,6 +145,7 @@ module MangoMIPS_Core_Top
         .ibus_en    (ibus_en),
         .ibus_paddr (ibus_addr),
         .ibus_rdata (ibus_rdata),
+        .ibus_streq (ibus_streq),
 
         .stallreq (stallreq[`IF])
     );
@@ -153,7 +157,7 @@ module MangoMIPS_Core_Top
         .flush   (flush[`ID]),
         .clrslot (id_clrslot),
 
-        .if_pc   (ibus_addr ),
+        .if_pc   (if_i_vaddr ),
         .if_pcp4 (if_pcp4 ),
         .if_inst (ibus_rdata),
         .id_isbranch (id_isbranch),
@@ -335,6 +339,7 @@ module MangoMIPS_Core_Top
         .dbus_rdata (dbus_rdata),
         .dbus_wen   (dbus_wen  ),
         .dbus_wdata (dbus_wdata),
+        .dbus_streq (dbus_streq),
 
         .stallreq (stallreq[`MEM])
     );

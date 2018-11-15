@@ -18,12 +18,12 @@ module MMU_Data
     output reg  [`AddrBus] dbus_paddr,
     output wire [`DataBus] dbus_wdata,
     input  wire [`DataBus] dbus_rdata,
+    input  wire            dbus_streq,
 //    output reg             dbus_cached,
     output wire            stallreq
 );
     //Temp
-    assign stallreq   = `false;
-    //assign resnrdy    = `false;
+    assign stallreq = dbus_streq;
 
     assign dbus_wdata = m_wdata;
 

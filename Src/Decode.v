@@ -417,7 +417,7 @@ module Decode
                 r1read    <= `true;
                 r2read    <= `true;
                 isbranch  <= `true;
-                br_flag   <= opr_eq;
+                br_flag   <= !opr_eq;
                 br_addr   <= br_target;
             end
 
@@ -466,7 +466,7 @@ module Decode
 
             `OP_SLTIU: begin
                 instvalid <= `true;
-                aluop     <= `ALU_SLT;
+                aluop     <= `ALU_SLTU;
                 r1read    <= `true;
                 wreg      <= `true;
                 wraddr    <=  rt;

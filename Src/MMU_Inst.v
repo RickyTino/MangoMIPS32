@@ -14,11 +14,12 @@ module MMU_Inst
     output wire            ibus_en,
     output reg  [`AddrBus] ibus_paddr,
     input  wire [`DataBus] ibus_rdata,
+	input  wire            ibus_streq,
 //    output reg             ibus_cached,
     output wire            stallreq
 );
     //Temp
-    assign stallreq   = `false;
+    assign stallreq = ibus_streq;
 
     always @(*) begin
         case (i_vaddr[31:28])
