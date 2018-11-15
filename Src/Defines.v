@@ -18,6 +18,7 @@ Version:	Unreleased
 `define     ZeroWord			32'h0
 `define     ZeroDWord           64'h0
 `define     WrDisable            4'h0
+`define     WrAllEn              4'hF
 `define     GPR_ra               5'd31
 
 //Pipeline stage identifier
@@ -48,7 +49,11 @@ Version:	Unreleased
 
 //Partial Select
 `define     Hi                  63:32
-`define     Lo                  31:0
+`define     Lo                  31: 0
+`define     Byte0                7: 0
+`define     Byte1               15: 8
+`define     Byte2               23:16
+`define     Byte3               31:24
 
 /*--------------------Encoding--------------------*/
 //Opcode

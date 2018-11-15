@@ -41,6 +41,8 @@ module MangoMIPS_Core_Top
     wire            r2read;
     wire [`RegAddr] r2addr;
     wire [`DataBus] r2data;
+    wire            hazard_ex;
+    wire            hazard_mem;
 
     wire            br_flag;
     wire [`AddrBus] br_addr;
@@ -71,6 +73,7 @@ module MangoMIPS_Core_Top
     wire [`DWord  ] ex_mulhi;
     wire [`DWord  ] ex_mullo;
     wire            ex_mul_s;
+    wire [`ByteWEn] ex_wregsel;
 
     wire            ex_m_en;
     wire [`ByteWEn] ex_m_wen;
@@ -85,7 +88,7 @@ module MangoMIPS_Core_Top
     wire [`DWord  ] mem_mullo;
     wire            mem_mul_s;
     wire [`DWord  ] mem_divres; 
-    wire            mem_wreg;
+    wire [`ByteWEn] mem_wreg;
     wire [`RegAddr] mem_wraddr;
 
     wire            mem_m_en;
@@ -105,7 +108,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] wb_opr2;
     wire [`AddrBus] wb_m_vaddr;
     wire [`DataBus] wb_m_rdata; 
-    wire            wb_wreg;
+    wire [`ByteWEn] wb_wreg;
     wire [`RegAddr] wb_wraddr;
     wire            wb_whilo;
     wire [`DWord  ] wb_hilo;
@@ -179,15 +182,10 @@ module MangoMIPS_Core_Top
         .wreg       (id_wreg   ),
         .wraddr     (id_wraddr ),
 
-        .ex_wreg    (ex_wreg   ),
-        .ex_wraddr  (ex_wraddr ),
-        .ex_alures  (ex_alures ),
-        .ex_resnrdy (ex_resnrdy),
-
-        .mem_wreg   (mem_wreg  ),
-        .mem_wraddr (mem_wraddr),
-        .mem_alures (mem_alures_o),
+        .ex_resnrdy  (ex_resnrdy),
         .mem_resnrdy (mem_resnrdy),
+        .hazard_ex   (hazard_ex),
+        .hazard_mem  (hazard_mem),
 
         .isbranch (id_isbranch),
         .inslot   (id_inslot),
@@ -210,10 +208,19 @@ module MangoMIPS_Core_Top
         .r2addr (r2addr   ),
         .r2data (r2data   ),
 
-        
         .we     (wb_wreg  ),
         .waddr  (wb_wraddr), 
-        .wdata  (wb_wrdata)
+        .wdata  (wb_wrdata),
+
+        .ex_wreg    (ex_wregsel),
+        .ex_wraddr  (ex_wraddr ),
+        .ex_alures  (ex_alures ),
+        .mem_wreg   (mem_wreg  ),
+        .mem_wraddr (mem_wraddr),
+        .mem_alures (mem_alures_o),
+
+        .hazard_ex  (hazard_ex),
+        .hazard_mem (hazard_mem)
     );
 
     Reg_ID_EX reg_id_ex (
@@ -261,6 +268,9 @@ module MangoMIPS_Core_Top
         .m_vaddr (ex_m_vaddr),
         .m_wdata (ex_m_wdata),
 
+        .wreg     (ex_wreg),
+        .wregsel  (ex_wregsel),
+
         .stallreq (stallreq[`EX])
     );
 
@@ -285,7 +295,7 @@ module MangoMIPS_Core_Top
         .ex_pc      (ex_pc      ),
         .ex_aluop   (ex_aluop   ),
         .ex_alures  (ex_alures  ),
-        .ex_opr2    (ex_opr2),
+        //.ex_opr2    (ex_opr2),
         .ex_mulhi (ex_mulhi),
         .ex_mullo (ex_mullo),
         .ex_mul_s (ex_mul_s),
@@ -294,13 +304,13 @@ module MangoMIPS_Core_Top
         .ex_m_wen (ex_m_wen),
         .ex_m_vaddr (ex_m_vaddr),
         .ex_m_wdata (ex_m_wdata),
-        .ex_wreg    (ex_wreg    ),
+        .ex_wreg    (ex_wregsel ),
         .ex_wraddr  (ex_wraddr  ),
         
         .mem_pc     (mem_pc     ),
         .mem_aluop  (mem_aluop  ),
         .mem_alures (mem_alures_i ),
-        .mem_opr2   (mem_opr2),
+        //.mem_opr2   (mem_opr2),
         .mem_mulhi (mem_mulhi),
         .mem_mullo (mem_mullo),
         .mem_mul_s (mem_mul_s),
@@ -353,7 +363,7 @@ module MangoMIPS_Core_Top
         .mem_pc      (mem_pc    ),
         .mem_aluop   (mem_aluop ),
         .mem_alures  (mem_alures_o),
-        .mem_opr2    (mem_opr2),
+        //.mem_opr2    (mem_opr2),
         .mem_m_vaddr (mem_m_vaddr),
         .mem_m_rdata (mem_m_rdata),
         .mem_wreg    (mem_wreg  ),
@@ -364,7 +374,7 @@ module MangoMIPS_Core_Top
         .wb_pc      (wb_pc      ),
         .wb_aluop   (wb_aluop   ),
         .wb_alures  (wb_alures  ),
-        .wb_opr2    (wb_opr2),
+        //.wb_opr2    (wb_opr2),
         .wb_m_vaddr (wb_m_vaddr),
         .wb_m_rdata (wb_m_rdata),
         .wb_wreg    (wb_wreg    ),
@@ -376,7 +386,7 @@ module MangoMIPS_Core_Top
     WriteBack writeback (
         .aluop  (wb_aluop),
         .alures (wb_alures),
-        .opr2   (wb_opr2),
+        //.opr2   (wb_opr2),
         .m_vaddr (wb_m_vaddr),
         .m_rdata (wb_m_rdata),
         .wrdata (wb_wrdata),

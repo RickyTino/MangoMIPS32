@@ -14,27 +14,21 @@ module Decode
     output reg             r1read,
     output reg  [`RegAddr] r1addr,
     input  wire [`DataBus] r1data,
-
     output reg             r2read,
     output reg  [`RegAddr] r2addr,
     input  wire [`DataBus] r2data,
 
-    output  reg [`DataBus] opr1,
-    output  reg [`DataBus] opr2,
+    output wire [`DataBus] opr1,
+    output wire [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
     output wire [`DataBus] offset,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
-	input  wire            ex_wreg,
-	input  wire [`RegAddr] ex_wraddr,
-	input  wire [`DataBus] ex_alures,
     input  wire            ex_resnrdy,
-
-	input  wire            mem_wreg,
-	input  wire [`RegAddr] mem_wraddr,
-	input  wire [`DataBus] mem_alures,
     input  wire            mem_resnrdy,
+    input  wire            hazard_ex,
+    input  wire            hazard_mem,
 
     output reg             isbranch,
     input  wire            inslot,
@@ -59,7 +53,7 @@ module Decode
     wire [`Word] lui_ext  = {immediate, 16'b0};
 
     wire opr1_lez = opr1[31] || (opr1 == `ZeroWord);
-    wire opr_eq   = (opr1 & ~opr2) == `ZeroWord;
+    wire opr_eq   = (opr1 ^ opr2) == `ZeroWord;
     wire [`Word] br_target = pcp4 + (sign_ext << 2); 
 
     reg instvalid;
@@ -657,7 +651,7 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWL;
                 r1read    <= `true;
-                r2read    <= `true;
+                //r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -666,7 +660,7 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWR;
                 r1read    <= `true;
-                r2read    <= `true;
+                //r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -715,34 +709,13 @@ module Decode
             end
         endcase
     end
-
-    wire ex_r1_haz  = ex_wreg  && ( ex_wraddr == r1addr) && (r1addr != `ZeroWord);
-    wire ex_r2_haz  = ex_wreg  && ( ex_wraddr == r2addr) && (r2addr != `ZeroWord);
-    wire mem_r1_haz = mem_wreg && (mem_wraddr == r1addr) && (r1addr != `ZeroWord);
-    wire mem_r2_haz = mem_wreg && (mem_wraddr == r2addr) && (r2addr != `ZeroWord);
-
-    always @(*) begin
-        case({r1read, ex_r1_haz, mem_r1_haz})
-            3'b110,
-            3'b111:  opr1 <= ex_alures;
-            3'b101:  opr1 <= mem_alures;
-            3'b100:  opr1 <= r1data;
-            default: opr1 <= ext_imme;
-        endcase
-
-        case({r2read, ex_r2_haz, mem_r2_haz})
-            3'b110,
-            3'b111:  opr2 <= ex_alures;
-            3'b101:  opr2 <= mem_alures;
-            3'b100:  opr2 <= r2data;
-            default: opr2 <= ext_imme;
-        endcase
-
-    end
-
-    wire    ex_nrdy = (( ex_r1_haz && r1read) || ( ex_r2_haz && r2read)) && ex_resnrdy;
-    wire   mem_nrdy = ((mem_r1_haz && r1read) || (mem_r2_haz && r2read)) && mem_resnrdy;
+    
+    assign opr1 = r1read ? r1data : ext_imme;
+    assign opr2 = r2read ? r2data : ext_imme;
+    //Delaying for hazards
+    wire    ex_nrdy = hazard_ex  && ex_resnrdy;
+    wire   mem_nrdy = hazard_mem && mem_resnrdy;
     assign stallreq = ex_nrdy || mem_nrdy;
-
+    
 endmodule
     

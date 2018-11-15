@@ -28,6 +28,9 @@ module ALU_EX
     output reg  [`AddrBus] m_vaddr,
     output reg  [`DataBus] m_wdata,
 
+    input  wire            wreg,
+    output reg  [`ByteWEn] wregsel,
+
     output wire            stallreq
 );
 
@@ -135,12 +138,14 @@ module ALU_EX
 
     //Memory Data Prepare
     wire [`AddrBus] sl_addr = opr1 + offset;
+    reg  [`ByteWEn] sel_l, sel_r;
 
     always @(*) begin
         m_en    <= `false;
         m_wen   <= `WrDisable;
         m_vaddr <= `ZeroWord;
         m_wdata <= `ZeroWord;
+        wregsel <= {4{wreg}};
 
         case (aluop)
             `ALU_LB,
@@ -160,10 +165,18 @@ module ALU_EX
                 m_vaddr <= sl_addr;
             end
 
-            `ALU_LWL,
+            `ALU_LWL: begin
+                m_en    <= `true;
+                //m_vaddr <= {sl_addr[31:2], 2'b00};
+                m_vaddr <= sl_addr;
+                wregsel <= sel_l;
+            end
+
             `ALU_LWR: begin
                 m_en    <= `true;
-                m_vaddr <= {sl_addr[31:2], 2'b00};
+                //m_vaddr <= {sl_addr[31:2], 2'b00};
+                m_vaddr <= sl_addr;
+                wregsel <= sel_r;
             end
 
             `ALU_SB: begin
@@ -207,17 +220,14 @@ module ALU_EX
                         m_wen   <= 4'b0001;
                         m_wdata <= {24'b0, opr2[31:24]};
                     end
-
                     2'b01: begin
 						m_wen   <= 4'b0011;
 						m_wdata <= {16'b0, opr2[31:16]};
 					end
-						
 					2'b10: begin
 						m_wen   <= 4'b0111;
 						m_wdata <= { 8'b0, opr2[31: 8]};
 					end
-						
 					2'b11: begin
 						m_wen   <= 4'b1111;
 						m_wdata <= opr2;
@@ -233,17 +243,14 @@ module ALU_EX
 						m_wen   <= 4'b1111;
 						m_wdata <= opr2;
 					end
-					
 					2'b01: begin
 						m_wen   <= 4'b1110;
 						m_wdata <= {opr2[23:0],  8'b0};
-					end
-						
+					end	
 					2'b10: begin
 						m_wen   <= 4'b1100;
 						m_wdata <= {opr2[15:0], 16'b0};
 					end
-					
 					2'b11: begin
 						m_wen   <= 4'b1000;
 						m_wdata <= {opr2[ 7:0], 24'b0};
@@ -258,6 +265,13 @@ module ALU_EX
                 m_vaddr <= `ZeroWord;
                 m_wdata <= `ZeroWord;
             end
+        endcase
+
+        case (sl_addr[1:0])
+            2'b00: begin sel_l <= 4'b1000; sel_r <= 4'b1111; end
+            2'b01: begin sel_l <= 4'b1100; sel_r <= 4'b0111; end
+            2'b10: begin sel_l <= 4'b1110; sel_r <= 4'b0011; end
+            2'b11: begin sel_l <= 4'b1111; sel_r <= 4'b0001; end
         endcase
     end
 
@@ -280,17 +294,9 @@ module ALU_EX
             `ALU_MOV,
             `ALU_MTHI,
             `ALU_MTLO: alures <= opr1;
-            //`ALU_MFHI: alures <= mem_whilo ? mem_hilo[`Hi] : hilo[`Hi];
-            //`ALU_MFLO: alures <= mem_whilo ? mem_hilo[`Lo] : hilo[`Lo];
             `ALU_CLO,
             `ALU_CLZ:  alures <= clzres;
             `ALU_BAL:  alures <= pc + 32'd8;
-            /*
-            `ALU_LB, `ALU_LBU, `ALU_LH,  `ALU_LHU,
-            `ALU_LW, `ALU_LWL, `ALU_LWR, `ALU_LL,
-            `ALU_SB, `ALU_SH,  `ALU_SW,  `ALU_SWL, 
-            `ALU_SWR:  alures <= opr1 + offset;
-            */
             default:   alures <= `ZeroWord;
         endcase
         

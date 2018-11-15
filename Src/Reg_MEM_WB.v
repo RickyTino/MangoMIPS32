@@ -15,10 +15,10 @@ module Reg_MEM_WB
     input  wire [`AddrBus] mem_pc,
     input  wire [`ALUOp  ] mem_aluop, 
     input  wire [`DataBus] mem_alures,
-    input  wire [`DataBus] mem_opr2,
+    //input  wire [`DataBus] mem_opr2,
     input  wire [`AddrBus] mem_m_vaddr,
     input  wire [`DataBus] mem_m_rdata,
-    input  wire            mem_wreg,
+    input  wire [`ByteWEn] mem_wreg,
     input  wire [`RegAddr] mem_wraddr,
     input  wire            mem_whilo,
     input  wire [`DWord  ] mem_hilo,
@@ -26,10 +26,10 @@ module Reg_MEM_WB
     output reg  [`AddrBus] wb_pc,
     output reg  [`ALUOp  ] wb_aluop, 
     output reg  [`DataBus] wb_alures,
-    output reg  [`DataBus] wb_opr2,
+    //output reg  [`DataBus] wb_opr2,
     output reg  [`AddrBus] wb_m_vaddr, 
     output reg  [`DataBus] wb_m_rdata,
-    output reg             wb_wreg,
+    output reg  [`ByteWEn] wb_wreg,
     output reg  [`RegAddr] wb_wraddr,
     output reg             wb_whilo,
     output reg  [`DWord  ] wb_hilo
@@ -40,10 +40,10 @@ module Reg_MEM_WB
             wb_pc      <= `ZeroWord;
             wb_aluop   <= `ALU_NOP;
             wb_alures  <= `ZeroWord;
-            wb_opr2    <= `ZeroWord;
+            //wb_opr2    <= `ZeroWord;
             wb_m_vaddr <= `ZeroWord;
             wb_m_rdata <= `ZeroWord;
-            wb_wreg    <= `false;
+            wb_wreg    <= `WrDisable;
             wb_wraddr  <= `ZeroReg;
             wb_whilo   <= `false;
             wb_hilo    <= `ZeroDWord;
@@ -54,10 +54,10 @@ module Reg_MEM_WB
                     wb_pc      <= `ZeroWord;
                     wb_aluop   <= `ALU_NOP;
                     wb_alures  <= `ZeroWord;
-                    wb_opr2    <= `ZeroWord;
+                    //wb_opr2    <= `ZeroWord;
                     wb_m_vaddr <= `ZeroWord;
                     wb_m_rdata <= `ZeroWord;
-                    wb_wreg    <= `false;
+                    wb_wreg    <= `WrDisable;
                     wb_wraddr  <= `ZeroReg;
                     wb_whilo   <= `false;
                     wb_hilo    <= `ZeroDWord;
@@ -66,7 +66,7 @@ module Reg_MEM_WB
                     wb_pc      <= mem_pc;
                     wb_aluop   <= mem_aluop;
                     wb_alures  <= mem_alures;
-                    wb_opr2    <= mem_opr2;
+                    //wb_opr2    <= mem_opr2;
                     wb_m_vaddr <= mem_m_vaddr;
                     wb_m_rdata <= mem_m_rdata;
                     wb_wreg    <= mem_wreg;
