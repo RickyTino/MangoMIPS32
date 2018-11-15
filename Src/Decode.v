@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	Decode.v
 Author:		RickyTino
-Version:	Unreleased
+Version:	Preview2-181115
 **************************************************/
 `include "Defines.v"
 
@@ -730,6 +730,7 @@ module Decode
     
     assign opr1 = r1read ? r1data : ext_imme;
     assign opr2 = r2read ? r2data : ext_imme;
+    
     //Delaying for hazards
     wire    ex_nrdy = hazard_ex  && ex_resnrdy;
     wire   mem_nrdy = hazard_mem && mem_resnrdy;

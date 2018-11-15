@@ -1,12 +1,15 @@
 # MangoMIPS32
 轻量级CPU软核，兼容MIPS32 release 1架构
 
-**开发中，将在第一个正式发布版本中更新此文档**
+**开发中，将在第一个正式发布版本中更新此文档**  
+## 当前版本：开发预览版2 
+版本号：Preview2-181115 
 
 ## 开发进度：
+当前未实现CP0模块。
+
 已实现、未调试指令：
 - BEQL/BNEL/BGTZL/BLEZL/BGEZL/BGEZALL/BLTZL/BLTZALL
-
 
 已通过调试指令：
 - SLL/SRL/SRA/SLLV/SRLV/SRAV

@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	Defines.v
 Author:		RickyTino
-Version:	Unreleased
+Version:	Preview2-181115
 **************************************************/
 //`include "Config.v"
 

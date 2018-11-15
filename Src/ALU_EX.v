@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	ALU_EX.v
 Author:		RickyTino
-Version:	Unreleased
+Version:	Preview2-181115
 **************************************************/
 `include "Defines.v"
 
@@ -111,14 +111,7 @@ module ALU_EX
     assign mullo[63:32] = mopr1[31:16] * mopr2[15: 0];
     assign mulhi[31: 0] = mopr1[15: 0] * mopr2[31:16];
     assign mulhi[63:32] = mopr1[31:16] * mopr2[31:16]; 
-/*
-    wire [`Word] mul_ll = mopr1[15: 0] * mopr2[15: 0];
-    wire [`Word] mul_hl = mopr1[31:16] * mopr2[15: 0];
-    wire [`Word] mul_lh = mopr1[15: 0] * mopr2[31:16];
-    wire [`Word] mul_hh = mopr1[31:16] * mopr2[31:16]; 
-    assign mullo = mul_ll + (mul_hl << 16);
-    assign mulhi = mul_lh + (mul_hh << 16);
-*/
+
     //Divider
     always @(*) begin
         case (aluop)
@@ -172,14 +165,12 @@ module ALU_EX
 
             `ALU_LWL: begin
                 m_en    <= `true;
-                //m_vaddr <= {sl_addr[31:2], 2'b00};
                 m_vaddr <= sl_addr;
                 wregsel <= sel_l;
             end
 
             `ALU_LWR: begin
                 m_en    <= `true;
-                //m_vaddr <= {sl_addr[31:2], 2'b00};
                 m_vaddr <= sl_addr;
                 wregsel <= sel_r;
             end
@@ -205,9 +196,6 @@ module ALU_EX
                     2'b10:   m_wen <= 4'b1100;
                     default: m_wen <= `WrDisable;
                 endcase
-                //if(sl_addr[0]) begin
-                //Reserved for exception
-                //end
             end
 
             `ALU_SW:  begin

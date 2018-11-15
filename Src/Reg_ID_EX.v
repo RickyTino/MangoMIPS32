@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:	Reg_ID_EX.v
 Author:		RickyTino
-Version:	Unreleased
+Version:	Preview2-181115
 **************************************************/
 `include "Defines.v"
 
