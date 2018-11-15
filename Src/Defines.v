@@ -41,6 +41,7 @@ Version:	Unreleased
 //`define     Offset              15:0
 //`define     HWord               15:0
 //`define     Byte                 7:0
+`define     CP0Addr              7:0
 `define		HardInt              5:0
 `define     RegAddr              4:0
 `define     Stages               4:0
@@ -176,16 +177,13 @@ Version:	Unreleased
 
 /*--------------------ALUOp--------------------*/
 `define     ALU_NOP				`ALUOp_W'h00
-
 `define     ALU_AND				`ALUOp_W'h01
 `define     ALU_OR				`ALUOp_W'h02
 `define     ALU_XOR				`ALUOp_W'h03
 `define     ALU_NOR				`ALUOp_W'h04
-
 `define     ALU_SLL				`ALUOp_W'h05
 `define     ALU_SRL				`ALUOp_W'h06
 `define     ALU_SRA				`ALUOp_W'h07
-
 `define     ALU_SLT				`ALUOp_W'h08
 `define     ALU_SLTU			`ALUOp_W'h09
 `define     ALU_ADD				`ALUOp_W'h0A
@@ -194,13 +192,11 @@ Version:	Unreleased
 `define     ALU_SUBU			`ALUOp_W'h0D
 `define     ALU_CLZ				`ALUOp_W'h0E
 `define     ALU_CLO				`ALUOp_W'h0F
-
 `define     ALU_MOV 			`ALUOp_W'h10
 `define     ALU_MFHI			`ALUOp_W'h11
 `define     ALU_MTHI			`ALUOp_W'h12
 `define     ALU_MFLO			`ALUOp_W'h13
 `define     ALU_MTLO			`ALUOp_W'h14
-
 `define     ALU_MULT			`ALUOp_W'h15
 `define     ALU_MULTU			`ALUOp_W'h16
 `define     ALU_MUL				`ALUOp_W'h17
@@ -208,12 +204,9 @@ Version:	Unreleased
 `define     ALU_MADDU			`ALUOp_W'h19
 `define     ALU_MSUB			`ALUOp_W'h1A
 `define     ALU_MSUBU			`ALUOp_W'h1B
-
 `define     ALU_DIV				`ALUOp_W'h1C
 `define     ALU_DIVU			`ALUOp_W'h1D
-
 `define     ALU_BAL             `ALUOp_W'h1E
-
 `define     ALU_LB				`ALUOp_W'h20
 `define     ALU_LBU				`ALUOp_W'h21
 `define     ALU_LH				`ALUOp_W'h22
@@ -229,25 +222,26 @@ Version:	Unreleased
 `define     ALU_LL              `ALUOp_W'h2C
 `define     ALU_SC              `ALUOp_W'h2D
 
-/*
-`define     ALU_MFC0			`ALUOp_W'h37
-`define     ALU_MTC0			`ALUOp_W'h38
-`define     ALU_SYSCALL         `ALUOp_W'h39
-`define     ALU_BREAK			`ALUOp_W'h3A 
-`define     ALU_ERET            `ALUOp_W'h3B
-
-
-`define     MEM_NOP             4'h0
-`define     MEM_LB              4'h1
-`define     MEM_LBU
-`define     MEM_LH
-`define     MEM_LHU
-`define     MEM_LW
-`define     MEM_LWL
-`define     MEM_LWR
-`define     MEM_SB
-`define     MEM_SH
-`define     MEM_SW
-`define     MEM_SWL
-`define     MEM_SWR
-*/
+/*--------------------CP0 Registers--------------------*/
+`define     CP0_Index               {5'd00, 3'd0}
+`define     CP0_Random              {5'd01, 3'd0}
+`define     CP0_EntryLo0            {5'd02, 3'd0}
+`define     CP0_EntryLo1            {5'd03, 3'd0}
+`define     CP0_Context  			{5'd04, 3'd0}
+`define     CP0_PageMask 			{5'd05, 3'd0}
+`define     CP0_Wired    			{5'd06, 3'd0}
+`define     CP0_BadVAddr 			{5'd08, 3'd0}
+`define     CP0_Count    			{5'd09, 3'd0}
+`define     CP0_EntryHi  			{5'd10, 3'd0}
+`define     CP0_Compare  			{5'd11, 3'd0}
+`define     CP0_Status   			{5'd12, 3'd0}
+`define     CP0_Cause    			{5'd13, 3'd0}
+`define     CP0_EPC      			{5'd14, 3'd0}
+`define     CP0_PrId     			{5'd15, 3'd0}
+`define     CP0_EBase    			{5'd15, 3'd1}
+`define     CP0_Config0   			{5'd16, 3'd0}
+`define     CP0_Config1  			{5'd16, 3'd1}
+`define     CP0_TagLo0   			{5'd28, 3'd0}
+`define     CP0_TagLo1   			{5'd28, 3'd2}
+`define     CP0_TagHi0   			{5'd29, 3'd0}
+`define     CP0_TagHi1   			{5'd29, 3'd2}

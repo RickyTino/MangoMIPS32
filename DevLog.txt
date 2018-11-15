@@ -156,9 +156,33 @@
 [20181115]
 - 为数据和指令接口添加了暂停请求信号
 - sram_func测试通过至64点，前面的指令测试通过
-- 下一批指令：
--- LL/SC
--- MFC0/MTC0
 - 将LLbit模块与hilo合并，减少模块数量
 - LL/SC通过测试
+- 下一批实现MFC0/MTC0以及相关CP0寄存器
 - T: MEM段的Exception会需要处理llbit的读写问题
+- T: 计划实现的CP0寄存器有：
+-- Index    (Register 0, Select 0)
+-- Random   (Register 1, Select 0)
+-- EntryLo0 (Register 2, Select 0)
+-- EntryLo1 (Register 3, Select 0)
+-- Context  (Register 4, Select 0)
+-- PageMask (Register 5, Select 0)
+-- Wired    (Register 6, Select 0)
+-- BadVAddr (Register 8, Select 0)
+-- Count    (Register 9, Select 0)
+-- EntryHi  (Register 10, Select 0)
+-- Compare  (Register 11, Select 0)
+-- Status   (Register 12, Select 0)
+-- Cause    (Register 13, Select 0)
+-- EPC      (Register 14, Select 0)
+-- PrId     (Register 15, Select 0)
+-- EBase    (Register 15, Select 1)
+-- Config   (Register 16, Select 0)
+-- Config1  (Register 16, Select 1)
+-- TagLo    (Register 28, Select 0, 2)
+-- TagHi    (Register 29, Select 0, 2)
+- 在Defines.v中添加了以上CP0寄存器的相关定义
+- CP0中试着添加了badvaddr/count/Compare
+- 以后的CP0寄存器要一个一个添加
+
+
