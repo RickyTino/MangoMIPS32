@@ -13,6 +13,7 @@ Version:	Unreleased
 //Global constant
 `define		true				 1'b1
 `define     false                1'b0
+`define     One                  1'b1
 `define     Zero                 1'b0
 `define     ZeroReg				 5'h0
 `define     ZeroWord			32'h0
@@ -234,7 +235,7 @@ Version:	Unreleased
 `define     ALU_SYSCALL         `ALUOp_W'h39
 `define     ALU_BREAK			`ALUOp_W'h3A 
 `define     ALU_ERET            `ALUOp_W'h3B
-*/
+
 
 `define     MEM_NOP             4'h0
 `define     MEM_LB              4'h1
@@ -249,3 +250,4 @@ Version:	Unreleased
 `define     MEM_SW
 `define     MEM_SWL
 `define     MEM_SWR
+*/

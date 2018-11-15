@@ -27,9 +27,12 @@ module ALU_EX
     output reg  [`ByteWEn] m_wen, 
     output reg  [`AddrBus] m_vaddr,
     output reg  [`DataBus] m_wdata,
-
     input  wire            wreg,
     output reg  [`ByteWEn] wregsel,
+
+    input  wire            llbit_i,
+    output reg             llb_wen,
+    output reg             llbit_o,
 
     output wire            stallreq
 );
@@ -146,6 +149,8 @@ module ALU_EX
         m_vaddr <= `ZeroWord;
         m_wdata <= `ZeroWord;
         wregsel <= {4{wreg}};
+        llb_wen <= `false;
+        llbit_o <= llbit_i;
 
         case (aluop)
             `ALU_LB,
@@ -257,8 +262,20 @@ module ALU_EX
 					end
 				endcase
 			end
-            //`ALU_LL:
-            //`ALU_SC:
+            `ALU_LL: begin
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                llb_wen <= `true;
+                llbit_o <= `One;
+            end
+
+            `ALU_SC: if(llbit_i) begin
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                m_wdata <= opr2;
+                m_wen   <= 4'b1111;
+            end
+            
             default: begin
                 m_en    <= `false;
                 m_wen   <= `WrDisable;
@@ -297,6 +314,7 @@ module ALU_EX
             `ALU_CLO,
             `ALU_CLZ:  alures <= clzres;
             `ALU_BAL:  alures <= pc + 32'd8;
+            `ALU_SC:   alures <= {31'b0, llbit_i};
             default:   alures <= `ZeroWord;
         endcase
         

@@ -16,7 +16,7 @@ module ALU_MEM
     input  wire [`DWord  ] hilo_i,
 
     output reg  [`DataBus] alures_o,
-    output reg             whilo,
+    output reg             hilo_wen,
     output reg  [`DWord  ] hilo_o,
     output reg             resnrdy
 );
@@ -27,8 +27,7 @@ module ALU_MEM
     wire [`DWord] smres = mul_s ? ~umres + 64'b1 : umres;
 
     always @(*) begin
-        resnrdy  <= `false;
-        whilo    <= `false;
+        hilo_wen <= `false;
         hilo_o   <= hilo_i; 
         alures_o <= alures_i;
 
@@ -38,51 +37,53 @@ module ALU_MEM
             `ALU_MUL:  alures_o <= smres[31:0];
 
             `ALU_MTHI: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= {alures_i, hilo_i[`Lo]};
             end
 
             `ALU_MTLO: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= {hilo_i[`Hi], alures_i};
             end
 
             `ALU_MULT: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= smres; 
             end
 
             `ALU_MULTU: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= umres; 
             end
 
             `ALU_MADD: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= hilo_i + smres; 
             end
 
             `ALU_MADDU: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= hilo_i + umres; 
             end
 
             `ALU_MSUB: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= hilo_i - smres; 
             end
 
             `ALU_MSUBU: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= hilo_i - umres; 
             end
 
             `ALU_DIV,
             `ALU_DIVU: begin
-                whilo    <= `true;
+                hilo_wen <= `true;
                 hilo_o   <= divres;
             end
-            
+        endcase
+
+        case (aluop)
             `ALU_LB,
             `ALU_LBU,
             `ALU_LH,
@@ -91,13 +92,7 @@ module ALU_MEM
             `ALU_LWL,
             `ALU_LWR,
             `ALU_LL: resnrdy <= `true;
-
-            default:  begin
-                resnrdy <=  `false;
-                whilo    <= `false;
-                hilo_o   <= hilo_i; 
-                alures_o <= alures_i;
-            end
+            default: resnrdy <= `false;
         endcase
     end
 

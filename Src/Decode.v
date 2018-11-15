@@ -699,14 +699,32 @@ module Decode
                 r1read    <= `true;
                 r2read    <= `true;
             end
+            
+            `OP_CACHE: begin //Temporarily decode as nop
+                instvalid <= `true;
+            end
+
+            `OP_LL: begin
+                instvalid <= `true;
+                aluop     <= `ALU_LL;
+                r1read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
+            end
 
             `OP_PREF: begin //Temporarily decode as nop
                 instvalid <= `true;
             end
 
-            `OP_CACHE: begin //Temporarily decode as nop
+            `OP_SC: begin
                 instvalid <= `true;
+                aluop     <= `ALU_SC;
+                r1read    <= `true;
+                r2read    <= `true;
+                wreg      <= `true;
+                wraddr    <= rt;
             end
+
         endcase
     end
     

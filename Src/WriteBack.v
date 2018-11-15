@@ -61,7 +61,8 @@ module WriteBack
 				endcase
 			end
 			
-			`ALU_LW: begin
+			`ALU_LW,
+			`ALU_LL: begin
                 memtoreg <= `true;
                 memdata  <= m_rdata;
 			end

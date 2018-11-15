@@ -26,6 +26,8 @@ module Reg_EX_MEM
     input  wire [`DataBus] ex_m_wdata,
     input  wire [`ByteWEn] ex_wreg,
     input  wire [`RegAddr] ex_wraddr,
+    input  wire            ex_llb_wen,
+    input  wire            ex_llbit,
     
     output reg  [`AddrBus] mem_pc,
     output reg  [`ALUOp  ] mem_aluop, 
@@ -40,7 +42,9 @@ module Reg_EX_MEM
     output reg  [`AddrBus] mem_m_vaddr,
     output reg  [`DataBus] mem_m_wdata,
     output reg  [`ByteWEn] mem_wreg,
-    output reg  [`RegAddr] mem_wraddr
+    output reg  [`RegAddr] mem_wraddr,
+    output reg             mem_llb_wen,
+    output reg             mem_llbit
 );
 
     always @(posedge clk, posedge rst) begin
@@ -48,7 +52,6 @@ module Reg_EX_MEM
             mem_pc      <= `ZeroWord;
             mem_aluop   <= `ALU_NOP;
             mem_alures  <= `ZeroWord;
-            //mem_opr2    <= `ZeroWord;
             mem_mulhi   <= `ZeroDWord;
             mem_mullo   <= `ZeroDWord;
             mem_mul_s   <= `Zero;
@@ -59,6 +62,8 @@ module Reg_EX_MEM
             mem_m_wdata <= `ZeroWord;
             mem_wreg    <= `WrDisable;
             mem_wraddr  <= `ZeroReg;
+            mem_llb_wen <= `false;
+            mem_llbit   <= `Zero;
         end
         else begin
             case ({flush, stall})
@@ -66,7 +71,6 @@ module Reg_EX_MEM
                     mem_pc      <= `ZeroWord;
                     mem_aluop   <= `ALU_NOP;
                     mem_alures  <= `ZeroWord;
-                    //mem_opr2    <= `ZeroWord;
                     mem_mulhi   <= `ZeroDWord;
                     mem_mullo   <= `ZeroDWord;
                     mem_mul_s   <= `Zero;
@@ -77,12 +81,13 @@ module Reg_EX_MEM
                     mem_m_wdata <= `ZeroWord;
                     mem_wreg    <= `WrDisable;
                     mem_wraddr  <= `ZeroReg;
+                    mem_llb_wen <= `false;
+                    mem_llbit   <= `Zero;
                 end
                 2'b00: begin
                     mem_pc      <= ex_pc;
                     mem_aluop   <= ex_aluop;
                     mem_alures  <= ex_alures;
-                    //mem_opr2    <= ex_opr2;
                     mem_mulhi   <= ex_mulhi;
                     mem_mullo   <= ex_mullo;
                     mem_mul_s   <= ex_mul_s;
@@ -93,6 +98,8 @@ module Reg_EX_MEM
                     mem_m_wdata <= ex_m_wdata;
                     mem_wreg    <= ex_wreg;
                     mem_wraddr  <= ex_wraddr;
+                    mem_llb_wen <= ex_llb_wen;
+                    mem_llbit   <= ex_llbit;
                 end
             endcase
         end
