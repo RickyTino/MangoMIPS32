@@ -160,7 +160,7 @@
 - LL/SC通过测试
 - 下一批实现MFC0/MTC0以及相关CP0寄存器
 - T: MEM段的Exception会需要处理llbit的读写问题
-- T: 计划实现的CP0寄存器有：
+- T: 计划实现的CP0寄存器有：【后面备注批次】
 -- Index    (Register 0, Select 0)      //3
 -- Random   (Register 1, Select 0)      //3
 -- EntryLo0 (Register 2, Select 0)      //3
@@ -193,3 +193,7 @@
 --------------------------------------------------
 [20181117]
 - Status.ERL暂缓实现
+- 去掉了文件中所有的制表符，全部改为使用空格
+- 初步完成CP0模块
+- 去掉了所有的opr2的后送信号（已经注掉的也删了）
+- T: MFC0也要在MEM段出结果
