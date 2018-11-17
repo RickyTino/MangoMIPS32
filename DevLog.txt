@@ -161,28 +161,35 @@
 - 下一批实现MFC0/MTC0以及相关CP0寄存器
 - T: MEM段的Exception会需要处理llbit的读写问题
 - T: 计划实现的CP0寄存器有：
--- Index    (Register 0, Select 0)
--- Random   (Register 1, Select 0)
--- EntryLo0 (Register 2, Select 0)
--- EntryLo1 (Register 3, Select 0)
--- Context  (Register 4, Select 0)
--- PageMask (Register 5, Select 0)
--- Wired    (Register 6, Select 0)
--- BadVAddr (Register 8, Select 0)
--- Count    (Register 9, Select 0)
--- EntryHi  (Register 10, Select 0)
--- Compare  (Register 11, Select 0)
--- Status   (Register 12, Select 0)
--- Cause    (Register 13, Select 0)
--- EPC      (Register 14, Select 0)
--- PrId     (Register 15, Select 0)
--- EBase    (Register 15, Select 1)
--- Config   (Register 16, Select 0)
--- Config1  (Register 16, Select 1)
--- TagLo    (Register 28, Select 0, 2)
--- TagHi    (Register 29, Select 0, 2)
+-- Index    (Register 0, Select 0)      //3
+-- Random   (Register 1, Select 0)      //3
+-- EntryLo0 (Register 2, Select 0)      //3
+-- EntryLo1 (Register 3, Select 0)      //3
+-- Context  (Register 4, Select 0)      //3
+-- PageMask (Register 5, Select 0)      //3
+-- Wired    (Register 6, Select 0)      //3
+-- BadVAddr (Register 8, Select 0)      //1
+-- Count    (Register 9, Select 0)      //2
+-- EntryHi  (Register 10, Select 0)     //3
+-- Compare  (Register 11, Select 0)     //2
+-- Status   (Register 12, Select 0)     //1
+-- Cause    (Register 13, Select 0)     //1
+-- EPC      (Register 14, Select 0)     //1
+-- PrId     (Register 15, Select 0)     //2
+-- EBase    (Register 15, Select 1)     //4
+-- Config   (Register 16, Select 0)     //2
+-- Config1  (Register 16, Select 1)     //2
+-- TagLo    (Register 28, Select 0, 2) //
+-- TagHi    (Register 29, Select 0, 2) //
 - 在Defines.v中添加了以上CP0寄存器的相关定义
 - CP0中试着添加了badvaddr/count/Compare
-- 以后的CP0寄存器要一个一个添加
-
-
+- T: 第一批添加的CP0寄存器：BadVAddr, Status, Cause, EPC
+--------------------------------------------------
+[20181116]
+- T: 不实现Soft Reset和NMI异常
+- Q: 如何在EX段实现User Mode访问核心内存空间的异常判断？
+- A: 可以在MEM段判断，本来就是MMU的任务
+- 初步添加Status和Cause寄存器
+--------------------------------------------------
+[20181117]
+- Status.ERL暂缓实现

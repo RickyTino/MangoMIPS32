@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	ALU_MEM.v
-Author:		RickyTino
-Version:	Unreleased
+Filename:   ALU_MEM.v
+Author:     RickyTino
+Version:    Unreleased
 **************************************************/
 `include "Defines.v"
 

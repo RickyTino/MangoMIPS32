@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Decode.v
-Author:		RickyTino
-Version:	Unreleased
+Filename:   Decode.v
+Author:     RickyTino
+Version:    Unreleased
 **************************************************/
 `include "Defines.v"
 
@@ -22,6 +22,7 @@ module Decode
     output wire [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
     output wire [`DataBus] offset,
+    output wire [`CP0Addr] cp0addr,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
@@ -47,6 +48,7 @@ module Decode
     wire [ 5:0] funct     = inst[ 5: 0];
     wire [15:0] immediate = inst[15: 0];
     wire [25:0] j_offset  = inst[25: 0];
+    wire [ 2:0] sel       = inst[ 3: 0];
 
     wire [`Word] zero_ext = {16'b0, immediate};
     wire [`Word] sign_ext = {{16{immediate[15]}}, immediate};
@@ -59,7 +61,8 @@ module Decode
     reg instvalid;
     reg [`Word] ext_imme;
 
-    assign offset = sign_ext;
+    assign offset  = sign_ext;
+    assign cp0addr = {rd, sel};
 
     always @(*) begin
         instvalid <= `false;
@@ -510,7 +513,32 @@ module Decode
             end
 
             `OP_COP0: begin
+                case (rs)
+                    `C0_MFC0: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MFC0;
+                        wreg      <= `true;
+                        wraddr    <= `rt;
+                    end
 
+                    `C0_MTC0: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_MTC0;
+                        r2read    <= `true;
+                    end
+
+                    `C0_CO: begin
+                        case (funct)
+                            //`C0F_TLBR:
+                            //`C0F_TLBWI:
+                            //`C0F_TLBWR:
+                            //`C0F_TLBP:
+                            `C0F_ERET: begin
+
+                            end
+                            //`C0F_WAIT:
+                        endcase
+                    end
             end
             
             `OP_BEQL: begin
@@ -734,6 +762,5 @@ module Decode
     wire    ex_nrdy = hazard_ex  && ex_resnrdy;
     wire   mem_nrdy = hazard_mem && mem_resnrdy;
     assign stallreq = ex_nrdy || mem_nrdy;
-    
+
 endmodule
-    

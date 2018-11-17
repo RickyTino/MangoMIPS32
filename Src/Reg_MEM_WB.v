@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Reg_MEM_WB.v
-Author:		RickyTino
-Version:	Unreleased
+Filename:   Reg_MEM_WB.v
+Author:     RickyTino
+Version:    Unreleased
 **************************************************/
 `include "Defines.v"
 

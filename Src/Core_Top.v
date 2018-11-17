@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Core_Top.v
-Author:		RickyTino
-Version:	Preview2-181115
+Filename:   Core_Top.v
+Author:     RickyTino
+Version:    Preview2-181115
 **************************************************/
 `include "Defines.v"
 
@@ -37,6 +37,8 @@ module MangoMIPS_Core_Top
     wire [`AddrBus] id_pcp4;
     wire [`DataBus] id_inst;
     wire            id_inslot;
+    wire            br_flag;
+    wire [`AddrBus] br_addr;
 
     wire            r1read;
     wire [`RegAddr] r1addr;
@@ -47,8 +49,6 @@ module MangoMIPS_Core_Top
     wire            hazard_ex;
     wire            hazard_mem;
 
-    wire            br_flag;
-    wire [`AddrBus] br_addr;
     wire [`DataBus] id_opr1;
     wire [`DataBus] id_opr2;
     wire [`DataBus] id_offset;

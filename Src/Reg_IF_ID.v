@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Reg_IF_ID.v
-Author:		RickyTino
-Version:	Unreleased
+Filename:   Reg_IF_ID.v
+Author:     RickyTino
+Version:    Unreleased
 **************************************************/
 `include "Defines.v"
 
