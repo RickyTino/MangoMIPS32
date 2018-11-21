@@ -12,6 +12,7 @@ module ALU_EX
     input  wire [`DataBus] opr1,
     input  wire [`DataBus] opr2,
     input  wire [`DataBus] offset,
+    //input  wire [`CP0Addr] cp0sel,
 
     output reg             div_start,
     output reg             div_signed,
@@ -315,6 +316,7 @@ module ALU_EX
             `ALU_CLZ:  alures <= clzres;
             `ALU_BAL:  alures <= pc + 32'd8;
             `ALU_SC:   alures <= {31'b0, llbit_i};
+            `ALU_MTC0: alures <= opr2;
             default:   alures <= `ZeroWord;
         endcase
         
@@ -329,6 +331,7 @@ module ALU_EX
             `ALU_LL,
             `ALU_MFHI,
             `ALU_MFLO,
+            `ALU_MFC0,
             `ALU_MUL: resnrdy <= `true;
             default:  resnrdy <= `false;
         endcase

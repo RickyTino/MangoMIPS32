@@ -19,6 +19,7 @@ module Reg_EX_MEM
     input  wire [`DWord  ] ex_mullo,
     input  wire            ex_mul_s,
     input  wire [`DWord  ] ex_divres,
+    input  wire [`CP0Addr] ex_cp0sel,
     input  wire            ex_m_en,
     input  wire [`ByteWEn] ex_m_wen,
     input  wire [`AddrBus] ex_m_vaddr,
@@ -35,6 +36,7 @@ module Reg_EX_MEM
     output reg  [`DWord  ] mem_mullo,
     output reg             mem_mul_s,
     output reg  [`DWord  ] mem_divres,
+    output reg  [`CP0Addr] mem_cp0sel,
     output reg             mem_m_en,
     output reg  [`ByteWEn] mem_m_wen,
     output reg  [`AddrBus] mem_m_vaddr,
@@ -54,6 +56,7 @@ module Reg_EX_MEM
             mem_mullo   <= `ZeroDWord;
             mem_mul_s   <= `Zero;
             mem_divres  <= `ZeroDWord;
+            mem_cp0sel  <= `CP0_ZeroReg;
             mem_m_en    <= `false;
             mem_m_wen   <= `WrDisable;
             mem_m_vaddr <= `ZeroWord;
@@ -73,6 +76,7 @@ module Reg_EX_MEM
                     mem_mullo   <= `ZeroDWord;
                     mem_mul_s   <= `Zero;
                     mem_divres  <= `ZeroDWord;
+                    mem_cp0sel  <= `CP0_ZeroReg;
                     mem_m_en    <= `false;
                     mem_m_wen   <= `WrDisable;
                     mem_m_vaddr <= `ZeroWord;
@@ -90,6 +94,7 @@ module Reg_EX_MEM
                     mem_mullo   <= ex_mullo;
                     mem_mul_s   <= ex_mul_s;
                     mem_divres  <= ex_divres;
+                    mem_cp0sel  <= ex_cp0sel;
                     mem_m_en    <= ex_m_en;
                     mem_m_wen   <= ex_m_wen;
                     mem_m_vaddr <= ex_m_vaddr;

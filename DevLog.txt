@@ -179,14 +179,14 @@
 -- EBase    (Register 15, Select 1)     //4
 -- Config   (Register 16, Select 0)     //2
 -- Config1  (Register 16, Select 1)     //2
--- TagLo    (Register 28, Select 0, 2) //
--- TagHi    (Register 29, Select 0, 2) //
+-- TagLo    (Register 28, Select 0, 2)  //4
+-- TagHi    (Register 29, Select 0, 2)  //4
 - 在Defines.v中添加了以上CP0寄存器的相关定义
 - CP0中试着添加了badvaddr/count/Compare
 - T: 第一批添加的CP0寄存器：BadVAddr, Status, Cause, EPC
 --------------------------------------------------
 [20181116]
-- T: 不实现Soft Reset和NMI异常
+- T: 暂不实现Soft Reset和NMI异常
 - Q: 如何在EX段实现User Mode访问核心内存空间的异常判断？
 - A: 可以在MEM段判断，本来就是MMU的任务
 - 初步添加Status和Cause寄存器
@@ -197,3 +197,35 @@
 - 初步完成CP0模块
 - 去掉了所有的opr2的后送信号（已经注掉的也删了）
 - T: MFC0也要在MEM段出结果
+--------------------------------------------------
+[20181118]
+- 日程需要，短期停工
+- 截至之前的进度，CP0已经嵌入顶层模块
+- T: 用tab键对格式进行整理（实际上是空格）
+- T: Status.UM可能是要实现的
+--------------------------------------------------
+[20181121]
+- Config.v回来了，添加了去除延迟槽的设定
+- CP0移动指令和Count/Compare通过测试
+- T: 第一批准备实现的异常类型及优先级：
+-- Int
+-- I-AdEL
+-- CpU
+-- RI
+-- Ov, Trap, Syscall, Bp,
+-- D-AdEL/AdES
+- T: COP1之类的关于CP1/CP2的指令不存在造成的异常暂时按照RI处理
+- defines.v增加关于CP0寄存器的字段的定义
+- defines.v增加关于异常相关的定义
+- 直接实现ERL
+- T: AdE中关于虚地址非法访问的判断不需要经过MMU
+
+
+
+--------------------------------------------------
+[特别笔记区段]
+对MIPS32R1的全面适配，以下工作放到最后：
+- 完整的SYNC/PREF
+- CP1-3的指令按照CpU处理
+- ErrorEPC与NMI
+

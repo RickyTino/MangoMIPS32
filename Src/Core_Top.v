@@ -52,6 +52,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] id_opr1;
     wire [`DataBus] id_opr2;
     wire [`DataBus] id_offset;
+    wire [`CP0Addr] id_cp0sel;
     wire [`ALUOp  ] id_aluop;
     wire            id_wreg;
     wire [`RegAddr] id_wraddr;
@@ -63,6 +64,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] ex_opr1;
     wire [`DataBus] ex_opr2;
     wire [`DataBus] ex_offset;
+    wire [`CP0Addr] ex_cp0sel;
     wire            ex_wreg;
     wire [`RegAddr] ex_wraddr;
 
@@ -92,6 +94,7 @@ module MangoMIPS_Core_Top
     wire [`DWord  ] mem_mullo;
     wire            mem_mul_s;
     wire [`DWord  ] mem_divres; 
+    wire [`CP0Addr] mem_cp0sel;
     wire [`ByteWEn] mem_wreg;
     wire [`RegAddr] mem_wraddr;
     wire            mem_llb_wen;
@@ -103,6 +106,11 @@ module MangoMIPS_Core_Top
     wire [`DataBus] mem_m_wdata;
     wire [`DataBus] mem_m_rdata;
 
+    wire            cp0_wen;
+    wire [`CP0Addr] cp0_addr;
+    wire [`DataBus] cp0_wdata;
+    wire [`DataBus] cp0_rdata;
+    
     wire [`DataBus] mem_alures_o;
     wire            mem_resnrdy;
     wire            mem_hilo_wen;
@@ -129,107 +137,108 @@ module MangoMIPS_Core_Top
     wire [`Stages ] flush; 
   
     PC pc (
-        .clk      (clk       ),
-        .rst      (rst       ),
-        .stall    (stall[`IF]),
-        .flush    (flush[`IF]),
-        .flush_pc (`ZeroWord ), //Temp!
-        .br_flag  (br_flag   ),
-        .br_addr  (br_addr   ),
+        .clk        (clk        ),
+        .rst        (rst        ),
+        .stall      (stall[`IF] ),
+        .flush      (flush[`IF] ),
+        .flush_pc   (`ZeroWord  ), //Temp!
+        .br_flag    (br_flag    ),
+        .br_addr    (br_addr    ),
 
-        .pc       (if_i_vaddr),
-        .pcp4     (if_pcp4   ),
-        .i_en     (if_i_en   )
+        .pc         (if_i_vaddr ),
+        .pcp4       (if_pcp4    ),
+        .i_en       (if_i_en    )
     );
     
     MMU_Inst mmu_inst (
-        .i_en       (if_i_en   ),
-        .i_vaddr    (if_i_vaddr),
-        .i_rdata    (if_i_rdata),
+        .i_en       (if_i_en    ),
+        .i_vaddr    (if_i_vaddr ),
+        .i_rdata    (if_i_rdata ),
 
-        .ibus_en    (ibus_en   ),
-        .ibus_paddr (ibus_addr ),
-        .ibus_rdata (ibus_rdata),
-        .ibus_streq (ibus_streq),
+        .ibus_en    (ibus_en    ),
+        .ibus_paddr (ibus_addr  ),
+        .ibus_rdata (ibus_rdata ),
+        .ibus_streq (ibus_streq ),
 
         .stallreq   (stallreq[`IF])
     );
 
     Reg_IF_ID reg_if_id (
-        .clk     (clk       ),
-        .rst     (rst       ),
-        .stall   (stall[`ID]),
-        .flush   (flush[`ID]),
-        .clrslot (id_clrslot),
+        .clk            (clk        ),
+        .rst            (rst        ),
+        .stall          (stall[`ID] ),
+        .flush          (flush[`ID] ),
+        .clrslot        (id_clrslot ),
 
-        .if_pc       (if_i_vaddr  ),
-        .if_pcp4     (if_pcp4     ),
-        .if_inst     (ibus_rdata  ),
-        .id_isbranch (id_isbranch ),
-        .id_pc       (id_pc       ),
-        .id_pcp4     (id_pcp4     ),
-        .id_inst     (id_inst     ),
-        .id_inslot   (id_inslot   )
+        .if_pc          (if_i_vaddr ),
+        .if_pcp4        (if_pcp4    ),
+        .if_inst        (ibus_rdata ),
+        .id_isbranch    (id_isbranch),
+        .id_pc          (id_pc      ),
+        .id_pcp4        (id_pcp4    ),
+        .id_inst        (id_inst    ),
+        .id_inslot      (id_inslot  )
     );
 
     Decode decode (
-        .pc         (id_pc     ),
-        .pcp4       (id_pcp4   ),
-        .inst       (id_inst   ),
+        .pc             (id_pc      ),
+        .pcp4           (id_pcp4    ),
+        .inst           (id_inst    ),
 
-        .r1read     (r1read    ),
-        .r1addr     (r1addr    ),
-        .r1data     (r1data    ),
-        .r2read     (r2read    ),
-        .r2addr     (r2addr    ),
-        .r2data     (r2data    ),
+        .r1read         (r1read     ),
+        .r1addr         (r1addr     ),
+        .r1data         (r1data     ),
+        .r2read         (r2read     ),
+        .r2addr         (r2addr     ),
+        .r2data         (r2data     ),
 
-        .opr1       (id_opr1   ),
-        .opr2       (id_opr2   ),
-        .aluop      (id_aluop  ),
-        .offset     (id_offset ),
-        .wreg       (id_wreg   ),
-        .wraddr     (id_wraddr ),
+        .opr1           (id_opr1    ),
+        .opr2           (id_opr2    ),
+        .aluop          (id_aluop   ),
+        .offset         (id_offset  ),
+        .cp0sel         (id_cp0sel  ),
+        .wreg           (id_wreg    ),
+        .wraddr         (id_wraddr  ),
 
-        .ex_resnrdy  (ex_resnrdy ),
-        .mem_resnrdy (mem_resnrdy),
-        .hazard_ex   (hazard_ex  ),
-        .hazard_mem  (hazard_mem ),
+        .ex_resnrdy     (ex_resnrdy ),
+        .mem_resnrdy    (mem_resnrdy),
+        .hazard_ex      (hazard_ex  ),
+        .hazard_mem     (hazard_mem ),
 
-        .isbranch (id_isbranch),
-        .inslot   (id_inslot),
-        .clrslot  (id_clrslot),
-        .br_flag  (br_flag),
-        .br_addr  (br_addr),
+        .isbranch       (id_isbranch),
+        .inslot         (id_inslot  ),
+        .clrslot        (id_clrslot ),
+        .br_flag        (br_flag    ),
+        .br_addr        (br_addr    ),
 
-        .stallreq(stallreq[`ID])
+        .stallreq       (stallreq[`ID])
     );
 
     RegFile regfile (
-        .clk    (clk      ),
-        .rst    (rst      ), 
+        .clk        (clk        ),
+        .rst        (rst        ), 
 
-        .re1    (r1read   ), 
-        .r1addr (r1addr   ),
-        .r1data (r1data   ),
+        .re1        (r1read     ), 
+        .r1addr     (r1addr     ),
+        .r1data     (r1data     ),
 
-        .re2    (r2read   ),
-        .r2addr (r2addr   ),
-        .r2data (r2data   ),
+        .re2        (r2read     ),
+        .r2addr     (r2addr     ),
+        .r2data     (r2data     ),
 
-        .we     (wb_wreg  ),
-        .waddr  (wb_wraddr), 
-        .wdata  (wb_wrdata),
+        .we         (wb_wreg    ),
+        .waddr      (wb_wraddr  ), 
+        .wdata      (wb_wrdata  ),
 
-        .ex_wreg    (ex_wregsel),
-        .ex_wraddr  (ex_wraddr ),
-        .ex_alures  (ex_alures ),
-        .mem_wreg   (mem_wreg  ),
-        .mem_wraddr (mem_wraddr),
+        .ex_wreg    (ex_wregsel ),
+        .ex_wraddr  (ex_wraddr  ),
+        .ex_alures  (ex_alures  ),
+        .mem_wreg   (mem_wreg   ),
+        .mem_wraddr (mem_wraddr ),
         .mem_alures (mem_alures_o),
 
-        .hazard_ex  (hazard_ex),
-        .hazard_mem (hazard_mem)
+        .hazard_ex  (hazard_ex  ),
+        .hazard_mem (hazard_mem )
     );
 
     Reg_ID_EX reg_id_ex (
@@ -243,6 +252,7 @@ module MangoMIPS_Core_Top
         .id_opr1   (id_opr1   ),
         .id_opr2   (id_opr2   ),
         .id_offset (id_offset ),
+        .id_cp0sel (id_cp0sel ),
         .id_wreg   (id_wreg   ),
         .id_wraddr (id_wraddr ),
         
@@ -252,121 +262,139 @@ module MangoMIPS_Core_Top
         .ex_opr1   (ex_opr1   ),
         .ex_opr2   (ex_opr2   ),
         .ex_offset (ex_offset ),
+        .ex_cp0sel (ex_cp0sel ),
         .ex_wreg   (ex_wreg   ),
         .ex_wraddr (ex_wraddr )
     );
 
     ALU_EX alu_ex (
-        .pc         (ex_pc     ),
-        .aluop      (ex_aluop  ),
-        .opr1       (ex_opr1   ),
-        .opr2       (ex_opr2   ),
-        .offset     (ex_offset ),
-        .div_start  (div_start ),
-        .div_signed (div_signed),
-        .div_ready  (div_ready ),
+        .pc         (ex_pc      ),
+        .aluop      (ex_aluop   ),
+        .opr1       (ex_opr1    ),
+        .opr2       (ex_opr2    ),
+        .offset     (ex_offset  ),
+        .div_start  (div_start  ),
+        .div_signed (div_signed ),
+        .div_ready  (div_ready  ),
 
-        .alures  (ex_alures ),
-        .resnrdy (ex_resnrdy),
-        .mulhi   (ex_mulhi  ),
-        .mullo   (ex_mullo  ),
-        .mul_s   (ex_mul_s  ),
+        .alures     (ex_alures  ),
+        .resnrdy    (ex_resnrdy ),
+        .mulhi      (ex_mulhi   ),
+        .mullo      (ex_mullo   ),
+        .mul_s      (ex_mul_s   ),
 
-        .m_en    (ex_m_en   ),
-        .m_wen   (ex_m_wen  ),
-        .m_vaddr (ex_m_vaddr),
-        .m_wdata (ex_m_wdata),
+        .m_en       (ex_m_en    ),
+        .m_wen      (ex_m_wen   ),
+        .m_vaddr    (ex_m_vaddr ),
+        .m_wdata    (ex_m_wdata ),
 
-        .wreg    (ex_wreg   ),
-        .wregsel (ex_wregsel),
-        .llbit_i (llbit     ),
-        .llb_wen (ex_llb_wen),
-        .llbit_o (ex_llbit  ),
+        .wreg       (ex_wreg    ),
+        .wregsel    (ex_wregsel ),
+        .llbit_i    (llbit      ),
+        .llb_wen    (ex_llb_wen ),
+        .llbit_o    (ex_llbit   ),
 
-        .stallreq (stallreq[`EX])
+        .stallreq   (stallreq[`EX])
     );
 
     Divider divider (
-        .clk     (clk       ),
-        .rst     (rst       ),
-        .start   (div_start ),
-        .abandon (flush[`EX]),
-        .signdiv (div_signed),
-        .opr1    (ex_opr1   ),
-        .opr2    (ex_opr2   ),
-        .ready   (div_ready ),
-        .res     (div_res   )
+        .clk        (clk        ),
+        .rst        (rst        ),
+        .start      (div_start  ),
+        .abandon    (flush[`EX] ),
+        .signdiv    (div_signed ),
+        .opr1       (ex_opr1    ),
+        .opr2       (ex_opr2    ),
+        .ready      (div_ready  ),
+        .res        (div_res    )
     );
 
     Reg_EX_MEM reg_ex_mem (
-        .clk        (clk        ),
-        .rst        (rst        ),
-        .stall      (stall[`MEM]),
-        .flush      (flush[`MEM]),
+        .clk            (clk        ),
+        .rst            (rst        ),
+        .stall          (stall[`MEM]),
+        .flush          (flush[`MEM]),
 
-        .ex_pc      (ex_pc      ),
-        .ex_aluop   (ex_aluop   ),
-        .ex_alures  (ex_alures  ),
-        .ex_mulhi   (ex_mulhi   ),
-        .ex_mullo   (ex_mullo   ),
-        .ex_mul_s   (ex_mul_s   ),
-        .ex_divres  (div_res    ),
-        .ex_m_en    (ex_m_en    ),
-        .ex_m_wen   (ex_m_wen   ),
-        .ex_m_vaddr (ex_m_vaddr ),
-        .ex_m_wdata (ex_m_wdata ),
-        .ex_wreg    (ex_wregsel ),
-        .ex_wraddr  (ex_wraddr  ),
-        .ex_llb_wen (ex_llb_wen ),
-        .ex_llbit   (ex_llbit   ),
+        .ex_pc          (ex_pc      ),
+        .ex_aluop       (ex_aluop   ),
+        .ex_alures      (ex_alures  ),
+        .ex_mulhi       (ex_mulhi   ),
+        .ex_mullo       (ex_mullo   ),
+        .ex_mul_s       (ex_mul_s   ),
+        .ex_divres      (div_res    ),
+        .ex_cp0sel      (ex_cp0sel  ),
+        .ex_m_en        (ex_m_en    ),
+        .ex_m_wen       (ex_m_wen   ),
+        .ex_m_vaddr     (ex_m_vaddr ),
+        .ex_m_wdata     (ex_m_wdata ),
+        .ex_wreg        (ex_wregsel ),
+        .ex_wraddr      (ex_wraddr  ),
+        .ex_llb_wen     (ex_llb_wen ),
+        .ex_llbit       (ex_llbit   ),
         
-        .mem_pc      (mem_pc      ),
-        .mem_aluop   (mem_aluop   ),
-        .mem_alures  (mem_alures_i),
-        .mem_mulhi   (mem_mulhi   ),
-        .mem_mullo   (mem_mullo   ),
-        .mem_mul_s   (mem_mul_s   ),
-        .mem_divres  (mem_divres  ),
-        .mem_m_en    (mem_m_en    ),
-        .mem_m_wen   (mem_m_wen   ),
-        .mem_m_vaddr (mem_m_vaddr ),
-        .mem_m_wdata (mem_m_wdata ),
-        .mem_wreg    (mem_wreg    ),
-        .mem_wraddr  (mem_wraddr  ),
-        .mem_llb_wen (mem_llb_wen ),
-        .mem_llbit   (mem_llbit   )
+        .mem_pc         (mem_pc      ),
+        .mem_aluop      (mem_aluop   ),
+        .mem_alures     (mem_alures_i),
+        .mem_mulhi      (mem_mulhi   ),
+        .mem_mullo      (mem_mullo   ),
+        .mem_mul_s      (mem_mul_s   ),
+        .mem_divres     (mem_divres  ),
+        .mem_cp0sel     (mem_cp0sel  ),
+        .mem_m_en       (mem_m_en    ),
+        .mem_m_wen      (mem_m_wen   ),
+        .mem_m_vaddr    (mem_m_vaddr ),
+        .mem_m_wdata    (mem_m_wdata ),
+        .mem_wreg       (mem_wreg    ),
+        .mem_wraddr     (mem_wraddr  ),
+        .mem_llb_wen    (mem_llb_wen ),
+        .mem_llbit      (mem_llbit   )
     );
     
     MMU_Data mmu_data (
-        .m_en    (mem_m_en   ),
-        .m_wen   (mem_m_wen  ),
-        .m_vaddr (mem_m_vaddr),
-        .m_wdata (mem_m_wdata),
-        .m_rdata (mem_m_rdata),
+        .m_en       (mem_m_en   ),
+        .m_wen      (mem_m_wen  ),
+        .m_vaddr    (mem_m_vaddr),
+        .m_wdata    (mem_m_wdata),
+        .m_rdata    (mem_m_rdata),
         
-        .dbus_en    (dbus_en   ),
-        .dbus_paddr (dbus_addr ),
-        .dbus_rdata (dbus_rdata),
-        .dbus_wen   (dbus_wen  ),
-        .dbus_wdata (dbus_wdata),
-        .dbus_streq (dbus_streq),
+        .dbus_en    (dbus_en    ),
+        .dbus_paddr (dbus_addr  ),
+        .dbus_rdata (dbus_rdata ),
+        .dbus_wen   (dbus_wen   ),
+        .dbus_wdata (dbus_wdata ),
+        .dbus_streq (dbus_streq ),
 
         .stallreq (stallreq[`MEM])
     );
     
     ALU_MEM alu_mem (
-        .aluop    (mem_aluop   ),
-        .alures_i (mem_alures_i),
-        .mulhi    (mem_mulhi   ),
-        .mullo    (mem_mullo   ),
-        .mul_s    (mem_mul_s   ),
-        .divres   (mem_divres  ),
-        .hilo_i   (hilo        ),
+        .aluop     (mem_aluop   ),
+        .alures_i  (mem_alures_i),
+        .mulhi     (mem_mulhi   ),
+        .mullo     (mem_mullo   ),
+        .mul_s     (mem_mul_s   ),
+        .divres    (mem_divres  ),
+        .hilo_i    (hilo        ),
+        .cp0sel    (mem_cp0sel  ),
 
-        .alures_o (mem_alures_o),
-        .hilo_wen (mem_hilo_wen),
-        .hilo_o   (mem_hilo    ),
-        .resnrdy  (mem_resnrdy )
+        .alures_o  (mem_alures_o),
+        .hilo_wen  (mem_hilo_wen),
+        .hilo_o    (mem_hilo    ),
+        .cp0_wen   (cp0_wen     ),
+        .cp0_addr  (cp0_addr    ),
+        .cp0_wdata (cp0_wdata   ),
+        .cp0_rdata (cp0_rdata   ),
+        .resnrdy   (mem_resnrdy )
+    );
+
+    CP0 coprocessor0 (
+        .clk        (clk        ),
+        .rst        (rst        ),
+        .addr       (cp0_addr   ),
+        .wen        (cp0_wen    ),
+        .rdata      (cp0_rdata  ),
+        .wdata      (cp0_wdata  ),
+        .timer_int  (           )
     );
 
     Reg_MEM_WB reg_mem_wb (

@@ -22,7 +22,7 @@ module Decode
     output wire [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
     output wire [`DataBus] offset,
-    output wire [`CP0Addr] cp0addr,
+    output wire [`CP0Addr] cp0sel,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
@@ -61,8 +61,8 @@ module Decode
     reg instvalid;
     reg [`Word] ext_imme;
 
-    assign offset  = sign_ext;
-    assign cp0addr = {rd, sel};
+    assign offset = sign_ext;
+    assign cp0sel = {rd, sel};
 
     always @(*) begin
         instvalid <= `false;
@@ -313,6 +313,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BGEZ: begin
@@ -321,6 +324,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BLTZL: begin
@@ -329,7 +335,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= opr1[31];
+                        `endif
                     end
 
                     `RI_BGEZL: begin
@@ -338,7 +348,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= !opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= !opr1[31];
+                        `endif
                     end
 
                     `RI_BLTZAL: begin
@@ -350,6 +364,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BGEZAL: begin
@@ -361,6 +378,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BLTZALL: begin
@@ -372,7 +392,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= opr1[31];
+                        `endif
                     end
 
                     `RI_BGEZALL: begin
@@ -384,7 +408,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= !opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= !opr1[31];
+                        `endif
                     end
                 endcase
             end
@@ -394,6 +422,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= `true;
                 br_addr   <= {pcp4[31:28], j_offset, 2'b00};
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_JAL: begin
@@ -404,6 +435,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= `true;
                 br_addr   <= {pcp4[31:28], j_offset, 2'b00};
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BEQ: begin
@@ -413,6 +447,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr_eq;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BNE: begin
@@ -422,6 +459,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr_eq;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BLEZ: if(rt == 5'b0) begin
@@ -430,6 +470,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr1_lez;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BGTZ: if(rt == 5'b0) begin
@@ -438,6 +481,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr1_lez;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_ADDI: begin
@@ -518,7 +564,7 @@ module Decode
                         instvalid <= `true;
                         aluop     <= `ALU_MFC0;
                         wreg      <= `true;
-                        wraddr    <= `rt;
+                        wraddr    <= rt;
                     end
 
                     `C0_MTC0: begin
@@ -539,6 +585,7 @@ module Decode
                             //`C0F_WAIT:
                         endcase
                     end
+                endcase
             end
             
             `OP_BEQL: begin
@@ -548,7 +595,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr_eq;
                 br_addr   <= br_target;
-                clrslot   <= opr_eq;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= opr_eq;
+                `endif
             end
 
             `OP_BNEL: begin
@@ -558,7 +609,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr_eq;
                 br_addr   <= br_target;
-                clrslot   <= !opr_eq;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= !opr_eq;
+                `endif
             end
 
             `OP_BLEZL: if(rt == 5'b0) begin
@@ -567,7 +622,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr1_lez;
                 br_addr   <= br_target;
-                clrslot   <= opr1_lez;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= opr1_lez;
+                `endif
             end
 
             `OP_BGTZL: if(rt == 5'b0) begin
@@ -576,7 +635,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr1_lez;
                 br_addr   <= br_target;
-                clrslot   <= !opr1_lez;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= !opr1_lez;
+                `endif
             end
 
             `OP_SPECIAL2: begin
@@ -679,7 +742,6 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWL;
                 r1read    <= `true;
-                //r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -688,7 +750,6 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWR;
                 r1read    <= `true;
-                //r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end

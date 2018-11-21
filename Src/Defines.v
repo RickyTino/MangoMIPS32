@@ -7,8 +7,9 @@ Version:    Unreleased
 
 /*--------------------Constant--------------------*/
 //Width constant
-`define         ALUOp_W                 6
-`define         Excp_W                  8
+`define         ALUOp_W              6
+`define         Exc_W               11
+`define         ExcT_W               4
 
 //Global constant
 `define         true                 1'b1
@@ -23,11 +24,11 @@ Version:    Unreleased
 `define         GPR_ra               5'd31
 
 //Pipeline stage identifier
-`define         IF                      0
-`define         ID                      1
-`define         EX                      2
-`define         MEM                     3
-`define         WB                      4
+`define         IF                   0
+`define         ID                   1
+`define         EX                   2
+`define         MEM                  3
+`define         WB                   4
 
 //Entrance address
 `define         Entr_Start          32'hBFC00000
@@ -44,7 +45,8 @@ Version:    Unreleased
 `define         Stages               4:0
 `define         ByteWEn              3:0
 `define         ALUOp               `ALUOp_W-1:0
-`define         Excp                `Excp_W -1:0
+`define         ExcBus              `Exc_W  -1:0
+`define         ExcType             `ExcT_W -1:0
 
 //Partial Select
 `define         Hi                  63:32
@@ -218,8 +220,12 @@ Version:    Unreleased
 `define         ALU_SWR             `ALUOp_W'h2B
 `define         ALU_LL              `ALUOp_W'h2C
 `define         ALU_SC              `ALUOp_W'h2D
+`define         ALU_MFC0            `ALUOp_W'h30
+`define         ALU_MTC0            `ALUOp_W'h31
 
-/*--------------------CP0 Registers--------------------*/
+/*--------------------Coprocessor 0--------------------*/
+//CP0 Registers
+`define         CP0_ZeroReg          8'd00
 `define         CP0_Index           {5'd00, 3'd0}
 `define         CP0_Random          {5'd01, 3'd0}
 `define         CP0_EntryLo0        {5'd02, 3'd0}
@@ -242,3 +248,62 @@ Version:    Unreleased
 `define         CP0_TagLo1          {5'd28, 3'd2}
 `define         CP0_TagHi0          {5'd29, 3'd0}
 `define         CP0_TagHi1          {5'd29, 3'd2}
+`define         CP0_ErrorEPC        {5'd30, 3'd0}
+
+//Fields of Status Register
+`define         CU0                 28
+`define         BEV                 22
+`define         IM                  15:8
+`define         UM                   4
+`define         ERL                  2
+`define         EXL                  1
+`define         IE                   0
+
+//Fields of Cause Register
+`define         BD                  31
+`define         CE                  29:28
+`define         IV                  23
+`define         IPH                 15:10
+`define         IPS                  9: 8
+`define         ExcCode              6: 2
+
+/*--------------------Exceptions--------------------*/
+//Position in exception vector
+`define         Exc_Intr            0
+`define         Exc_I_AdEL          1
+`define         Exc_CpU             2
+`define         Exc_RI              3
+`define         Exc_Ov              4
+`define         Exc_Trap            5
+`define         Exc_SysC            6
+`define         Exc_Bp              7
+`define         Exc_D_AdEL          8
+`define         Exc_D_AdES          9
+`define         Exc_ERET           10
+
+//Exception Types
+`define         ExcT_Intr           ExcT_W'h01;
+`define         ExcT_CpU            ExcT_W'h02;
+`define         ExcT_RI             ExcT_W'h03;
+`define         ExcT_Ov             ExcT_W'h04;
+`define         ExcT_Trap           ExcT_W'h05;
+`define         ExcT_SysC           ExcT_W'h06;
+`define         ExcT_Bp             ExcT_W'h07;
+`define         ExcT_AdEL           ExcT_W'h08;
+`define         ExcT_AdES           ExcT_W'h09;
+`define         ExcT_ERET           ExcT_W'h0A;
+
+//Cause.ExcCode
+`define         ExcC_Intr           5'h00;
+`define         ExcC_Mod            5'h01;
+`define         ExcC_TLBL           5'h02;
+`define         ExcC_TLBS           5'h03;
+`define         ExcC_AdEL           5'h04;
+`define         ExcC_AdES           5'h05;
+`define         ExcC_SysC           5'h08;
+`define         ExcC_Bp             5'h09;
+`define         ExcC_RI             5'h0A;
+`define         ExcC_CpU            5'h0B;
+`define         ExcC_Ov             5'h0C;
+`define         ExcC_Tr             5'h0D;
+

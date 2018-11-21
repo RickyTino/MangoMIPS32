@@ -10,12 +10,12 @@ module CP0
     input  wire            clk,
     input  wire            rst,
 
-    input  wire            wen,
-    input  wire [`CP0Addr] waddr,
-    input  wire [`DataBus] wdata,
-    input  wire [`CP0Addr] raddr,
+    input  wire [`CP0Addr] addr,
     output reg  [`DataBus] rdata,
+    input  wire            wen,
+    input  wire [`DataBus] wdata,
 
+    output wire            usermode,
     output reg             timer_int
 );
 
@@ -27,6 +27,7 @@ module CP0
     reg          Status_CU0;
     reg          Status_BEV;
     reg  [ 7: 0] Status_IM;
+    reg          Status_UM;
     reg          Status_ERL;
     reg          Status_EXL;
     reg          Status_IE;
@@ -38,27 +39,32 @@ module CP0
         Status_BEV, //22
         6'b0,
         Status_IM,  //15:8
-        5'b0,
-        //Status_ERL, //2
+        3'b0,
+        Status_UM,  //4
         1'b0,
+        Status_ERL, //2
         Status_EXL, //1
         Status_IE   //0
     };
 
     //Cause
     reg          Cause_BD;
+    reg  [ 1: 0] Cause_CE;
     reg          Cause_IV;
     reg  [ 7: 0] Cause_IP;
     reg  [ 5: 0] Cause_ExcCode;
 
     wire [`Word] Cause = {
-        Cause_BD,       //31
-        7'b0,
-        Cause_IV,       //23
-        7'b0,
-        Cause_IP,       //15:8
+        Cause_BD,       //31 R
         1'b0,
-        Cause_ExcCode,  //6:2
+        //Cause_CE,       //29:28 R
+        2'b0,
+        4'b0,
+        Cause_IV,       //23 
+        7'b0,
+        Cause_IP,       //15:8 R[15:10]
+        1'b0,
+        Cause_ExcCode,  //6:2 R
         2'b0
     };
 
@@ -75,10 +81,13 @@ module CP0
             Status_CU0 <= 0;
             Status_BEV <= 1;
             Status_IM  <= 0;
+            Status_UM  <= 0;
+            Status_ERL <= 1;
             Status_EXL <= 0;
             Status_IE  <= 0;
 
             Cause_BD      <= 0;
+            Cause_CE      <= 0;
             Cause_IV      <= 0;
             Cause_IP      <= 0;
             Cause_ExcCode <= 0;
@@ -91,7 +100,7 @@ module CP0
             
             //Write
             if(wen) begin
-                case (waddr)
+                case (addr)
                     `CP0_BadVAddr: begin
                         BadVAddr <= wdata;
                     end
@@ -106,18 +115,18 @@ module CP0
                     end
 
                     `CP0_Status: begin
-                        Status_CU0 <= wdata[28];
-                        Status_BEV <= wdata[22];
-                        Status_IM  <= wdata[15:8];
-                        Status_EXL <= wdata[ 1];
-                        Status_IE  <= wdata[ 0];
+                        Status_CU0 <= wdata[`CU0];
+                        Status_BEV <= wdata[`BEV];
+                        Status_IM  <= wdata[`IM];
+                        Status_UM  <= wdata[`UM];
+                        Status_ERL <= wdata[`ERL];
+                        Status_EXL <= wdata[`EXL];
+                        Status_IE  <= wdata[`IE];
                     end
 
                     `CP0_Cause: begin
-                        Cause_BD      <= wdata[31];
-                        Cause_IV      <= wdata[23];
-                        Cause_IP      <= wdata[15:8];
-                        Cause_ExcCode <= wdata[ 6:2];
+                        Cause_IV      <= wdata[`IV];
+                        Cause_IP[1:0] <= wdata[`IPS];
                     end
                 endcase
             end
@@ -125,7 +134,7 @@ module CP0
     end
 
     always @(*) begin
-        case (raddr)
+        case (addr)
             `CP0_BadVAddr: rdata <= BadVAddr;
             `CP0_Count:    rdata <= Count;
             `CP0_Compare:  rdata <= Compare;
@@ -134,5 +143,7 @@ module CP0
             default:       rdata <= `ZeroWord;
         endcase
     end
+
+    assign usermode = Status_UM & ~(Status_ERL | Status_EXL);
 
 endmodule
