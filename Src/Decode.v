@@ -37,6 +37,9 @@ module Decode
     output reg             br_flag,
     output reg  [`AddrBus] br_addr,
 
+    input  wire [`ExcBus ] excp_i,
+    output reg  [`ExcBus ] excp_o,
+
     output wire            stallreq
 );
 
@@ -60,6 +63,9 @@ module Decode
 
     reg instvalid;
     reg [`Word] ext_imme;
+    
+    reg  exc_sc;
+    reg  exc_bp;
 
     assign offset = sign_ext;
     assign cp0sel = {rd, sel};
@@ -78,10 +84,36 @@ module Decode
         br_flag   <= `false;
         br_addr   <= `ZeroWord;
         clrslot   <= `false;
+        exc_sc    <= `false;
+        exc_bp    <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
                 case (funct)
+                    `SP_SLL: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SLL;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
+                    `SP_SRL: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRL;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
+                    `SP_SRA: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRA;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
                     `SP_SLLV: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SLL;
@@ -139,6 +171,22 @@ module Decode
                         r1read    <= `true;
                         r2read    <= `true;
                         wreg      <= (opr2 != `ZeroWord);
+                    end
+
+                    `SP_SYSCALL: begin
+                        instvalid <= `true;
+                        exc_sc    <= `true;
+                    end
+
+                    `SP_BREAK: begin
+                        instvalid <= `true;
+                        exc_bp    <= `true;
+                    end
+
+                    //SYNC temporarily decode as nop
+                    `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_NOP;
                     end
 
                     `SP_MFHI: if({rs, rt, sa} == 15'b0) begin
@@ -273,34 +321,46 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SLL: if(rs == 5'b0) begin
+                    `SP_TGE: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_SLL;
+                        aluop     <= `ALU_TGE;
+                        r1read    <= `true;
                         r2read    <= `true;
-                        wreg      <= `true;
-                        ext_imme  <=  sa;
                     end
 
-                    `SP_SRL: if(rs == 5'b0) begin
+                    `SP_TGEU: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_SRL;
+                        aluop     <= `ALU_TGEU;
+                        r1read    <= `true;
                         r2read    <= `true;
-                        wreg      <= `true;
-                        ext_imme  <=  sa;
                     end
 
-                    `SP_SRA: if(rs == 5'b0) begin
+                    `SP_TLT: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_SRA;
+                        aluop     <= `ALU_TLT;
+                        r1read    <= `true;
                         r2read    <= `true;
-                        wreg      <= `true;
-                        ext_imme  <=  sa;
                     end
 
-                    //SYNC temporarily decode as nop
-                    `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
+                    `SP_TLTU: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_NOP;
+                        aluop     <= `ALU_TLTU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
+
+                    `SP_TEQ: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TEQ;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
+
+                    `SP_TNE: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TNE;
+                        r1read    <= `true;
+                        r2read    <= `true;
                     end
                 endcase
             end
@@ -353,6 +413,48 @@ module Decode
                         `else
                             clrslot <= !opr1[31];
                         `endif
+                    end
+
+                    `RI_TGEI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TGE;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+
+                    `RI_TGEIU: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TGEU;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TLTI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TLT;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TLTIU: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TLTU;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TEQI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TEQ;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TNEI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TNE;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
                     end
 
                     `RI_BLTZAL: begin

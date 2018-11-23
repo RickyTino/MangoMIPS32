@@ -222,6 +222,12 @@ Version:    Unreleased
 `define         ALU_SC              `ALUOp_W'h2D
 `define         ALU_MFC0            `ALUOp_W'h30
 `define         ALU_MTC0            `ALUOp_W'h31
+`define         ALU_TGE             `ALUOp_W'h32
+`define         ALU_TGEU            `ALUOp_W'h33
+`define         ALU_TLT             `ALUOp_W'h34
+`define         ALU_TLTU            `ALUOp_W'h35
+`define         ALU_TEQ             `ALUOp_W'h36
+`define         ALU_TNE             `ALUOp_W'h37
 
 /*--------------------Coprocessor 0--------------------*/
 //CP0 Registers
@@ -268,7 +274,11 @@ Version:    Unreleased
 `define         ExcCode              6: 2
 
 /*--------------------Exceptions--------------------*/
-//Position in exception vector
+//No exception
+`define         Exc_NoExc           Exc_W'b0
+`define         ExcT_NoExc          ExcT_W'b0
+
+//Index of exception vector
 `define         Exc_Intr            0
 `define         Exc_I_AdEL          1
 `define         Exc_CpU             2

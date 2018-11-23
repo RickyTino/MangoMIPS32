@@ -14,9 +14,11 @@ module PC
     input  wire [`AddrBus] flush_pc,
     input  wire            br_flag,
     input  wire [`AddrBus] br_addr,
+    input  wire            usermode,
     
     output reg  [`AddrBus] pc,
     output wire [`AddrBus] pcp4,
+    output reg  [`ExcBus ] excp,
     output reg             i_en
 );
 
@@ -35,6 +37,11 @@ module PC
                 3'b??1: pc <= flush_pc;
             endcase
         end
+    end
+
+    always @(*) begin
+        excp <= 0;
+        excp[`Exc_I_AdEL] <= (pc[1:0] != 2'b0) || (usermode && pc[31]);
     end
 
 endmodule
