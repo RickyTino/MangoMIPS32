@@ -20,6 +20,7 @@ module Reg_ID_EX
     input  wire [`CP0Addr] id_cp0sel,
     input  wire [`RegAddr] id_wraddr,
     input  wire            id_wreg,
+    input  wire [`ExcBus ] id_excp,
 
     output reg  [`AddrBus] ex_pc,
     output reg  [`ALUOp  ] ex_aluop,
@@ -28,7 +29,8 @@ module Reg_ID_EX
     output reg  [`DataBus] ex_offset,
     output reg  [`CP0Addr] ex_cp0sel,
     output reg  [`RegAddr] ex_wraddr,
-    output reg             ex_wreg
+    output reg             ex_wreg,
+    output reg  [`ExcBus ] ex_excp
 );
 
     always @(posedge clk, posedge rst) begin
@@ -41,6 +43,7 @@ module Reg_ID_EX
             ex_cp0sel  <= `CP0_ZeroReg; //0
             ex_wraddr  <= `ZeroReg;
             ex_wreg    <= `false;
+            ex_excp    <= `Exc_NoExc;
         end
         else begin
             case ({flush, stall})
@@ -53,6 +56,7 @@ module Reg_ID_EX
                     ex_cp0sel  <= `CP0_ZeroReg;
                     ex_wraddr  <= `ZeroReg;
                     ex_wreg    <= `false;
+                    ex_excp    <= `Exc_NoExc;
                 end
                 2'b00: begin
                     ex_pc      <= id_pc;
@@ -63,6 +67,7 @@ module Reg_ID_EX
                     ex_cp0sel  <= id_cp0sel;
                     ex_wraddr  <= id_wraddr;
                     ex_wreg    <= id_wreg;
+                    ex_excp    <= id_excp;
                 end
             endcase
         end

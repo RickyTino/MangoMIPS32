@@ -37,6 +37,8 @@ module Decode
     output reg             br_flag,
     output reg  [`AddrBus] br_addr,
 
+    input  wire            usermode,
+    input  wire [`DataBus] cp0_status,
     input  wire [`ExcBus ] excp_i,
     output reg  [`ExcBus ] excp_o,
 
@@ -61,15 +63,25 @@ module Decode
     wire opr_eq   = (opr1 ^ opr2) == `ZeroWord;
     wire [`Word] br_target = pcp4 + (sign_ext << 2); 
 
-    reg instvalid;
     reg [`Word] ext_imme;
-    
-    reg  exc_sc;
-    reg  exc_bp;
 
     assign offset = sign_ext;
     assign cp0sel = {rd, sel};
 
+    //Exceptions
+    reg  instvalid;
+    reg  exc_sc, exc_bp, exc_cpu, exc_eret;
+
+    always @(*) begin
+        excp_o            <= excp_i;
+        excp_o[`Exc_SysC] <= exc_sc;
+        excp_o[`Exc_Bp  ] <= exc_bp; 
+        excp_o[`Exc_RI  ] <= !instvalid;
+        excp_o[`Exc_CpU ] <= exc_cpu;
+        excp_o[`Exc_ERET] <= exc_eret;
+    end
+
+    //Decode
     always @(*) begin
         instvalid <= `false;
         aluop     <= `ALU_NOP;
@@ -86,6 +98,8 @@ module Decode
         clrslot   <= `false;
         exc_sc    <= `false;
         exc_bp    <= `false;
+        exc_cpu   <= `false;
+        exc_eret  <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
@@ -661,33 +675,41 @@ module Decode
             end
 
             `OP_COP0: begin
-                case (rs)
-                    `C0_MFC0: begin
-                        instvalid <= `true;
-                        aluop     <= `ALU_MFC0;
-                        wreg      <= `true;
-                        wraddr    <= rt;
-                    end
+                if(usermode && !cp0_status[`CU0]) begin
+                    exc_cpu <= `true;
+                end
+                else begin
+                    case (rs)
+                        `C0_MFC0: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MFC0;
+                            wreg      <= `true;
+                            wraddr    <= rt;
+                        end
 
-                    `C0_MTC0: begin
-                        instvalid <= `true;
-                        aluop     <= `ALU_MTC0;
-                        r2read    <= `true;
-                    end
+                        `C0_MTC0: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MTC0;
+                            r2read    <= `true;
+                        end
 
-                    `C0_CO: begin
-                        case (funct)
-                            //`C0F_TLBR:
-                            //`C0F_TLBWI:
-                            //`C0F_TLBWR:
-                            //`C0F_TLBP:
-                            `C0F_ERET: begin
+                        `C0_CO: begin
+                            case (funct)
+                                //`C0F_TLBR:
+                                //`C0F_TLBWI:
+                                //`C0F_TLBWR:
+                                //`C0F_TLBP:
 
-                            end
-                            //`C0F_WAIT:
-                        endcase
-                    end
-                endcase
+                                `C0F_ERET: begin
+                                    instvalid <= `true;
+                                    exc_eret  <= `true;
+                                end
+
+                                //`C0F_WAIT:
+                            endcase
+                        end
+                    endcase
+                end
             end
             
             `OP_BEQL: begin
@@ -893,6 +915,7 @@ module Decode
             
             `OP_CACHE: begin //Temporarily decode as nop
                 instvalid <= `true;
+                exc_cpu   <= usermode && !cp0_status[`CU0];
             end
 
             `OP_LL: begin
@@ -921,6 +944,7 @@ module Decode
     
     assign opr1 = r1read ? r1data : ext_imme;
     assign opr2 = r2read ? r2data : ext_imme;
+
     //Delaying for hazards
     wire    ex_nrdy = hazard_ex  && ex_resnrdy;
     wire   mem_nrdy = hazard_mem && mem_resnrdy;

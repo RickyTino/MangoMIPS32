@@ -281,15 +281,24 @@ Version:    Unreleased
 //Index of exception vector
 `define         Exc_Intr            0
 `define         Exc_I_AdEL          1
-`define         Exc_CpU             2
-`define         Exc_RI              3
-`define         Exc_Ov              4
-`define         Exc_Trap            5
-`define         Exc_SysC            6
-`define         Exc_Bp              7
-`define         Exc_D_AdEL          8
-`define         Exc_D_AdES          9
-`define         Exc_ERET           10
+`define         Exc_I_TLBR          2
+`define         Exc_I_TLBI          3
+`define         Exc_I_CE            4
+`define         Exc_I_BE            5
+`define         Exc_CpU             6
+`define         Exc_RI              7
+`define         Exc_Ov              8
+`define         Exc_Trap            9
+`define         Exc_SysC            10
+`define         Exc_Bp              11
+`define         Exc_D_AdEL          12
+`define         Exc_D_AdES          13
+`define         Exc_D_TLBR          14
+`define         Exc_D_TLBI          15
+`define         Exc_D_TLBM          16
+`define         Exc_D_CE            17
+`define         Exc_D_BE            18
+`define         Exc_ERET            19
 
 //Exception Types
 `define         ExcT_Intr           ExcT_W'h01;

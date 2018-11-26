@@ -28,6 +28,7 @@ module Reg_EX_MEM
     input  wire [`RegAddr] ex_wraddr,
     input  wire            ex_llb_wen,
     input  wire            ex_llbit,
+    input  wire [`ExcBus ] ex_excp,
     
     output reg  [`AddrBus] mem_pc,
     output reg  [`ALUOp  ] mem_aluop, 
@@ -44,7 +45,8 @@ module Reg_EX_MEM
     output reg  [`ByteWEn] mem_wreg,
     output reg  [`RegAddr] mem_wraddr,
     output reg             mem_llb_wen,
-    output reg             mem_llbit
+    output reg             mem_llbit,
+    output reg  [`ExcBus ] mem_excp
 );
 
     always @(posedge clk, posedge rst) begin
@@ -65,6 +67,7 @@ module Reg_EX_MEM
             mem_wraddr  <= `ZeroReg;
             mem_llb_wen <= `false;
             mem_llbit   <= `Zero;
+            mem_excp    <= `Exc_NoExc;
         end
         else begin
             case ({flush, stall})
@@ -85,6 +88,7 @@ module Reg_EX_MEM
                     mem_wraddr  <= `ZeroReg;
                     mem_llb_wen <= `false;
                     mem_llbit   <= `Zero;
+                    mem_excp    <= `Exc_NoExc;
                 end
                 2'b00: begin
                     mem_pc      <= ex_pc;
@@ -103,6 +107,7 @@ module Reg_EX_MEM
                     mem_wraddr  <= ex_wraddr;
                     mem_llb_wen <= ex_llb_wen;
                     mem_llbit   <= ex_llbit;
+                    mem_excp    <= ex_excp;
                 end
             endcase
         end

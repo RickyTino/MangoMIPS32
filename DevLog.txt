@@ -221,6 +221,29 @@
 - T: AdE中关于虚地址非法访问的判断不需要经过MMU
 - 完成了Syscall/Break/Trap的译码段
 
+--------------------------------------------------
+[20181126]
+- T: 所有要实现的异常和优先级：
+-- Reset
+-- Int
+-- I-AdEL
+-- I-TLBR
+-- I-TLBI
+-- I_BE
+-- CpU
+-- RI
+-- Ov, Trap, Syscall, Bp,
+-- D-AdEL/AdES
+-- D-TLBR
+-- D-TLBI
+-- D-TLBM
+-- D-BE
+-- ERET
+- T: 好像是不会出现校验错误，不实现Cache Error异常
+- 完善了defines.v中的异常种类
+- 完成异常处理至MEM段，正在写Exception.v
+- 
+
 
 --------------------------------------------------
 [特别笔记区段]

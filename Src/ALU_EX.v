@@ -35,6 +35,9 @@ module ALU_EX
     output reg             llb_wen,
     output reg             llbit_o,
 
+    input  wire [`ExcBus ] excp_i,
+    output reg  [`ExcBus ] excp_o,
+
     output wire            stallreq
 );
 
@@ -47,6 +50,9 @@ module ALU_EX
 
     wire [`Word] abs_opr1 = opr1_s ? ~opr1 + 32'd1 : opr1;
     wire [`Word] abs_opr2 = opr2_s ? ~opr2 + 32'd1 : opr2;
+    wire opr_lt  = $signed(opr1) < $signed(opr2);
+    wire opr_ltu = opr1 < opr2;
+    wire opr_eq  = (opr1 ^ opr2) == `ZeroWord;
 
     //CLO/CLZ
     reg  [`Word] clzopr;
@@ -143,15 +149,18 @@ module ALU_EX
     //Memory Data Prepare
     wire [`AddrBus] sl_addr = opr1 + offset;
     reg  [`ByteWEn] sel_l, sel_r;
+    reg             exc_adel, exc_ades;
 
     always @(*) begin
-        m_en    <= `false;
-        m_wen   <= `WrDisable;
-        m_vaddr <= `ZeroWord;
-        m_wdata <= `ZeroWord;
-        wregsel <= {4{wreg}};
-        llb_wen <= `false;
-        llbit_o <= llbit_i;
+        m_en     <= `false;
+        m_wen    <= `WrDisable;
+        m_vaddr  <= `ZeroWord;
+        m_wdata  <= `ZeroWord;
+        wregsel  <= {4{wreg}};
+        llb_wen  <= `false;
+        llbit_o  <= llbit_i;
+        exc_adel <= `false;
+        exc_ades <= `false;
 
         case (aluop)
             `ALU_LB,
@@ -162,25 +171,25 @@ module ALU_EX
 
             `ALU_LH,
             `ALU_LHU: begin
-                m_en    <= `true;
-                m_vaddr <= sl_addr;
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                exc_adel <= sl_addr[0];
             end
 
             `ALU_LW:  begin
-                m_en    <= `true;
-                m_vaddr <= sl_addr;
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                exc_adel <= sl_addr[1:0] != 2'b00;
             end
 
             `ALU_LWL: begin
                 m_en    <= `true;
-                //m_vaddr <= {sl_addr[31:2], 2'b00};
                 m_vaddr <= sl_addr;
                 wregsel <= sel_l;
             end
 
             `ALU_LWR: begin
                 m_en    <= `true;
-                //m_vaddr <= {sl_addr[31:2], 2'b00};
                 m_vaddr <= sl_addr;
                 wregsel <= sel_r;
             end
@@ -201,21 +210,20 @@ module ALU_EX
                 m_en <= `true;
                 m_vaddr <= sl_addr;
                 m_wdata <= {2{opr2[15:0]}};
+                exc_ades <= sl_addr[0];
                 case (sl_addr[1:0])
                     2'b00:   m_wen <= 4'b0011;
                     2'b10:   m_wen <= 4'b1100;
                     default: m_wen <= `WrDisable;
                 endcase
-                //if(sl_addr[0]) begin
-                //Reserved for exception
-                //end
             end
 
             `ALU_SW:  begin
-                m_en    <= `true;
-                m_vaddr <= sl_addr;
-                m_wdata <= opr2;
-                m_wen   <= 4'b1111;
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                m_wdata  <= opr2;
+                m_wen    <= 4'b1111;
+                exc_ades <= sl_addr[1:0] != 2'b00;
             end
 
             `ALU_SWL: begin
@@ -263,6 +271,7 @@ module ALU_EX
                     end
                 endcase
             end
+
             `ALU_LL: begin
                 m_en    <= `true;
                 m_vaddr <= sl_addr;
@@ -293,6 +302,35 @@ module ALU_EX
         endcase
     end
 
+    //Exception
+    reg exc_ov, exc_tr;
+
+    always @(*) begin
+        case (aluop)
+            `ALU_ADD: exc_ov <= (opr1_s &  opr2_s & ~res_s) | (~opr1_s & ~opr2_s & res_s);
+            `ALU_SUB: exc_ov <= (opr1_s & ~opr2_s & ~res_s) | (~opr1_s &  opr2_s & res_s);
+            default:  exc_ov <= `false;
+        endcase
+
+        case (aluop)
+            `ALU_TGE:  exc_tr <= ~opr_lt;
+            `ALU_TGEU: exc_tr <= ~opr_ltu;
+            `ALU_TLT:  exc_tr <= opr_lt;
+            `ALU_TLTU: exc_tr <= opr_ltu;
+            `ALU_TEQ:  exc_tr <= opr_eq;
+            `ALU_TNE:  exc_tr <= ~opr_eq;
+            default:   exc_tr <= `false;
+        endcase
+    end
+
+    always @(*) begin
+        excp_o              <= excp_i;
+        excp_o[`Exc_Ov    ] <= exc_ov;
+        excp_o[`Exc_Trap  ] <= exc_tr;
+        excp_o[`Exc_D_AdEL] <= exc_adel;
+        excp_o[`Exc_D_AdES] <= exc_ades;
+    end
+
     //General
     always @(*) begin
         case (aluop)
@@ -307,8 +345,8 @@ module ALU_EX
             `ALU_OR:   alures <= opr1 | opr2;
             `ALU_XOR:  alures <= opr1 ^ opr2;
             `ALU_NOR:  alures <= ~(opr1 | opr2);
-            `ALU_SLT:  alures <= $signed(opr1) < $signed(opr2);
-            `ALU_SLTU: alures <= opr1 < opr2;
+            `ALU_SLT:  alures <= opr_lt;
+            `ALU_SLTU: alures <= opr_ltu;
             `ALU_MOV,
             `ALU_MTHI,
             `ALU_MTLO: alures <= opr1;

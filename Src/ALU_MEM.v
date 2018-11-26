@@ -15,6 +15,7 @@ module ALU_MEM
     input  wire [`DWord  ] divres,
     input  wire [`DWord  ] hilo_i,
     input  wire [`CP0Addr] cp0sel,
+    input  wire [`ExcBus ] excp,
 
     output reg  [`DataBus] alures_o,
     output reg             hilo_wen,
@@ -30,6 +31,7 @@ module ALU_MEM
     wire [47: 0 ] reshi = mulhi[31:0] + (mulhi[63:32] << 16);
     wire [`DWord] umres = reslo + (reshi << 16);
     wire [`DWord] smres = mul_s ? ~umres + 64'b1 : umres;
+    wire          noexc = (excp == `Exc_NoExc);
 
     always @(*) begin
         hilo_wen <= `false;
@@ -98,7 +100,7 @@ module ALU_MEM
 
             `ALU_MTC0: begin
                 cp0_addr  <= cp0sel;
-                cp0_wen   <= `true;
+                cp0_wen   <= noexc;
                 cp0_wdata <= alures_i;
             end
         endcase

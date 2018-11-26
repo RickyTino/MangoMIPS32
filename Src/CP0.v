@@ -15,6 +15,7 @@ module CP0
     input  wire            wen,
     input  wire [`DataBus] wdata,
 
+    output wire [`DataBus] Status_o,
     output wire            usermode,
     output reg             timer_int
 );
@@ -145,5 +146,6 @@ module CP0
     end
 
     assign usermode = Status_UM & ~(Status_ERL | Status_EXL);
+    assign Status_o = Status;
 
 endmodule
