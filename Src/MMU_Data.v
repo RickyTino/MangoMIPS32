@@ -20,6 +20,7 @@ module MMU_Data
     input  wire [`DataBus] dbus_rdata,
     input  wire            dbus_streq,
 //    output reg             dbus_cached,
+    input  wire            exc_flag,
     output wire            stallreq
 );
     //Temp
@@ -48,7 +49,7 @@ module MMU_Data
         endcase
     end
 
-    assign dbus_en  = m_en;
+    assign dbus_en  = m_en && !exc_flag;
     assign dbus_wen = m_en ? m_wen      : `WrDisable;
     assign m_rdata  = m_en ? dbus_rdata : `ZeroWord; 
 

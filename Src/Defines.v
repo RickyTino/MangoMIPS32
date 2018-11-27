@@ -8,7 +8,7 @@ Version:    Unreleased
 /*--------------------Constant--------------------*/
 //Width constant
 `define         ALUOp_W              6
-`define         Exc_W               11
+`define         Exc_W               20
 `define         ExcT_W               4
 
 //Global constant
@@ -31,7 +31,14 @@ Version:    Unreleased
 `define         WB                   4
 
 //Entrance address
-`define         Entr_Start          32'hBFC00000
+`define         Reset_Entrance          32'hBFC00000
+
+`define         Base_Bts                32'hBFC00200
+`define         Base_Nml                32'h80000000
+`define         Bts_GenExc              32'hBFC00380
+`define         Nml_GenExc              32'h80000180
+`define         Bts_SpIntr              32'hBFC00400
+`define         Nml_SpIntr              32'h80000200
 
 /*--------------------Vector--------------------*/
 //Bus Width
@@ -271,20 +278,21 @@ Version:    Unreleased
 `define         IV                  23
 `define         IPH                 15:10
 `define         IPS                  9: 8
+`define         IP                  15: 8
 `define         ExcCode              6: 2
 
 /*--------------------Exceptions--------------------*/
 //No exception
-`define         Exc_NoExc           Exc_W'b0
-`define         ExcT_NoExc          ExcT_W'b0
+`define         Exc_NoExc           `Exc_W'b0
+`define         ExcT_NoExc          `ExcT_W'b0
 
 //Index of exception vector
-`define         Exc_Intr            0
-`define         Exc_I_AdEL          1
-`define         Exc_I_TLBR          2
-`define         Exc_I_TLBI          3
-`define         Exc_I_CE            4
-`define         Exc_I_BE            5
+`define         Exc_NMI             0
+`define         Exc_Intr            1
+`define         Exc_I_AdEL          2
+`define         Exc_I_TLBR          3
+`define         Exc_I_TLBI          4
+`define         Exc_I_BusE          5
 `define         Exc_CpU             6
 `define         Exc_RI              7
 `define         Exc_Ov              8
@@ -296,33 +304,38 @@ Version:    Unreleased
 `define         Exc_D_TLBR          14
 `define         Exc_D_TLBI          15
 `define         Exc_D_TLBM          16
-`define         Exc_D_CE            17
-`define         Exc_D_BE            18
-`define         Exc_ERET            19
+`define         Exc_D_BusE          17
+`define         Exc_ERET            18
 
 //Exception Types
-`define         ExcT_Intr           ExcT_W'h01;
-`define         ExcT_CpU            ExcT_W'h02;
-`define         ExcT_RI             ExcT_W'h03;
-`define         ExcT_Ov             ExcT_W'h04;
-`define         ExcT_Trap           ExcT_W'h05;
-`define         ExcT_SysC           ExcT_W'h06;
-`define         ExcT_Bp             ExcT_W'h07;
-`define         ExcT_AdEL           ExcT_W'h08;
-`define         ExcT_AdES           ExcT_W'h09;
-`define         ExcT_ERET           ExcT_W'h0A;
+`define         ExcT_Intr           `ExcT_W'h01
+`define         ExcT_CpU            `ExcT_W'h02
+`define         ExcT_RI             `ExcT_W'h03
+`define         ExcT_Ov             `ExcT_W'h04
+`define         ExcT_Trap           `ExcT_W'h05
+`define         ExcT_SysC           `ExcT_W'h06
+`define         ExcT_Bp             `ExcT_W'h07
+`define         ExcT_AdEL           `ExcT_W'h08
+`define         ExcT_AdES           `ExcT_W'h09
+`define         ExcT_TLBR           `ExcT_W'h0A
+`define         ExcT_TLBI           `ExcT_W'h0B
+`define         ExcT_TLBM           `ExcT_W'h0C
+`define         ExcT_IBE            `ExcT_W'h0D
+`define         ExcT_DBE            `ExcT_W'h0E
+`define         ExcT_ERET           `ExcT_W'h0F
 
 //Cause.ExcCode
-`define         ExcC_Intr           5'h00;
-`define         ExcC_Mod            5'h01;
-`define         ExcC_TLBL           5'h02;
-`define         ExcC_TLBS           5'h03;
-`define         ExcC_AdEL           5'h04;
-`define         ExcC_AdES           5'h05;
-`define         ExcC_SysC           5'h08;
-`define         ExcC_Bp             5'h09;
-`define         ExcC_RI             5'h0A;
-`define         ExcC_CpU            5'h0B;
-`define         ExcC_Ov             5'h0C;
-`define         ExcC_Tr             5'h0D;
-
+`define         ExcC_Intr           5'h00
+`define         ExcC_Mod            5'h01
+`define         ExcC_TLBL           5'h02
+`define         ExcC_TLBS           5'h03
+`define         ExcC_AdEL           5'h04
+`define         ExcC_AdES           5'h05
+`define         ExcC_IBE            5'h06
+`define         ExcC_DBE            5'h07
+`define         ExcC_SysC           5'h08
+`define         ExcC_Bp             5'h09
+`define         ExcC_RI             5'h0A
+`define         ExcC_CpU            5'h0B
+`define         ExcC_Ov             5'h0C
+`define         ExcC_Tr             5'h0D

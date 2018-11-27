@@ -32,7 +32,7 @@ module PC
         else begin
             i_en <= `true;
             casez ({stall, br_flag, flush})
-                3'b000: pc <= i_en ? pcp4 : `Entr_Start;
+                3'b000: pc <= i_en ? pcp4 : `Reset_Entrance;
                 3'b010: pc <= br_addr;
                 3'b??1: pc <= flush_pc;
             endcase

@@ -9,13 +9,23 @@ module CP0
 (
     input  wire            clk,
     input  wire            rst,
+    input  wire [`HardInt] intr,
 
     input  wire [`CP0Addr] addr,
-    output reg  [`DataBus] rdata,
     input  wire            wen,
+    output reg  [`DataBus] rdata,
     input  wire [`DataBus] wdata,
 
+    input  wire            exc_flag,
+    input  wire [`ExcType] exc_type,
+    input  wire [`AddrBus] pc,
+    input  wire [`AddrBus] exc_baddr,
+    input  wire            inslot,
+
     output wire [`DataBus] Status_o,
+    output wire [`DataBus] Cause_o,
+    output wire [`DataBus] EPC_o,
+
     output wire            usermode,
     output reg             timer_int
 );
@@ -23,6 +33,7 @@ module CP0
     reg  [`Word] BadVAddr;
     reg  [`Word] Count;
     reg  [`Word] Compare;
+    reg  [`Word] EPC;
     
     //Status
     reg          Status_CU0;
@@ -69,7 +80,10 @@ module CP0
         2'b0
     };
 
+    wire [`Word] PrId = 32'h00018000;
+
     wire timer_eq = (Count ^ Compare) == `ZeroWord; 
+    wire pcm4     = pc - 32'h4;
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
@@ -99,8 +113,62 @@ module CP0
             if(Compare != `ZeroWord && timer_eq)
                 timer_int <= `true;
             
-            //Write
-            if(wen) begin
+            //Exceptions
+            Cause_IP[7:2] <= intr;
+
+            if(exc_flag) begin
+                case (exc_type)
+                    `ExcT_Intr,
+                    `ExcT_CpU,
+                    `ExcT_RI,
+                    `ExcT_Ov,
+                    `ExcT_Trap,
+                    `ExcT_SysC,
+                    `ExcT_Bp,
+                    `ExcT_AdEL,
+                    `ExcT_AdES: begin
+                        if(!Status_EXL) begin
+                            EPC       <= inslot ? pcm4 : pc;
+                            Cause_BD  <= inslot;
+                        end
+                        Status_EXL <= `One;
+                    end
+                    // `ExcT_TLBR:
+                    // `ExcT_TLBI:
+                    // `ExcT_TLBM:
+                    // `ExcT_IBE:
+                    // `ExcT_DBE:
+                    `ExcT_ERET: begin
+                        Status_EXL <= `Zero;
+                    end
+                endcase
+
+                case (exc_type)
+                    `ExcT_AdEL,
+                    `ExcT_AdES: begin
+                        BadVAddr <= exc_baddr;
+                    end
+                endcase
+
+                //ExcCode
+                case (exc_type)
+                    `ExcT_Intr: Cause_ExcCode <= `ExcC_Intr;
+                    `ExcT_CpU:  Cause_ExcCode <= `ExcC_CpU;
+                    `ExcT_RI:   Cause_ExcCode <= `ExcC_RI;
+                    `ExcT_Ov:   Cause_ExcCode <= `ExcC_Ov;
+                    `ExcT_Trap: Cause_ExcCode <= `ExcC_Tr;
+                    `ExcT_SysC: Cause_ExcCode <= `ExcC_SysC;
+                    `ExcT_Bp:   Cause_ExcCode <= `ExcC_Bp;
+                    `ExcT_AdEL: Cause_ExcCode <= `ExcC_AdEL;
+                    `ExcT_AdES: Cause_ExcCode <= `ExcC_AdES;
+                    // `ExcT_TLBR: Cause_ExcCode <= `ExcC_
+                    // `ExcT_TLBI: Cause_ExcCode <= `ExcC_
+                    // `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS
+                    // `ExcT_IBE:  Cause_ExcCode <= `ExcC_
+                    // `ExcT_DBE:  Cause_ExcCode <= `ExcC_
+                endcase
+            end
+            else if(wen) begin
                 case (addr)
                     `CP0_BadVAddr: begin
                         BadVAddr <= wdata;
@@ -129,6 +197,10 @@ module CP0
                         Cause_IV      <= wdata[`IV];
                         Cause_IP[1:0] <= wdata[`IPS];
                     end
+
+                    `CP0_EPC: begin
+                        EPC <= wdata;
+                    end
                 endcase
             end
         end
@@ -141,11 +213,15 @@ module CP0
             `CP0_Compare:  rdata <= Compare;
             `CP0_Status:   rdata <= Status;
             `CP0_Cause:    rdata <= Cause;
+            `CP0_EPC:      rdata <= EPC;
+            `CP0_PrId:     rdata <= PrId;
             default:       rdata <= `ZeroWord;
         endcase
     end
 
     assign usermode = Status_UM & ~(Status_ERL | Status_EXL);
     assign Status_o = Status;
+    assign Cause_o  = Cause;
+    assign EPC_o    = EPC;
 
 endmodule

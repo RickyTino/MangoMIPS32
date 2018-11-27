@@ -12,7 +12,6 @@ module ALU_EX
     input  wire [`DataBus] opr1,
     input  wire [`DataBus] opr2,
     input  wire [`DataBus] offset,
-    //input  wire [`CP0Addr] cp0sel,
 
     output reg             div_start,
     output reg             div_signed,
@@ -35,6 +34,7 @@ module ALU_EX
     output reg             llb_wen,
     output reg             llbit_o,
 
+    input  wire            usermode,
     input  wire [`ExcBus ] excp_i,
     output reg  [`ExcBus ] excp_o,
 
@@ -150,6 +150,7 @@ module ALU_EX
     wire [`AddrBus] sl_addr = opr1 + offset;
     reg  [`ByteWEn] sel_l, sel_r;
     reg             exc_adel, exc_ades;
+    wire            exc_user = usermode && sl_addr[31];
 
     always @(*) begin
         m_en     <= `false;
@@ -165,39 +166,43 @@ module ALU_EX
         case (aluop)
             `ALU_LB,
             `ALU_LBU:begin
-                m_en    <= `true;
-                m_vaddr <= sl_addr;
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                exc_adel <= exc_user;
             end
 
             `ALU_LH,
             `ALU_LHU: begin
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
-                exc_adel <= sl_addr[0];
+                exc_adel <= exc_user || sl_addr[0];
             end
 
             `ALU_LW:  begin
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
-                exc_adel <= sl_addr[1:0] != 2'b00;
+                exc_adel <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_LWL: begin
-                m_en    <= `true;
-                m_vaddr <= sl_addr;
-                wregsel <= sel_l;
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                wregsel  <= sel_l;
+                exc_adel <= exc_user;
             end
 
             `ALU_LWR: begin
-                m_en    <= `true;
-                m_vaddr <= sl_addr;
-                wregsel <= sel_r;
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                wregsel  <= sel_r;
+                exc_adel <= exc_user;
             end
 
             `ALU_SB: begin
-                m_en <= `true;
-                m_vaddr <= sl_addr;
-                m_wdata <= {4{opr2[7:0]}};
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                m_wdata  <= {4{opr2[7:0]}};
+                exc_ades <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: m_wen <= 4'b0001;
                     2'b01: m_wen <= 4'b0010;
@@ -207,10 +212,10 @@ module ALU_EX
             end
 
             `ALU_SH: begin
-                m_en <= `true;
-                m_vaddr <= sl_addr;
-                m_wdata <= {2{opr2[15:0]}};
-                exc_ades <= sl_addr[0];
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                m_wdata  <= {2{opr2[15:0]}};
+                exc_ades <= exc_user || sl_addr[0];
                 case (sl_addr[1:0])
                     2'b00:   m_wen <= 4'b0011;
                     2'b10:   m_wen <= 4'b1100;
@@ -223,12 +228,13 @@ module ALU_EX
                 m_vaddr  <= sl_addr;
                 m_wdata  <= opr2;
                 m_wen    <= 4'b1111;
-                exc_ades <= sl_addr[1:0] != 2'b00;
+                exc_ades <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_SWL: begin
-                m_en    <= `true;
-                m_vaddr <= {sl_addr[31:2], 2'b00};
+                m_en     <= `true;
+                m_vaddr  <= {sl_addr[31:2], 2'b00};
+                exc_ades <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: begin
                         m_wen   <= 4'b0001;
@@ -250,8 +256,9 @@ module ALU_EX
             end
 
             `ALU_SWR: begin
-                m_en    <= `true;
-                m_vaddr <= {sl_addr[31:2], 2'b00};
+                m_en     <= `true;
+                m_vaddr  <= {sl_addr[31:2], 2'b00};
+                exc_ades <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: begin
                         m_wen   <= 4'b1111;
@@ -284,13 +291,6 @@ module ALU_EX
                 m_vaddr <= sl_addr;
                 m_wdata <= opr2;
                 m_wen   <= 4'b1111;
-            end
-            
-            default: begin
-                m_en    <= `false;
-                m_wen   <= `WrDisable;
-                m_vaddr <= `ZeroWord;
-                m_wdata <= `ZeroWord;
             end
         endcase
 

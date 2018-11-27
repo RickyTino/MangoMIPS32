@@ -69,9 +69,14 @@ module mycpu_top
     assign ibus_rdata = inst_sram_rdata;
     assign dbus_rdata = data_sram_rdata;
 
-    reg    istate, dstate;
-    assign ibus_streq = ibus_en && !istate;
-    assign dbus_streq = dbus_en && !dstate;
+    reg        istate, dstate;
+    reg [31:0] i_addr, d_addr;
+    
+    wire i_hit = ibus_addr != i_addr;
+    wire d_hit = dbus_addr != d_addr;
+
+    assign ibus_streq = ibus_en && i_hit;
+    assign dbus_streq = dbus_en && d_hit;
 
     always @(posedge clk, negedge resetn) begin
         if(!resetn) begin
@@ -80,13 +85,25 @@ module mycpu_top
         end
         else begin
             case (istate)
-                1'b0: if(ibus_en) istate <= 1'b1;
-                1'b1: istate   <= 1'b0;
+                1'b0: if(ibus_en && !i_hit) begin
+                    istate <= 1'b1;
+                    i_addr <= ibus_addr;
+                end
+                1'b1: if(i_hit) begin
+                    istate <= 1'b0;
+                    i_addr <= 32'b0;
+                end
             endcase
 
             case (dstate)
-                1'b0: if(dbus_en) dstate <= 1'b1;
-                1'b1: dstate <= 1'b0;
+                1'b0: if(dbus_en && !d_hit) begin
+                    dstate <= 1'b1;
+                    d_addr <= dbus_addr;
+                end
+                1'b1: if(d_hit) begin
+                    dstate <= 1'b0;
+                    d_addr <= 32'b0;
+                end
             endcase
         end
     end

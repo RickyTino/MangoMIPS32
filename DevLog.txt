@@ -160,28 +160,7 @@
 - LL/SC通过测试
 - 下一批实现MFC0/MTC0以及相关CP0寄存器
 - T: MEM段的Exception会需要处理llbit的读写问题
-- T: 计划实现的CP0寄存器有：【后面备注批次】
--- Index    (Register 0, Select 0)      //3
--- Random   (Register 1, Select 0)      //3
--- EntryLo0 (Register 2, Select 0)      //3
--- EntryLo1 (Register 3, Select 0)      //3
--- Context  (Register 4, Select 0)      //3
--- PageMask (Register 5, Select 0)      //3
--- Wired    (Register 6, Select 0)      //3
--- BadVAddr (Register 8, Select 0)      //1
--- Count    (Register 9, Select 0)      //2
--- EntryHi  (Register 10, Select 0)     //3
--- Compare  (Register 11, Select 0)     //2
--- Status   (Register 12, Select 0)     //1
--- Cause    (Register 13, Select 0)     //1
--- EPC      (Register 14, Select 0)     //1
--- PrId     (Register 15, Select 0)     //2
--- EBase    (Register 15, Select 1)     //4
--- Config   (Register 16, Select 0)     //2
--- Config1  (Register 16, Select 1)     //2
--- TagLo    (Register 28, Select 0, 2)  //4
--- TagHi    (Register 29, Select 0, 2)  //4
-- 在Defines.v中添加了以上CP0寄存器的相关定义
+- 在Defines.v中添加了\CP0寄存器的相关定义
 - CP0中试着添加了badvaddr/count/Compare
 - T: 第一批添加的CP0寄存器：BadVAddr, Status, Cause, EPC
 --------------------------------------------------
@@ -223,30 +202,70 @@
 
 --------------------------------------------------
 [20181126]
-- T: 所有要实现的异常和优先级：
--- Reset
--- Int
--- I-AdEL
--- I-TLBR
--- I-TLBI
--- I_BE
--- CpU
--- RI
--- Ov, Trap, Syscall, Bp,
--- D-AdEL/AdES
--- D-TLBR
--- D-TLBI
--- D-TLBM
--- D-BE
--- ERET
 - T: 好像是不会出现校验错误，不实现Cache Error异常
 - 完善了defines.v中的异常种类
 - 完成异常处理至MEM段，正在写Exception.v
-- 
+- Control.v未完成，留待研究异常入口
+
+
+--------------------------------------------------
+[20181127]
+- inslot 已经从前段往后传
+- 添加了EX段对用户空间地址引起的AdE的判断
+- T: Status.EXL=1时不更新EPC和Cause.BD
+- 预留了所有要实现的异常类型的定义
+- 修改sram_func_top.v，增加对异常的支持
+- 为了提高效率，异常向量地址不使用加法计算，直接定义了运算的结果
+- T: 使用flush和使用exc_flag的区别要注意
+- T: 异常属于TLBL还是TLBS的判断另外加信号
+- 初步完成异常，等待测试
+
+
+
 
 
 --------------------------------------------------
 [特别笔记区段]
+计划实现的CP0寄存器有：【后面备注批次】
+- Index    (Register  0, Select 0)     //3
+- Random   (Register  1, Select 0)     //3
+- EntryLo0 (Register  2, Select 0)     //3
+- EntryLo1 (Register  3, Select 0)     //3
+- Context  (Register  4, Select 0)     //3
+- PageMask (Register  5, Select 0)     //3
+- Wired    (Register  6, Select 0)     //3
+- BadVAddr (Register  8, Select 0)     //1
+- Count    (Register  9, Select 0)     //2
+- EntryHi  (Register 10, Select 0)     //3
+- Compare  (Register 11, Select 0)     //2
+- Status   (Register 12, Select 0)     //1
+- Cause    (Register 13, Select 0)     //1
+- EPC      (Register 14, Select 0)     //1
+- PrId     (Register 15, Select 0)     //2
+- EBase    (Register 15, Select 1)     //4 //可能不实现
+- Config   (Register 16, Select 0)     //2
+- Config1  (Register 16, Select 1)     //2
+- TagLo    (Register 28, Select 0, 2)  //4
+- TagHi    (Register 29, Select 0, 2)  //4
+
+所有要实现的异常和优先级：
+- Reset
+- NMI  (暂缓)
+- Int
+- I-AdEL
+- I-TLBR
+- I-TLBI
+- I_BusE
+- CpU
+- RI
+- Ov, Trap, Syscall, Bp,
+- D-AdEL/AdES
+- D-TLBR
+- D-TLBI
+- D-TLBM
+- D-BusE
+- ERET
+
 对MIPS32R1的全面适配，以下工作放到最后：
 - 完整的SYNC/PREF
 - CP1-3的指令按照CpU处理
