@@ -41,6 +41,7 @@ module Decode
     input  wire [`DataBus] cp0_Status,
     input  wire [`ExcBus ] excp_i,
     output reg  [`ExcBus ] excp_o,
+    output reg  [`CPNum  ] ecpnum,
 
     output wire            stallreq
 );
@@ -100,6 +101,7 @@ module Decode
         exc_bp    <= `false;
         exc_cpu   <= `false;
         exc_eret  <= `false;
+        ecpnum    <= `CP0;
 
         case (opcode)
             `OP_SPECIAL: begin
@@ -110,6 +112,12 @@ module Decode
                         r2read    <= `true;
                         wreg      <= `true;
                         ext_imme  <=  sa;
+                    end
+
+                    `SP_MOVCI: begin //CP1 instruction
+                        instvalid <= `true;
+                        exc_cpu   <= !cp0_Status[`CU1];
+                        ecpnum    <= `CP1;
                     end
 
                     `SP_SRL: if(rs == 5'b0) begin
@@ -412,7 +420,7 @@ module Decode
                         `ifdef No_Branch_Delay_Slot
                             clrslot <= `true;
                         `else
-                            clrslot <= opr1[31];
+                            clrslot <= !opr1[31];
                         `endif
                     end
 
@@ -425,7 +433,7 @@ module Decode
                         `ifdef No_Branch_Delay_Slot
                             clrslot <= `true;
                         `else
-                            clrslot <= !opr1[31];
+                            clrslot <= opr1[31];
                         `endif
                     end
 
@@ -511,7 +519,7 @@ module Decode
                         `ifdef No_Branch_Delay_Slot
                             clrslot <= `true;
                         `else
-                            clrslot <= opr1[31];
+                            clrslot <= !opr1[31];
                         `endif
                     end
 
@@ -527,7 +535,7 @@ module Decode
                         `ifdef No_Branch_Delay_Slot
                             clrslot <= `true;
                         `else
-                            clrslot <= !opr1[31];
+                            clrslot <= opr1[31];
                         `endif
                     end
                 endcase
@@ -711,6 +719,21 @@ module Decode
                     endcase
                 end
             end
+
+            `OP_COP1: begin //CP1 encoding field
+                exc_cpu <= !cp0_Status[`CU1];
+                ecpnum  <= `CP1;
+            end
+
+            `OP_COP2: begin //CP2 encoding field
+                exc_cpu <= !cp0_Status[`CU2];
+                ecpnum  <= `CP2;
+            end
+
+            `OP_COP3: begin //CP3 encoding field
+                exc_cpu <= !cp0_Status[`CU3];
+                ecpnum  <= `CP3;
+            end
             
             `OP_BEQL: begin
                 instvalid <= `true;
@@ -722,7 +745,7 @@ module Decode
                 `ifdef No_Branch_Delay_Slot
                     clrslot <= `true;
                 `else
-                    clrslot <= opr_eq;
+                    clrslot <= !opr_eq;
                 `endif
             end
 
@@ -736,7 +759,7 @@ module Decode
                 `ifdef No_Branch_Delay_Slot
                     clrslot <= `true;
                 `else
-                    clrslot <= !opr_eq;
+                    clrslot <= opr_eq;
                 `endif
             end
 
@@ -749,7 +772,7 @@ module Decode
                 `ifdef No_Branch_Delay_Slot
                     clrslot <= `true;
                 `else
-                    clrslot <= opr1_lez;
+                    clrslot <= !opr1_lez;
                 `endif
             end
 
@@ -762,7 +785,7 @@ module Decode
                 `ifdef No_Branch_Delay_Slot
                     clrslot <= `true;
                 `else
-                    clrslot <= !opr1_lez;
+                    clrslot <= opr1_lez;
                 `endif
             end
 
@@ -925,7 +948,7 @@ module Decode
                 wreg      <= `true;
                 wraddr    <= rt;
             end
-
+            
             `OP_PREF: begin //Temporarily decode as nop
                 instvalid <= `true;
             end
@@ -937,6 +960,22 @@ module Decode
                 r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
+            end
+
+            `OP_LWC1,
+            `OP_LDC1,
+            `OP_SWC1,
+            `OP_SDC1: begin //CP1 instructions
+                exc_cpu <= !cp0_Status[`CU1];
+                ecpnum  <= `CP1;
+            end
+
+            `OP_LWC2,
+            `OP_LDC2,
+            `OP_SWC2,
+            `OP_SDC2: begin //CP2 instructions
+                exc_cpu <= !cp0_Status[`CU2];
+                ecpnum  <= `CP2;
             end
 
         endcase

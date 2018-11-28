@@ -20,6 +20,7 @@ module CP0
     input  wire [`ExcType] exc_type,
     input  wire [`AddrBus] pc,
     input  wire [`AddrBus] exc_baddr,
+    input  wire [`CPNum  ] exc_cpnum,
     input  wire            inslot,
 
     output wire [`DataBus] Status_o,
@@ -68,18 +69,31 @@ module CP0
     reg  [ 7: 0] Cause_IP;
     reg  [ 4: 0] Cause_ExcCode;
 
+`ifdef NSCSCC_Mode
+    wire [`Word] Cause = {
+        Cause_BD,       //31 R
+        1'b0,
+        Cause_CE,       //29:28 R
+        12'b0,
+        Cause_IP,       //15:8 R[15:10] RW[9:8]
+        1'b0,
+        Cause_ExcCode,  //6:2 R
+        2'b0
+    };
+`else
     wire [`Word] Cause = {
         Cause_BD,       //31 R
         1'b0,
         Cause_CE,       //29:28 R
         4'b0,
-        Cause_IV,       //23 
+        Cause_IV,       //23 RW
         7'b0,
         Cause_IP,       //15:8 R[15:10] RW[9:8]
         1'b0,
         Cause_ExcCode,  //6:2 R
         2'b0
     };
+`endif
 
     wire [`Word] pcm4     = pc - 32'h4;
     wire         timer_eq = (Count ^ Compare) == `ZeroWord;
@@ -145,9 +159,9 @@ module CP0
 
                 case (exc_type)
                     `ExcT_AdEL,
-                    `ExcT_AdES: begin
-                        BadVAddr <= exc_baddr;
-                    end
+                    `ExcT_AdES: BadVAddr <= exc_baddr;
+                    
+                    `ExcT_CpU:  Cause_CE <= exc_cpnum;
                 endcase
 
                 //ExcCode

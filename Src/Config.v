@@ -14,4 +14,8 @@ and branch likely instructions.
 */
 //`define No_Branch_Delay_Slot
 /*------------------------------------------------
+Define “NSCSCC_Mode" to meet the requirement of NSCSCC-2018 functional tests.
+Changes in configuration includes:
+- Disabe Cause.IV (Ignore on write and read as zero)
 */
+`define NSCSCC_Mode

@@ -60,6 +60,7 @@ module MangoMIPS_Core_Top
     wire            id_wreg;
     wire [`RegAddr] id_wraddr;
     wire [`ExcBus ] id_excp_o;
+    wire [`CPNum  ] id_ecpnum;
     wire            id_isbranch;
     wire            id_clrslot;
 
@@ -72,6 +73,7 @@ module MangoMIPS_Core_Top
     wire            ex_wreg;
     wire [`RegAddr] ex_wraddr;
     wire [`ExcBus ] ex_excp_i;
+    wire [`CPNum  ] ex_ecpnum;
     wire            ex_inslot;
 
     wire            div_start;
@@ -107,6 +109,7 @@ module MangoMIPS_Core_Top
     wire            mem_llb_wen;
     wire            mem_llbit;
     wire [`ExcBus ] mem_excp;
+    wire [`CPNum  ] mem_ecpnum;
     wire            mem_inslot;
 
     wire            mem_m_en;
@@ -242,6 +245,7 @@ module MangoMIPS_Core_Top
         .cp0_Status     (cp0_Status ), 
         .excp_i         (id_excp_i  ),
         .excp_o         (id_excp_o  ),
+        .ecpnum         (id_ecpnum  ),
 
         .stallreq       (stallreq[`ID])
     );
@@ -274,32 +278,34 @@ module MangoMIPS_Core_Top
     );
 
     Reg_ID_EX reg_id_ex (
-        .clk       (clk       ),
-        .rst       (rst       ),
-        .stall     (stall[`EX]),
-        .flush     (flush[`EX]),
+        .clk        (clk        ),
+        .rst        (rst        ),
+        .stall      (stall[`EX] ),
+        .flush      (flush[`EX] ),
 
-        .id_pc     (id_pc     ),
-        .id_aluop  (id_aluop  ),
-        .id_opr1   (id_opr1   ),
-        .id_opr2   (id_opr2   ),
-        .id_offset (id_offset ),
-        .id_cp0sel (id_cp0sel ),
-        .id_wreg   (id_wreg   ),
-        .id_wraddr (id_wraddr ),
-        .id_excp   (id_excp_o ),
-        .id_inslot (id_inslot ),
+        .id_pc      (id_pc      ),
+        .id_aluop   (id_aluop   ),
+        .id_opr1    (id_opr1    ),
+        .id_opr2    (id_opr2    ),
+        .id_offset  (id_offset  ),
+        .id_cp0sel  (id_cp0sel  ),
+        .id_wreg    (id_wreg    ),
+        .id_wraddr  (id_wraddr  ),
+        .id_excp    (id_excp_o  ),
+        .id_ecpnum  (id_ecpnum  ),
+        .id_inslot  (id_inslot  ),
 
-        .ex_pc     (ex_pc     ),
-        .ex_aluop  (ex_aluop  ),
-        .ex_opr1   (ex_opr1   ),
-        .ex_opr2   (ex_opr2   ),
-        .ex_offset (ex_offset ),
-        .ex_cp0sel (ex_cp0sel ),
-        .ex_wreg   (ex_wreg   ),
-        .ex_wraddr (ex_wraddr ),
-        .ex_excp   (ex_excp_i ),
-        .ex_inslot (ex_inslot )
+        .ex_pc      (ex_pc      ),
+        .ex_aluop   (ex_aluop   ),
+        .ex_opr1    (ex_opr1    ),
+        .ex_opr2    (ex_opr2    ),
+        .ex_offset  (ex_offset  ),
+        .ex_cp0sel  (ex_cp0sel  ),
+        .ex_wreg    (ex_wreg    ),
+        .ex_wraddr  (ex_wraddr  ),
+        .ex_excp    (ex_excp_i  ),
+        .ex_ecpnum  (ex_ecpnum  ),
+        .ex_inslot  (ex_inslot  )
     );
 
     ALU_EX alu_ex (
@@ -370,6 +376,7 @@ module MangoMIPS_Core_Top
         .ex_llb_wen     (ex_llb_wen ),
         .ex_llbit       (ex_llbit   ),
         .ex_excp        (ex_excp_o  ),
+        .ex_ecpnum      (ex_ecpnum  ),
         .ex_inslot      (ex_inslot  ),
         
         .mem_pc         (mem_pc         ),
@@ -389,6 +396,7 @@ module MangoMIPS_Core_Top
         .mem_llb_wen    (mem_llb_wen    ),
         .mem_llbit      (mem_llbit      ),
         .mem_excp       (mem_excp       ),
+        .mem_ecpnum     (mem_ecpnum     ),
         .mem_inslot     (mem_inslot     )   
     );
     
@@ -457,6 +465,7 @@ module MangoMIPS_Core_Top
         .exc_type   (exc_type   ),
         .pc         (mem_pc     ),
         .exc_baddr  (exc_baddr  ),
+        .exc_cpnum  (mem_ecpnum ),
         .inslot     (mem_inslot ),
 
         .Status_o   (cp0_Status ),

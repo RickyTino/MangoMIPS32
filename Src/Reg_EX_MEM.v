@@ -29,6 +29,7 @@ module Reg_EX_MEM
     input  wire            ex_llb_wen,
     input  wire            ex_llbit,
     input  wire [`ExcBus ] ex_excp,
+    input  wire [`CPNum  ] ex_ecpnum,
     input  wire            ex_inslot,
     
     output reg  [`AddrBus] mem_pc,
@@ -48,6 +49,7 @@ module Reg_EX_MEM
     output reg             mem_llb_wen,
     output reg             mem_llbit,
     output reg  [`ExcBus ] mem_excp,
+    output reg  [`CPNum  ] mem_ecpnum,
     output reg             mem_inslot
 );
 
@@ -70,6 +72,7 @@ module Reg_EX_MEM
             mem_llb_wen <= `false;
             mem_llbit   <= `Zero;
             mem_excp    <= `Exc_NoExc;
+            mem_ecpnum  <= `CP0;
             mem_inslot  <= `false;
         end
         else begin
@@ -96,6 +99,7 @@ module Reg_EX_MEM
                     mem_llb_wen <= `false;
                     mem_llbit   <= `Zero;
                     mem_excp    <= `Exc_NoExc;
+                    mem_ecpnum  <= `CP0;
                     mem_inslot  <= `false;
                 end
                 2'b00: begin
@@ -116,6 +120,7 @@ module Reg_EX_MEM
                     mem_llb_wen <= ex_llb_wen;
                     mem_llbit   <= ex_llbit;
                     mem_excp    <= ex_excp;
+                    mem_ecpnum  <= ex_ecpnum;
                     mem_inslot  <= ex_inslot;
                 end
             endcase

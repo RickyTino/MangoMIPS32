@@ -3,7 +3,7 @@ Filename:   Defines.v
 Author:     RickyTino
 Version:    Unreleased
 **************************************************/
-//`include "Config.v"
+`include "Config.v"
 
 /*--------------------Constant--------------------*/
 //Width constant
@@ -30,6 +30,12 @@ Version:    Unreleased
 `define         MEM                  3
 `define         WB                   4
 
+//Coprocessor identifier
+`define         CP0                  2'd0
+`define         CP1                  2'd1
+`define         CP2                  2'd2
+`define         CP3                  2'd3
+
 //Entrance address
 `define         Reset_Entrance          32'hBFC00000
 
@@ -51,6 +57,7 @@ Version:    Unreleased
 `define         RegAddr              4:0
 `define         Stages               4:0
 `define         ByteWEn              3:0
+`define         CPNum                1:0
 `define         ALUOp               `ALUOp_W-1:0
 `define         ExcBus              `Exc_W  -1:0
 `define         ExcType             `ExcT_W -1:0
@@ -82,6 +89,9 @@ Version:    Unreleased
 `define         OP_XORI             6'b001110
 `define         OP_LUI              6'b001111
 `define         OP_COP0             6'b010000
+`define         OP_COP1             6'b010001
+`define         OP_COP2             6'b010010
+`define         OP_COP3             6'b010011
 `define         OP_BEQL             6'b010100
 `define         OP_BNEL             6'b010101
 `define         OP_BLEZL            6'b010110
@@ -101,11 +111,20 @@ Version:    Unreleased
 `define         OP_SWR              6'b101110
 `define         OP_CACHE            6'b101111
 `define         OP_LL               6'b110000
+`define         OP_LWC1             6'b110001
+`define         OP_LWC2             6'b110010
 `define         OP_PREF             6'b110011
+`define         OP_LDC1             6'b110101
+`define         OP_LDC2             6'b110110
 `define         OP_SC               6'b111000
+`define         OP_SWC1             6'b111001
+`define         OP_SWC2             6'b111010
+`define         OP_SDC1             6'b111101
+`define         OP_SDC2             6'b111110
 
 //Function : Opcode = Special
 `define         SP_SLL              6'b000000
+`define         SP_MOVCI            6'b000001
 `define         SP_SRL              6'b000010
 `define         SP_SRA              6'b000011
 `define         SP_SLLV             6'b000100
@@ -264,6 +283,9 @@ Version:    Unreleased
 `define         CP0_ErrorEPC        {5'd30, 3'd0}
 
 //Fields of Status Register
+`define         CU3                 31
+`define         CU2                 30
+`define         CU1                 29
 `define         CU0                 28
 `define         BEV                 22
 `define         IM                  15:8

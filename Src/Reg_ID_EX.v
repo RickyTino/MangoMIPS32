@@ -21,6 +21,7 @@ module Reg_ID_EX
     input  wire [`RegAddr] id_wraddr,
     input  wire            id_wreg,
     input  wire [`ExcBus ] id_excp,
+    input  wire [`CPNum  ] id_ecpnum,
     input  wire            id_inslot,
 
     output reg  [`AddrBus] ex_pc,
@@ -32,6 +33,7 @@ module Reg_ID_EX
     output reg  [`RegAddr] ex_wraddr,
     output reg             ex_wreg,
     output reg  [`ExcBus ] ex_excp,
+    output reg  [`CPNum  ] ex_ecpnum,
     output reg             ex_inslot
 );
 
@@ -46,12 +48,10 @@ module Reg_ID_EX
             ex_wraddr  <= `ZeroReg;
             ex_wreg    <= `false;
             ex_excp    <= `Exc_NoExc;
+            ex_ecpnum  <= `CP0;
             ex_inslot  <= `false;
         end
         else begin
-
-            
-
             case ({flush, stall})
                 2'b10, 2'b11: begin
                     // ex_pc      <= `ZeroWord;
@@ -64,6 +64,7 @@ module Reg_ID_EX
                     ex_wraddr  <= `ZeroReg;
                     ex_wreg    <= `false;
                     ex_excp    <= `Exc_NoExc;
+                    ex_ecpnum  <= `CP0;
                     ex_inslot  <= `false;
                 end
                 2'b00: begin
@@ -76,6 +77,7 @@ module Reg_ID_EX
                     ex_wraddr  <= id_wraddr;
                     ex_wreg    <= id_wreg;
                     ex_excp    <= id_excp;
+                    ex_ecpnum  <= id_ecpnum;
                     ex_inslot  <= id_inslot;
                 end
             endcase

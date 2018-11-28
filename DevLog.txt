@@ -220,12 +220,25 @@
 - T: 异常属于TLBL还是TLBS的判断另外加信号
 - 初步完成异常，等待测试
 
+--------------------------------------------------
+[20181128]
+- 通过NSCSCC-2018 sram_func_test
+- sram_func不支持IV位，Config增加相关选项
+- 完成对COP1/COP2判断为CpU的适配
+- 修复了branch likely的一个重大BUG，并通过测试
+- Trap通过测试
+- 准备第一个发布版
 
 
 
 
 --------------------------------------------------
 [特别笔记区段]
+需要的几场特别调试：
+- User Mode CpU & AdEL
+- COP1/COP2 CpU
+
+
 计划实现的CP0寄存器有：【后面备注批次】
 - Index    (Register  0, Select 0)     //3
 - Random   (Register  1, Select 0)     //3
@@ -268,6 +281,5 @@
 
 对MIPS32R1的全面适配，以下工作放到最后：
 - 完整的SYNC/PREF
-- CP1-3的指令按照CpU处理
 - ErrorEPC与NMI
 
