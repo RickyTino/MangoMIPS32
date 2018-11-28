@@ -34,9 +34,10 @@ module mycpu_top
     wire [`DataBus] dbus_wdata;
     wire            dbus_streq;
 
-    MangoMIPS_Core_Top testCPU (
+    MangoMIPS_Core_Top CPU (
         .clk         (clk       ),
         .rst         (!resetn   ),
+        .intr        (int       ),
         
         .ibus_en     (ibus_en   ),
         .ibus_addr   (ibus_addr ),
@@ -72,16 +73,18 @@ module mycpu_top
     reg        istate, dstate;
     reg [31:0] i_addr, d_addr;
     
-    wire i_hit = ibus_addr != i_addr;
-    wire d_hit = dbus_addr != d_addr;
+    wire i_hit = ibus_addr == i_addr;
+    wire d_hit = dbus_addr == d_addr;
 
-    assign ibus_streq = ibus_en && i_hit;
-    assign dbus_streq = dbus_en && d_hit;
+    assign ibus_streq = ibus_en && !i_hit;
+    assign dbus_streq = dbus_en && !d_hit;
 
     always @(posedge clk, negedge resetn) begin
         if(!resetn) begin
             istate   <= 1'b0;
             dstate   <= 1'b0;
+            i_addr   <= 32'b0;
+            d_addr   <= 32'b0;
         end
         else begin
             case (istate)
@@ -89,7 +92,7 @@ module mycpu_top
                     istate <= 1'b1;
                     i_addr <= ibus_addr;
                 end
-                1'b1: if(i_hit) begin
+                1'b1: begin
                     istate <= 1'b0;
                     i_addr <= 32'b0;
                 end
@@ -100,7 +103,7 @@ module mycpu_top
                     dstate <= 1'b1;
                     d_addr <= dbus_addr;
                 end
-                1'b1: if(d_hit) begin
+                1'b1: begin
                     dstate <= 1'b0;
                     d_addr <= 32'b0;
                 end

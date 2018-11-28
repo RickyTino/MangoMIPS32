@@ -9,6 +9,7 @@ module MangoMIPS_Core_Top
 (
     input  wire            clk,
     input  wire            rst,
+    input  wire [`HardInt] intr,
 
     output wire            ibus_en,
     output wire [`AddrBus] ibus_addr,
@@ -153,7 +154,6 @@ module MangoMIPS_Core_Top
     wire [`Stages ] stallreq;
     wire [`Stages ] stall;
     wire [`Stages ] flush; 
-    wire            usermode;
     wire            timer_int;
     wire [`HardInt] cp0_intr;
     
@@ -167,6 +167,7 @@ module MangoMIPS_Core_Top
         .flush_pc   (exc_newpc  ),
         .br_flag    (br_flag    ),
         .br_addr    (br_addr    ),
+        .usermode   (usermode   ),
 
         .pc         (if_i_vaddr ),
         .pcp4       (if_pcp4    ),
@@ -521,9 +522,15 @@ module MangoMIPS_Core_Top
     );
     
     Control control (
-        .stallreq (stallreq),
-        .stall    (stall   ),
-        .flush    (flush   )
+        .stallreq   (stallreq   ),
+        .stall      (stall      ),
+        .exc_flag   (exc_flag   ),
+        .exc_type   (exc_type   ),
+        .cp0_Status (cp0_Status ),
+        .cp0_Cause  (cp0_Cause  ),
+        .cp0_EPC    (cp0_EPC    ),
+        .flush      (flush      ),
+        .flush_pc   (exc_newpc  )
     );
 
     assign debug_wb_pc     = wb_pc;

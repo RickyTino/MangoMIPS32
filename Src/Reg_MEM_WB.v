@@ -52,9 +52,13 @@ module Reg_MEM_WB
             wb_llbit    <= `Zero;
         end
         else begin
+
+            
+
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    wb_pc       <= `ZeroWord;
+                    // wb_pc       <= `ZeroWord;
+                    wb_pc       <= mem_pc;
                     wb_aluop    <= `ALU_NOP;
                     wb_alures   <= `ZeroWord;
                     wb_m_vaddr  <= `ZeroWord;

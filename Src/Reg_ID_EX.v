@@ -49,9 +49,13 @@ module Reg_ID_EX
             ex_inslot  <= `false;
         end
         else begin
+
+            
+
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    ex_pc      <= `ZeroWord;
+                    // ex_pc      <= `ZeroWord;
+                    ex_pc      <= id_pc;
                     ex_aluop   <= `ALU_NOP;
                     ex_opr1    <= `ZeroWord;
                     ex_opr2    <= `ZeroWord;

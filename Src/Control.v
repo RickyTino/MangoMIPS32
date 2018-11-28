@@ -12,11 +12,12 @@ module Control
     
     input  wire            exc_flag,
     input  wire [`ExcType] exc_type,
-    input  wire [`DataBus] cp0_EPC,
     input  wire [`DataBus] cp0_Status,
+    input  wire [`DataBus] cp0_Cause,
+    input  wire [`DataBus] cp0_EPC,
     
     output reg  [`Stages ] flush,
-    output reg  [`AddrBus] flush_pc,
+    output reg  [`AddrBus] flush_pc
 );
 
     wire bev = cp0_Status[`BEV];
@@ -66,9 +67,12 @@ module Control
                     flush_pc <= cp0_EPC;
                     // flush_pc <= cp0_Status[`ERL] ? cp0_ErrorEPC : cp0_EPC
                 end
+                
+                default: flush_pc <= `ZeroWord;
             endcase
         end
         else begin
+            flush_pc <= `ZeroWord;
             casez (stallreq)
                 5'b00001: stall <= 5'b00011;
                 5'b0001?: stall <= 5'b00011;

@@ -21,8 +21,8 @@ module Exception
 );
 
     reg [`ExcBus] excp;
-    
-    wire exc_intr = (cp0_Cause[`IP] & cp0_Status[`IM] != 8'h00) 
+ 
+    wire exc_intr = (cp0_Cause[`IP] & cp0_Status[`IM]) != 8'h00 
                     &&  cp0_Status[`IE ]
                     && ~cp0_Status[`ERL]
                     && ~cp0_Status[`EXL];

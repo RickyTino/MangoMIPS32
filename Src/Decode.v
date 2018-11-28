@@ -38,7 +38,7 @@ module Decode
     output reg  [`AddrBus] br_addr,
 
     input  wire            usermode,
-    input  wire [`DataBus] cp0_status,
+    input  wire [`DataBus] cp0_Status,
     input  wire [`ExcBus ] excp_i,
     output reg  [`ExcBus ] excp_o,
 
@@ -675,7 +675,7 @@ module Decode
             end
 
             `OP_COP0: begin
-                if(usermode && !cp0_status[`CU0]) begin
+                if(usermode && !cp0_Status[`CU0]) begin
                     exc_cpu <= `true;
                 end
                 else begin
@@ -915,7 +915,7 @@ module Decode
             
             `OP_CACHE: begin //Temporarily decode as nop
                 instvalid <= `true;
-                exc_cpu   <= usermode && !cp0_status[`CU0];
+                exc_cpu   <= usermode && !cp0_Status[`CU0];
             end
 
             `OP_LL: begin
