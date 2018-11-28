@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Reg_EX_MEM.v
-Author:		RickyTino
-Version:	Preview2-181115
+Filename:   Reg_EX_MEM.v
+Author:     RickyTino
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
@@ -19,6 +19,7 @@ module Reg_EX_MEM
     input  wire [`DWord  ] ex_mullo,
     input  wire            ex_mul_s,
     input  wire [`DWord  ] ex_divres,
+    input  wire [`CP0Addr] ex_cp0sel,
     input  wire            ex_m_en,
     input  wire [`ByteWEn] ex_m_wen,
     input  wire [`AddrBus] ex_m_vaddr,
@@ -27,6 +28,9 @@ module Reg_EX_MEM
     input  wire [`RegAddr] ex_wraddr,
     input  wire            ex_llb_wen,
     input  wire            ex_llbit,
+    input  wire [`ExcBus ] ex_excp,
+    input  wire [`CPNum  ] ex_ecpnum,
+    input  wire            ex_inslot,
     
     output reg  [`AddrBus] mem_pc,
     output reg  [`ALUOp  ] mem_aluop, 
@@ -35,6 +39,7 @@ module Reg_EX_MEM
     output reg  [`DWord  ] mem_mullo,
     output reg             mem_mul_s,
     output reg  [`DWord  ] mem_divres,
+    output reg  [`CP0Addr] mem_cp0sel,
     output reg             mem_m_en,
     output reg  [`ByteWEn] mem_m_wen,
     output reg  [`AddrBus] mem_m_vaddr,
@@ -42,7 +47,10 @@ module Reg_EX_MEM
     output reg  [`ByteWEn] mem_wreg,
     output reg  [`RegAddr] mem_wraddr,
     output reg             mem_llb_wen,
-    output reg             mem_llbit
+    output reg             mem_llbit,
+    output reg  [`ExcBus ] mem_excp,
+    output reg  [`CPNum  ] mem_ecpnum,
+    output reg             mem_inslot
 );
 
     always @(posedge clk, posedge rst) begin
@@ -54,6 +62,7 @@ module Reg_EX_MEM
             mem_mullo   <= `ZeroDWord;
             mem_mul_s   <= `Zero;
             mem_divres  <= `ZeroDWord;
+            mem_cp0sel  <= `CP0_ZeroReg;
             mem_m_en    <= `false;
             mem_m_wen   <= `WrDisable;
             mem_m_vaddr <= `ZeroWord;
@@ -62,17 +71,25 @@ module Reg_EX_MEM
             mem_wraddr  <= `ZeroReg;
             mem_llb_wen <= `false;
             mem_llbit   <= `Zero;
+            mem_excp    <= `Exc_NoExc;
+            mem_ecpnum  <= `CP0;
+            mem_inslot  <= `false;
         end
         else begin
+
+            
+
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    mem_pc      <= `ZeroWord;
+                    // mem_pc      <= `ZeroWord;
+                    mem_pc      <= ex_pc;
                     mem_aluop   <= `ALU_NOP;
                     mem_alures  <= `ZeroWord;
                     mem_mulhi   <= `ZeroDWord;
                     mem_mullo   <= `ZeroDWord;
                     mem_mul_s   <= `Zero;
                     mem_divres  <= `ZeroDWord;
+                    mem_cp0sel  <= `CP0_ZeroReg;
                     mem_m_en    <= `false;
                     mem_m_wen   <= `WrDisable;
                     mem_m_vaddr <= `ZeroWord;
@@ -81,6 +98,9 @@ module Reg_EX_MEM
                     mem_wraddr  <= `ZeroReg;
                     mem_llb_wen <= `false;
                     mem_llbit   <= `Zero;
+                    mem_excp    <= `Exc_NoExc;
+                    mem_ecpnum  <= `CP0;
+                    mem_inslot  <= `false;
                 end
                 2'b00: begin
                     mem_pc      <= ex_pc;
@@ -90,6 +110,7 @@ module Reg_EX_MEM
                     mem_mullo   <= ex_mullo;
                     mem_mul_s   <= ex_mul_s;
                     mem_divres  <= ex_divres;
+                    mem_cp0sel  <= ex_cp0sel;
                     mem_m_en    <= ex_m_en;
                     mem_m_wen   <= ex_m_wen;
                     mem_m_vaddr <= ex_m_vaddr;
@@ -98,6 +119,9 @@ module Reg_EX_MEM
                     mem_wraddr  <= ex_wraddr;
                     mem_llb_wen <= ex_llb_wen;
                     mem_llbit   <= ex_llbit;
+                    mem_excp    <= ex_excp;
+                    mem_ecpnum  <= ex_ecpnum;
+                    mem_inslot  <= ex_inslot;
                 end
             endcase
         end

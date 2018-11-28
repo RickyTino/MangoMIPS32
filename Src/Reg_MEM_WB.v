@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Reg_MEM_WB.v
-Author:		RickyTino
-Version:	Preview2-181115
+Filename:   Reg_MEM_WB.v
+Author:     RickyTino
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
@@ -54,7 +54,8 @@ module Reg_MEM_WB
         else begin
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    wb_pc       <= `ZeroWord;
+                    // wb_pc       <= `ZeroWord;
+                    wb_pc       <= mem_pc;
                     wb_aluop    <= `ALU_NOP;
                     wb_alures   <= `ZeroWord;
                     wb_m_vaddr  <= `ZeroWord;

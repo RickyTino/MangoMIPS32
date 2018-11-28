@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	ALU_MEM.v
-Author:		RickyTino
-Version:	Preview2-181115
+Filename:   ALU_MEM.v
+Author:     RickyTino
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
@@ -14,10 +14,16 @@ module ALU_MEM
     input  wire            mul_s,
     input  wire [`DWord  ] divres,
     input  wire [`DWord  ] hilo_i,
+    input  wire [`CP0Addr] cp0sel,
+    input  wire            exc_flag,
 
     output reg  [`DataBus] alures_o,
     output reg             hilo_wen,
     output reg  [`DWord  ] hilo_o,
+    output reg             cp0_wen,
+    output reg  [`CP0Addr] cp0_addr,
+    output reg  [`DataBus] cp0_wdata,
+    input  wire [`DataBus] cp0_rdata,
     output reg             resnrdy
 );
     
@@ -30,6 +36,10 @@ module ALU_MEM
         hilo_wen <= `false;
         hilo_o   <= hilo_i; 
         alures_o <= alures_i;
+
+        cp0_addr  <= `CP0_ZeroReg;
+        cp0_wen   <= `false;
+        cp0_wdata <= `ZeroWord;
 
         case (aluop)
             `ALU_MFHI: alures_o <= hilo_i[`Hi];
@@ -80,6 +90,17 @@ module ALU_MEM
             `ALU_DIVU: begin
                 hilo_wen <= `true;
                 hilo_o   <= divres;
+            end
+
+            `ALU_MFC0: begin
+                cp0_addr <= cp0sel;
+                alures_o <= cp0_rdata;
+            end
+
+            `ALU_MTC0: begin
+                cp0_addr  <= cp0sel;
+                cp0_wen   <= !exc_flag;
+                cp0_wdata <= alures_i;
             end
         endcase
 

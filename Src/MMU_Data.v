@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	MMU_Data.v
-Author:		RickyTino
-Version:	Preview2-181115
+Filename:   MMU_Data.v
+Author:     RickyTino
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
@@ -20,6 +20,7 @@ module MMU_Data
     input  wire [`DataBus] dbus_rdata,
     input  wire            dbus_streq,
 //    output reg             dbus_cached,
+    input  wire            exc_flag,
     output wire            stallreq
 );
     //Temp
@@ -29,26 +30,26 @@ module MMU_Data
 
     always @(*) begin
         case (m_vaddr[31:28])
-			//kseg0: unmapped, cached
-			4'h8, 4'h9: begin
-				dbus_paddr  <= {3'b000, m_vaddr[28:0]};
-				//dbus_cached <= `true;
-			end
-			
-			//kseg1: unmapped, uncached
-			4'hA, 4'hB: begin
-				dbus_paddr  <= {3'b000, m_vaddr[28:0]};
-				//dbus_cached <= `false;
-			end
-			
-			default: begin
-				dbus_paddr  <= m_vaddr;
-				//dbus_cached <= `true;
-			end
-		endcase
+            //kseg0: unmapped, cached
+            4'h8, 4'h9: begin
+                dbus_paddr  <= {3'b000, m_vaddr[28:0]};
+                //dbus_cached <= `true;
+            end
+            
+            //kseg1: unmapped, uncached
+            4'hA, 4'hB: begin
+                dbus_paddr  <= {3'b000, m_vaddr[28:0]};
+                //dbus_cached <= `false;
+            end
+            
+            default: begin
+                dbus_paddr  <= m_vaddr;
+                //dbus_cached <= `true;
+            end
+        endcase
     end
 
-    assign dbus_en  = m_en;
+    assign dbus_en  = m_en && !exc_flag;
     assign dbus_wen = m_en ? m_wen      : `WrDisable;
     assign m_rdata  = m_en ? dbus_rdata : `ZeroWord; 
 

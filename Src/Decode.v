@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
-Filename:	Decode.v
-Author:		RickyTino
-Version:	Preview2-181115
+Filename:   Decode.v
+Author:     RickyTino
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
@@ -22,6 +22,7 @@ module Decode
     output wire [`DataBus] opr2,
     output  reg [`ALUOp  ] aluop,
     output wire [`DataBus] offset,
+    output wire [`CP0Addr] cp0sel,
     output  reg            wreg,
     output  reg [`RegAddr] wraddr,
 
@@ -36,6 +37,12 @@ module Decode
     output reg             br_flag,
     output reg  [`AddrBus] br_addr,
 
+    input  wire            usermode,
+    input  wire [`DataBus] cp0_Status,
+    input  wire [`ExcBus ] excp_i,
+    output reg  [`ExcBus ] excp_o,
+    output reg  [`CPNum  ] ecpnum,
+
     output wire            stallreq
 );
 
@@ -47,6 +54,7 @@ module Decode
     wire [ 5:0] funct     = inst[ 5: 0];
     wire [15:0] immediate = inst[15: 0];
     wire [25:0] j_offset  = inst[25: 0];
+    wire [ 2:0] sel       = inst[ 3: 0];
 
     wire [`Word] zero_ext = {16'b0, immediate};
     wire [`Word] sign_ext = {{16{immediate[15]}}, immediate};
@@ -56,11 +64,25 @@ module Decode
     wire opr_eq   = (opr1 ^ opr2) == `ZeroWord;
     wire [`Word] br_target = pcp4 + (sign_ext << 2); 
 
-    reg instvalid;
     reg [`Word] ext_imme;
 
     assign offset = sign_ext;
+    assign cp0sel = {rd, sel};
 
+    //Exceptions
+    reg  instvalid;
+    reg  exc_sc, exc_bp, exc_cpu, exc_eret;
+
+    always @(*) begin
+        excp_o            <= excp_i;
+        excp_o[`Exc_SysC] <= exc_sc;
+        excp_o[`Exc_Bp  ] <= exc_bp; 
+        excp_o[`Exc_RI  ] <= !instvalid;
+        excp_o[`Exc_CpU ] <= exc_cpu;
+        excp_o[`Exc_ERET] <= exc_eret;
+    end
+
+    //Decode
     always @(*) begin
         instvalid <= `false;
         aluop     <= `ALU_NOP;
@@ -75,10 +97,45 @@ module Decode
         br_flag   <= `false;
         br_addr   <= `ZeroWord;
         clrslot   <= `false;
+        exc_sc    <= `false;
+        exc_bp    <= `false;
+        exc_cpu   <= `false;
+        exc_eret  <= `false;
+        ecpnum    <= `CP0;
 
         case (opcode)
             `OP_SPECIAL: begin
                 case (funct)
+                    `SP_SLL: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SLL;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
+                    `SP_MOVCI: begin //CP1 instruction
+                        instvalid <= `true;
+                        exc_cpu   <= !cp0_Status[`CU1];
+                        ecpnum    <= `CP1;
+                    end
+
+                    `SP_SRL: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRL;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
+                    `SP_SRA: if(rs == 5'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_SRA;
+                        r2read    <= `true;
+                        wreg      <= `true;
+                        ext_imme  <=  sa;
+                    end
+
                     `SP_SLLV: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SLL;
@@ -136,6 +193,22 @@ module Decode
                         r1read    <= `true;
                         r2read    <= `true;
                         wreg      <= (opr2 != `ZeroWord);
+                    end
+
+                    `SP_SYSCALL: begin
+                        instvalid <= `true;
+                        exc_sc    <= `true;
+                    end
+
+                    `SP_BREAK: begin
+                        instvalid <= `true;
+                        exc_bp    <= `true;
+                    end
+
+                    //SYNC temporarily decode as nop
+                    `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_NOP;
                     end
 
                     `SP_MFHI: if({rs, rt, sa} == 15'b0) begin
@@ -270,34 +343,46 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SLL: if(rs == 5'b0) begin
+                    `SP_TGE: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_SLL;
+                        aluop     <= `ALU_TGE;
+                        r1read    <= `true;
                         r2read    <= `true;
-                        wreg      <= `true;
-                        ext_imme  <=  sa;
                     end
 
-                    `SP_SRL: if(rs == 5'b0) begin
+                    `SP_TGEU: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_SRL;
+                        aluop     <= `ALU_TGEU;
+                        r1read    <= `true;
                         r2read    <= `true;
-                        wreg      <= `true;
-                        ext_imme  <=  sa;
                     end
 
-                    `SP_SRA: if(rs == 5'b0) begin
+                    `SP_TLT: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_SRA;
+                        aluop     <= `ALU_TLT;
+                        r1read    <= `true;
                         r2read    <= `true;
-                        wreg      <= `true;
-                        ext_imme  <=  sa;
                     end
 
-                    //SYNC temporarily decode as nop
-                    `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
+                    `SP_TLTU: begin
                         instvalid <= `true;
-                        aluop     <= `ALU_NOP;
+                        aluop     <= `ALU_TLTU;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
+
+                    `SP_TEQ: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TEQ;
+                        r1read    <= `true;
+                        r2read    <= `true;
+                    end
+
+                    `SP_TNE: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TNE;
+                        r1read    <= `true;
+                        r2read    <= `true;
                     end
                 endcase
             end
@@ -310,6 +395,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BGEZ: begin
@@ -318,6 +406,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BLTZL: begin
@@ -326,7 +417,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= !opr1[31];
+                        `endif
                     end
 
                     `RI_BGEZL: begin
@@ -335,7 +430,53 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= !opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= opr1[31];
+                        `endif
+                    end
+
+                    `RI_TGEI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TGE;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+
+                    `RI_TGEIU: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TGEU;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TLTI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TLT;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TLTIU: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TLTU;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TEQI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TEQ;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
+                    end
+                    
+                    `RI_TNEI: begin
+                        instvalid <= `true;
+                        aluop     <= `ALU_TNE;
+                        r1read    <= `true;
+                        ext_imme  <=  sign_ext;
                     end
 
                     `RI_BLTZAL: begin
@@ -347,6 +488,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BGEZAL: begin
@@ -358,6 +502,9 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `endif
                     end
 
                     `RI_BLTZALL: begin
@@ -369,7 +516,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= !opr1[31];
+                        `endif
                     end
 
                     `RI_BGEZALL: begin
@@ -381,7 +532,11 @@ module Decode
                         isbranch  <= `true;
                         br_flag   <= !opr1[31];
                         br_addr   <= br_target;
-                        clrslot   <= !opr1[31];
+                        `ifdef No_Branch_Delay_Slot
+                            clrslot <= `true;
+                        `else
+                            clrslot <= opr1[31];
+                        `endif
                     end
                 endcase
             end
@@ -391,6 +546,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= `true;
                 br_addr   <= {pcp4[31:28], j_offset, 2'b00};
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_JAL: begin
@@ -401,6 +559,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= `true;
                 br_addr   <= {pcp4[31:28], j_offset, 2'b00};
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BEQ: begin
@@ -410,6 +571,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr_eq;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BNE: begin
@@ -419,6 +583,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr_eq;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BLEZ: if(rt == 5'b0) begin
@@ -427,6 +594,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr1_lez;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_BGTZ: if(rt == 5'b0) begin
@@ -435,6 +605,9 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr1_lez;
                 br_addr   <= br_target;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `endif
             end
 
             `OP_ADDI: begin
@@ -510,7 +683,56 @@ module Decode
             end
 
             `OP_COP0: begin
+                if(usermode && !cp0_Status[`CU0]) begin
+                    exc_cpu <= `true;
+                end
+                else begin
+                    case (rs)
+                        `C0_MFC0: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MFC0;
+                            wreg      <= `true;
+                            wraddr    <= rt;
+                        end
 
+                        `C0_MTC0: begin
+                            instvalid <= `true;
+                            aluop     <= `ALU_MTC0;
+                            r2read    <= `true;
+                        end
+
+                        `C0_CO: begin
+                            case (funct)
+                                //`C0F_TLBR:
+                                //`C0F_TLBWI:
+                                //`C0F_TLBWR:
+                                //`C0F_TLBP:
+
+                                `C0F_ERET: begin
+                                    instvalid <= `true;
+                                    exc_eret  <= `true;
+                                end
+
+                                //`C0F_WAIT:
+                            endcase
+                        end
+                    endcase
+                end
+            end
+
+            `OP_COP1: begin //CP1 encoding field
+                exc_cpu <= !cp0_Status[`CU1];
+                ecpnum  <= `CP1;
+            end
+
+            `OP_COP2: begin //CP2 encoding field
+                exc_cpu <= !cp0_Status[`CU2];
+                ecpnum  <= `CP2;
+            end
+
+            `OP_COP3: begin //CP3 encoding field
+                exc_cpu <= !cp0_Status[`CU3];
+                ecpnum  <= `CP3;
             end
             
             `OP_BEQL: begin
@@ -520,7 +742,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr_eq;
                 br_addr   <= br_target;
-                clrslot   <= opr_eq;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= !opr_eq;
+                `endif
             end
 
             `OP_BNEL: begin
@@ -530,7 +756,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr_eq;
                 br_addr   <= br_target;
-                clrslot   <= !opr_eq;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= opr_eq;
+                `endif
             end
 
             `OP_BLEZL: if(rt == 5'b0) begin
@@ -539,7 +769,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= opr1_lez;
                 br_addr   <= br_target;
-                clrslot   <= opr1_lez;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= !opr1_lez;
+                `endif
             end
 
             `OP_BGTZL: if(rt == 5'b0) begin
@@ -548,7 +782,11 @@ module Decode
                 isbranch  <= `true;
                 br_flag   <= !opr1_lez;
                 br_addr   <= br_target;
-                clrslot   <= !opr1_lez;
+                `ifdef No_Branch_Delay_Slot
+                    clrslot <= `true;
+                `else
+                    clrslot <= opr1_lez;
+                `endif
             end
 
             `OP_SPECIAL2: begin
@@ -651,7 +889,6 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWL;
                 r1read    <= `true;
-                //r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -660,7 +897,6 @@ module Decode
                 instvalid <= `true;
                 aluop     <= `ALU_LWR;
                 r1read    <= `true;
-                //r2read    <= `true;
                 wreg      <= `true;
                 wraddr    <= rt;
             end
@@ -702,6 +938,7 @@ module Decode
             
             `OP_CACHE: begin //Temporarily decode as nop
                 instvalid <= `true;
+                exc_cpu   <= usermode && !cp0_Status[`CU0];
             end
 
             `OP_LL: begin
@@ -711,7 +948,7 @@ module Decode
                 wreg      <= `true;
                 wraddr    <= rt;
             end
-
+            
             `OP_PREF: begin //Temporarily decode as nop
                 instvalid <= `true;
             end
@@ -725,16 +962,35 @@ module Decode
                 wraddr    <= rt;
             end
 
+            `OP_LWC1,
+            `OP_LDC1,
+            `OP_SWC1,
+            `OP_SDC1: begin //CP1 instructions
+                exc_cpu <= !cp0_Status[`CU1];
+                ecpnum  <= `CP1;
+            end
+
+            `OP_LWC2,
+            `OP_LDC2,
+            `OP_SWC2,
+            `OP_SDC2: begin //CP2 instructions
+                exc_cpu <= !cp0_Status[`CU2];
+                ecpnum  <= `CP2;
+            end
+
         endcase
     end
     
     assign opr1 = r1read ? r1data : ext_imme;
     assign opr2 = r2read ? r2data : ext_imme;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> dev
     //Delaying for hazards
     wire    ex_nrdy = hazard_ex  && ex_resnrdy;
     wire   mem_nrdy = hazard_mem && mem_resnrdy;
     assign stallreq = ex_nrdy || mem_nrdy;
-    
+
 endmodule
-    
