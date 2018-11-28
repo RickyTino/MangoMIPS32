@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   ALU_EX.v
 Author:     RickyTino
-Version:    Unreleased
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
@@ -118,14 +118,7 @@ module ALU_EX
     assign mullo[63:32] = mopr1[31:16] * mopr2[15: 0];
     assign mulhi[31: 0] = mopr1[15: 0] * mopr2[31:16];
     assign mulhi[63:32] = mopr1[31:16] * mopr2[31:16]; 
-/*
-    wire [`Word] mul_ll = mopr1[15: 0] * mopr2[15: 0];
-    wire [`Word] mul_hl = mopr1[31:16] * mopr2[15: 0];
-    wire [`Word] mul_lh = mopr1[15: 0] * mopr2[31:16];
-    wire [`Word] mul_hh = mopr1[31:16] * mopr2[31:16]; 
-    assign mullo = mul_ll + (mul_hl << 16);
-    assign mulhi = mul_lh + (mul_hh << 16);
-*/
+
     //Divider
     always @(*) begin
         case (aluop)

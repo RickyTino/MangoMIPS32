@@ -227,7 +227,9 @@
 - 完成对COP1/COP2判断为CpU的适配
 - 修复了branch likely的一个重大BUG，并通过测试
 - Trap通过测试
-- 准备第一个发布版
+- 准备第一个发布版v1.0.0
+- sram_func 95MHz impl通过，90MHz syn通过
+
 
 
 

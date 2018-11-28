@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Control.v
 Author:     RickyTino
-Version:    Unreleased
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 

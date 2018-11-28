@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Core_Top.v
 Author:     RickyTino
-Version:    Preview2-181115
+Version:    v1.0.0
 **************************************************/
 `include "Defines.v"
 
