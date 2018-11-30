@@ -154,7 +154,7 @@ module MangoMIPS_Core_Top
     wire [`DWord  ] hilo;
     wire            llbit;
 
-    wire [`Stages ] stallreq;
+    wire [`Stages ] streq;
     wire [`Stages ] stall;
     wire [`Stages ] flush; 
     wire            timer_int;
@@ -178,17 +178,35 @@ module MangoMIPS_Core_Top
         .i_en       (if_i_en    )
     );
     
-    MMU_Inst mmu_inst (
-        .i_en       (if_i_en    ),
-        .i_vaddr    (if_i_vaddr ),
-        .i_rdata    (if_i_rdata ),
+    // MMU_Inst mmu_inst (
+    //     .i_en       (if_i_en    ),
+    //     .i_vaddr    (if_i_vaddr ),
+    //     .i_rdata    (if_i_rdata ),
 
-        .ibus_en    (ibus_en    ),
-        .ibus_paddr (ibus_addr  ),
-        .ibus_rdata (ibus_rdata ),
-        .ibus_streq (ibus_streq ),
+    //     .ibus_en    (ibus_en    ),
+    //     .ibus_paddr (ibus_addr  ),
+    //     .ibus_rdata (ibus_rdata ),
+    //     .ibus_streq (ibus_streq ),
 
-        .stallreq   (stallreq[`IF])
+    //     .cp0_Status (cp0_Status ), 
+    //     .stallreq   (streq[`IF])
+    // );
+
+    MMU mmu_inst (
+        .en         (if_i_en    ),
+        .wen        (`WrDisable ),
+        .vaddr      (if_i_vaddr ),
+        .wdata      (`ZeroWord  ),
+        .rdata      (if_i_rdata ),
+
+        .bus_en     (ibus_en    ),
+        .bus_paddr  (ibus_addr  ),
+        .bus_rdata  (ibus_rdata ),
+        .bus_streq  (ibus_streq ),
+
+        .exc_flag   (exc_flag   ),
+        .cp0_Status (cp0_Status ), 
+        .stallreq   (streq[`IF] )
     );
 
     Reg_IF_ID reg_if_id (
@@ -247,34 +265,34 @@ module MangoMIPS_Core_Top
         .excp_o         (id_excp_o  ),
         .ecpnum         (id_ecpnum  ),
 
-        .stallreq       (stallreq[`ID])
+        .stallreq       (streq[`ID] )
     );
 
     RegFile regfile (
-        .clk        (clk        ),
-        .rst        (rst        ), 
+        .clk        (clk            ),
+        .rst        (rst            ), 
 
-        .re1        (r1read     ), 
-        .r1addr     (r1addr     ),
-        .r1data     (r1data     ),
+        .re1        (r1read         ), 
+        .r1addr     (r1addr         ),
+        .r1data     (r1data         ),
 
-        .re2        (r2read     ),
-        .r2addr     (r2addr     ),
-        .r2data     (r2data     ),
+        .re2        (r2read         ),
+        .r2addr     (r2addr         ),
+        .r2data     (r2data         ),
 
-        .we         (wb_wreg    ),
-        .waddr      (wb_wraddr  ), 
-        .wdata      (wb_wrdata  ),
+        .we         (wb_wreg        ),
+        .waddr      (wb_wraddr      ), 
+        .wdata      (wb_wrdata      ),
 
-        .ex_wreg    (ex_wregsel ),
-        .ex_wraddr  (ex_wraddr  ),
-        .ex_alures  (ex_alures  ),
-        .mem_wreg   (mem_wreg   ),
-        .mem_wraddr (mem_wraddr ),
-        .mem_alures (mem_alures_o),
+        .ex_wreg    (ex_wregsel     ),
+        .ex_wraddr  (ex_wraddr      ),
+        .ex_alures  (ex_alures      ),
+        .mem_wreg   (mem_wreg       ),
+        .mem_wraddr (mem_wraddr     ),
+        .mem_alures (mem_alures_o   ),
 
-        .hazard_ex  (hazard_ex  ),
-        .hazard_mem (hazard_mem )
+        .hazard_ex  (hazard_ex      ),
+        .hazard_mem (hazard_mem     )
     );
 
     Reg_ID_EX reg_id_ex (
@@ -338,7 +356,7 @@ module MangoMIPS_Core_Top
         .usermode   (usermode   ),
         .excp_i     (ex_excp_i  ),
         .excp_o     (ex_excp_o  ),
-        .stallreq   (stallreq[`EX])
+        .stallreq   (streq[`EX] )
     );
 
     Divider divider (
@@ -354,30 +372,30 @@ module MangoMIPS_Core_Top
     );
 
     Reg_EX_MEM reg_ex_mem (
-        .clk            (clk        ),
-        .rst            (rst        ),
-        .stall          (stall[`MEM]),
-        .flush          (flush[`MEM]),
+        .clk            (clk            ),
+        .rst            (rst            ),
+        .stall          (stall[`MEM]    ),
+        .flush          (flush[`MEM]    ),
 
-        .ex_pc          (ex_pc      ),
-        .ex_aluop       (ex_aluop   ),
-        .ex_alures      (ex_alures  ),
-        .ex_mulhi       (ex_mulhi   ),
-        .ex_mullo       (ex_mullo   ),
-        .ex_mul_s       (ex_mul_s   ),
-        .ex_divres      (div_res    ),
-        .ex_cp0sel      (ex_cp0sel  ),
-        .ex_m_en        (ex_m_en    ),
-        .ex_m_wen       (ex_m_wen   ),
-        .ex_m_vaddr     (ex_m_vaddr ),
-        .ex_m_wdata     (ex_m_wdata ),
-        .ex_wreg        (ex_wregsel ),
-        .ex_wraddr      (ex_wraddr  ),
-        .ex_llb_wen     (ex_llb_wen ),
-        .ex_llbit       (ex_llbit   ),
-        .ex_excp        (ex_excp_o  ),
-        .ex_ecpnum      (ex_ecpnum  ),
-        .ex_inslot      (ex_inslot  ),
+        .ex_pc          (ex_pc          ),
+        .ex_aluop       (ex_aluop       ),
+        .ex_alures      (ex_alures      ),
+        .ex_mulhi       (ex_mulhi       ),
+        .ex_mullo       (ex_mullo       ),
+        .ex_mul_s       (ex_mul_s       ),
+        .ex_divres      (div_res        ),
+        .ex_cp0sel      (ex_cp0sel      ),
+        .ex_m_en        (ex_m_en        ),
+        .ex_m_wen       (ex_m_wen       ),
+        .ex_m_vaddr     (ex_m_vaddr     ),
+        .ex_m_wdata     (ex_m_wdata     ),
+        .ex_wreg        (ex_wregsel     ),
+        .ex_wraddr      (ex_wraddr      ),
+        .ex_llb_wen     (ex_llb_wen     ),
+        .ex_llbit       (ex_llbit       ),
+        .ex_excp        (ex_excp_o      ),
+        .ex_ecpnum      (ex_ecpnum      ),
+        .ex_inslot      (ex_inslot      ),
         
         .mem_pc         (mem_pc         ),
         .mem_aluop      (mem_aluop      ),
@@ -400,22 +418,42 @@ module MangoMIPS_Core_Top
         .mem_inslot     (mem_inslot     )   
     );
     
-    MMU_Data mmu_data (
-        .m_en       (mem_m_en   ),
-        .m_wen      (mem_m_wen  ),
-        .m_vaddr    (mem_m_vaddr),
-        .m_wdata    (mem_m_wdata),
-        .m_rdata    (mem_m_rdata),
+    // MMU_Data mmu_data (
+    //     .m_en       (mem_m_en   ),
+    //     .m_wen      (mem_m_wen  ),
+    //     .m_vaddr    (mem_m_vaddr),
+    //     .m_wdata    (mem_m_wdata),
+    //     .m_rdata    (mem_m_rdata),
         
-        .dbus_en    (dbus_en    ),
-        .dbus_paddr (dbus_addr  ),
-        .dbus_rdata (dbus_rdata ),
-        .dbus_wen   (dbus_wen   ),
-        .dbus_wdata (dbus_wdata ),
-        .dbus_streq (dbus_streq ),
+    //     .dbus_en    (dbus_en    ),
+    //     .dbus_paddr (dbus_addr  ),
+    //     .dbus_rdata (dbus_rdata ),
+    //     .dbus_wen   (dbus_wen   ),
+    //     .dbus_wdata (dbus_wdata ),
+    //     .dbus_streq (dbus_streq ),
+
+    //     .exc_flag   (exc_flag   ),
+    //     .cp0_Status (cp0_Status ), 
+    //     .stallreq (streq[`MEM])
+    // );
+
+    MMU mmu_data (
+        .en         (mem_m_en   ),
+        .wen        (mem_m_wen  ),
+        .vaddr      (mem_m_vaddr),
+        .wdata      (mem_m_wdata),
+        .rdata      (mem_m_rdata),
+        
+        .bus_en     (dbus_en    ),
+        .bus_paddr  (dbus_addr  ),
+        .bus_rdata  (dbus_rdata ),
+        .bus_wen    (dbus_wen   ),
+        .bus_wdata  (dbus_wdata ),
+        .bus_streq  (dbus_streq ),
 
         .exc_flag   (exc_flag   ),
-        .stallreq (stallreq[`MEM])
+        .cp0_Status (cp0_Status ), 
+        .stallreq   (streq[`MEM])
     );
     
     ALU_MEM alu_mem (
@@ -477,61 +515,61 @@ module MangoMIPS_Core_Top
     );
 
     Reg_MEM_WB reg_mem_wb (
-        .clk         (clk       ),
-        .rst         (rst       ),
-        .stall       (stall[`WB]),
-        .flush       (flush[`WB]),
+        .clk            (clk            ),
+        .rst            (rst            ),
+        .stall          (stall[`WB]     ),
+        .flush          (flush[`WB]     ),
 
-        .mem_pc       (mem_pc      ),
-        .mem_aluop    (mem_aluop   ),
-        .mem_alures   (mem_alures_o),
-        .mem_m_vaddr  (mem_m_vaddr ),
-        .mem_m_rdata  (mem_m_rdata ),
-        .mem_wreg     (mem_wreg    ),
-        .mem_wraddr   (mem_wraddr  ),
-        .mem_hilo_wen (mem_hilo_wen),
-        .mem_hilo     (mem_hilo    ),
-        .mem_llb_wen  (mem_llb_wen ),
-        .mem_llbit    (mem_llbit   ),
+        .mem_pc         (mem_pc         ),
+        .mem_aluop      (mem_aluop      ),
+        .mem_alures     (mem_alures_o   ),
+        .mem_m_vaddr    (mem_m_vaddr    ),
+        .mem_m_rdata    (mem_m_rdata    ),
+        .mem_wreg       (mem_wreg       ),
+        .mem_wraddr     (mem_wraddr     ),
+        .mem_hilo_wen   (mem_hilo_wen   ),
+        .mem_hilo       (mem_hilo       ),
+        .mem_llb_wen    (mem_llb_wen    ),
+        .mem_llbit      (mem_llbit      ),
 
-        .wb_pc       (wb_pc      ),
-        .wb_aluop    (wb_aluop   ),
-        .wb_alures   (wb_alures  ),
-        .wb_m_vaddr  (wb_m_vaddr ),
-        .wb_m_rdata  (wb_m_rdata ),
-        .wb_wreg     (wb_wreg    ),
-        .wb_wraddr   (wb_wraddr  ),
-        .wb_hilo_wen (wb_hilo_wen),
-        .wb_hilo     (wb_hilo    ),
-        .wb_llb_wen  (wb_llb_wen ),
-        .wb_llbit    (wb_llbit   )
+        .wb_pc          (wb_pc          ),
+        .wb_aluop       (wb_aluop       ),
+        .wb_alures      (wb_alures      ),
+        .wb_m_vaddr     (wb_m_vaddr     ),
+        .wb_m_rdata     (wb_m_rdata     ),
+        .wb_wreg        (wb_wreg        ),
+        .wb_wraddr      (wb_wraddr      ),
+        .wb_hilo_wen    (wb_hilo_wen    ),
+        .wb_hilo        (wb_hilo        ),
+        .wb_llb_wen     (wb_llb_wen     ),
+        .wb_llbit       (wb_llbit       )
     );
 
     WriteBack writeback (
-        .aluop    (wb_aluop  ),
-        .alures   (wb_alures ),
-        .m_vaddr  (wb_m_vaddr),
-        .m_rdata  (wb_m_rdata),
-        .wrdata   (wb_wrdata ),
-        .stallreq (stallreq[`WB])
+        .aluop      (wb_aluop   ),
+        .alures     (wb_alures  ),
+        .m_vaddr    (wb_m_vaddr ),
+        .m_rdata    (wb_m_rdata ),
+        .wrdata     (wb_wrdata  ),
+        .stallreq   (streq[`WB] )
     );
     
     HiLo_LLbit hilo_llbit (
-        .clk         (clk        ),
-        .rst         (rst        ),
-        .hilo_wen    (wb_hilo_wen),
-        .hilo_wdata  (wb_hilo    ),
-        .hilo_rdata  (hilo       ),
+        .clk            (clk        ),
+        .rst            (rst        ),
+        .hilo_wen       (wb_hilo_wen),
+        .hilo_wdata     (wb_hilo    ),
+        .hilo_rdata     (hilo       ),
 
-        .llb_wen     (wb_llb_wen ),
-        .llb_wdata   (wb_llbit   ),
-        .mem_llb_wen (mem_llb_wen),
-        .mem_llbit   (mem_llbit  ),
-        .llb_rdata   (llbit      )
+        .llb_wen        (wb_llb_wen ),
+        .llb_wdata      (wb_llbit   ),
+        .mem_llb_wen    (mem_llb_wen),
+        .mem_llbit      (mem_llbit  ),
+        .llb_rdata      (llbit      )
     );
     
     Control control (
-        .stallreq   (stallreq   ),
+        .stallreq   (streq      ),
         .stall      (stall      ),
         .exc_flag   (exc_flag   ),
         .exc_type   (exc_type   ),

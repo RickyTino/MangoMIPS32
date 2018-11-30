@@ -230,6 +230,17 @@
 - 准备第一个发布版v1.0.0
 - sram_func 95MHz impl通过，90MHz syn通过
 
+--------------------------------------------------
+[20181129]
+- 完善了Fixed Mapping MMU,增加了ERL=0时的地址映射方式
+
+--------------------------------------------------
+[20181130]
+- 更进一步完善了Fixed Mapping MMU，区分kseg2/3与kuseg
+- 将两个MMU合并，实现为不同的实例
+- 增加了ChangeLog.md，区别于DevLog
+
+
 
 
 
@@ -249,14 +260,14 @@
 - Context  (Register  4, Select 0)     //3
 - PageMask (Register  5, Select 0)     //3
 - Wired    (Register  6, Select 0)     //3
-- BadVAddr (Register  8, Select 0)     //1
-- Count    (Register  9, Select 0)     //2
+- BadVAddr (Register  8, Select 0)     
+- Count    (Register  9, Select 0)     
 - EntryHi  (Register 10, Select 0)     //3
-- Compare  (Register 11, Select 0)     //2
-- Status   (Register 12, Select 0)     //1
-- Cause    (Register 13, Select 0)     //1
-- EPC      (Register 14, Select 0)     //1
-- PrId     (Register 15, Select 0)     //2
+- Compare  (Register 11, Select 0)     
+- Status   (Register 12, Select 0)     
+- Cause    (Register 13, Select 0)     
+- EPC      (Register 14, Select 0)     
+- PrId     (Register 15, Select 0)     
 - EBase    (Register 15, Select 1)     //4 //可能不实现
 - Config   (Register 16, Select 0)     //2
 - Config1  (Register 16, Select 1)     //2

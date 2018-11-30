@@ -19,3 +19,11 @@ Changes in configuration includes:
 - Disabe Cause.IV (Ignore on write and read as zero)
 */
 `define NSCSCC_Mode
+/*------------------------------------------------
+Define "Fixed_Mapping_MMU" to implement a Fixed Mapping MMU.
+Otherwise implements a standart TLB-Based MMU. 
+(This configuration temporarily does NOT work on current version)
+*/
+`define Fixed_Mapping_MMU
+/*------------------------------------------------
+*/
