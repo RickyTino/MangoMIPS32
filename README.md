@@ -2,7 +2,7 @@
 轻量级CPU软核，兼容MIPS32 release 1架构
 
 ## 当前版本
-MangoMIPS32 v1.0.0
+MangoMIPS32 v1.0.1
 
 ## CPU核心参数
 - ISA & PRA: MIPS32 release 1

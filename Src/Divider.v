@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Divider.v
 Author:     RickyTino
-Version:    v1.0.0
+Version:    v1.0.1
 **************************************************/
 `include "Defines.v"
 `define DivFree   2'd0
