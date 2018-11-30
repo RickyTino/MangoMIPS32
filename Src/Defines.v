@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Defines.v
 Author:     RickyTino
-Version:    v1.0.0
+Version:    v1.0.1
 **************************************************/
 `include "Config.v"
 
@@ -69,6 +69,7 @@ Version:    v1.0.0
 `define         Byte1               15: 8
 `define         Byte2               23:16
 `define         Byte3               31:24
+`define         Seg                 31:29
 
 /*--------------------Encoding--------------------*/
 //Opcode
@@ -200,7 +201,7 @@ Version:    v1.0.0
 `define         C0F_ERET            6'b011000
 `define         C0F_WAIT            6'b100000
 
-/*--------------------ALUOp--------------------*/
+/*--------------------ALU Op--------------------*/
 `define         ALU_NOP             `ALUOp_W'h00
 `define         ALU_AND             `ALUOp_W'h01
 `define         ALU_OR              `ALUOp_W'h02
@@ -361,3 +362,10 @@ Version:    v1.0.0
 `define         ExcC_CpU            5'h0B
 `define         ExcC_Ov             5'h0C
 `define         ExcC_Tr             5'h0D
+
+/*--------------------Address Space--------------------*/
+`define         kuseg               3'b0??
+`define         kseg0               3'b100
+`define         kseg1               3'b101
+`define         kseg2               3'b110
+`define         kseg3               3'b111
