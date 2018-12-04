@@ -25,7 +25,14 @@ module MMU
     input  wire [`DataBus] cp0_Status,
     output wire            stallreq
 );
-    //Temp
+
+    assign bus_en    = en && !exc_flag;
+    assign bus_wen   = en ? wen : `WrDisable;
+    assign bus_wdata = wdata;
+    assign rdata     = en ? bus_rdata : `ZeroWord;
+
+`ifdef Fixed_Mapping_MMU
+
     assign stallreq = bus_streq;
 
     always @(*) begin
@@ -55,10 +62,7 @@ module MMU
         endcase
     end
 
-    assign bus_en    = en && !exc_flag;
-    assign bus_wen   = en ? wen : `WrDisable;
-    assign bus_wdata = wdata;
-
-    assign rdata     = en ? bus_rdata : `ZeroWord; 
+`else   //TLB
+`endif
 
 endmodule

@@ -10,6 +10,10 @@ Version:    v1.0.1
 `define         ALUOp_W              6
 `define         Exc_W               20
 `define         ExcT_W               4
+`define         TLB_Idx_W            5
+`define         TLB_N               32
+`define         TLB_N1              `TLB_N-1
+
 
 //Global constant
 `define         true                 1'b1
@@ -48,19 +52,23 @@ Version:    v1.0.1
 
 /*--------------------Vector--------------------*/
 //Bus Width
-`define         DWord               63:0
-`define         Word                31:0
-`define         AddrBus             31:0
-`define         DataBus             31:0
-`define         CP0Addr              7:0
-`define         HardInt              5:0
-`define         RegAddr              4:0
-`define         Stages               4:0
-`define         ByteWEn              3:0
-`define         CPNum                1:0
-`define         ALUOp               `ALUOp_W-1:0
-`define         ExcBus              `Exc_W  -1:0
-`define         ExcType             `ExcT_W -1:0
+`define         TLB_Itm             94: 0
+`define         DWord               63: 0
+`define         Word                31: 0
+`define         AddrBus             31: 0
+`define         DataBus             31: 0
+`define         CP0Addr              7: 0
+`define         HardInt              5: 0
+`define         RegAddr              4: 0
+`define         Stages               4: 0
+`define         ByteWEn              3: 0
+`define         CPNum                1: 0
+`define         ALUOp                 `ALUOp_W-1:0
+`define         ExcBus                  `Exc_W-1:0
+`define         ExcType                `ExcT_W-1:0
+`define         TLB_Idx             `TLB_Idx_W-1:0
+`define         TLB_Sel                 `TLB_N-1:0
+
 
 //Partial Select
 `define         Hi                  63:32
@@ -275,7 +283,7 @@ Version:    v1.0.1
 `define         CP0_EPC             {5'd14, 3'd0}
 `define         CP0_PrId            {5'd15, 3'd0}
 `define         CP0_EBase           {5'd15, 3'd1}
-`define         CP0_Config0         {5'd16, 3'd0}
+`define         CP0_Config          {5'd16, 3'd0}
 `define         CP0_Config1         {5'd16, 3'd1}
 `define         CP0_TagLo0          {5'd28, 3'd0}
 `define         CP0_TagLo1          {5'd28, 3'd2}
@@ -303,6 +311,36 @@ Version:    v1.0.1
 `define         IPS                  9: 8
 `define         IP                  15: 8
 `define         ExcCode              6: 2
+
+//Fields of Config Registers
+`define         K23                 30:28
+`define         KU                  27:25
+`define         K0                   2: 0
+
+//Fields of CP0-TLB Registers
+//EntryLo
+`define         PFN                 29: 6
+`define         CAt                  5: 3
+`define         Drt                  2
+`define         Vld                  1
+`define         Glb                  0
+
+//EntryHi
+`define         VPN2                31:13
+`define         ASID                 7: 0
+
+//Context
+`define         PTEBase             31:23
+`define         BadVPN2             22: 4
+
+//PageMask
+`define         Mask                28:13
+
+//Zero Fields
+`define         Index_Z             31-`TLB_Idx_W
+`define         Random_Z            32-`TLB_Idx_W
+`define         Wired_Z             32-`TLB_Idx_W
+`define         Random_Rst          `TLB_Idx_W'd`TLB_N1
 
 /*--------------------Exceptions--------------------*/
 //No exception
@@ -363,9 +401,25 @@ Version:    v1.0.1
 `define         ExcC_Ov             5'h0C
 `define         ExcC_Tr             5'h0D
 
-/*--------------------Address Space--------------------*/
+/*--------------------MMU--------------------*/
+//Virtual Address Segments
 `define         kuseg               3'b0??
 `define         kseg0               3'b100
 `define         kseg1               3'b101
 `define         kseg2               3'b110
 `define         kseg3               3'b111
+
+//TLB Item Fields
+`define         TLB_VPN2            94:75
+`define         TLB_ASID            74:67
+`define         TLB_Mask            66:51
+`define         TLB_G               50
+`define         TLB_PFN0            49:30
+`define         TLB_V0              29
+`define         TLB_D0              28
+`define         TLB_C0              27:25
+`define         TLB_PFN1            24: 5
+`define         TLB_V1               4
+`define         TLB_D1               3
+`define         TLB_C1               2: 0
+

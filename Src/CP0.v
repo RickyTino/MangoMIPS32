@@ -21,23 +21,23 @@ module CP0
     input  wire [`AddrBus] pc,
     input  wire [`AddrBus] exc_baddr,
     input  wire [`CPNum  ] exc_cpnum,
+    input  wire            tlb_save,
     input  wire            inslot,
 
     output wire [`DataBus] Status_o,
     output wire [`DataBus] Cause_o,
-    output wire [`DataBus] EPC_o,
+    output wire [`DataBus] EPC_o，
+    output wire [`DataBus] Config_o,
 
     output wire            usermode,
     output reg             timer_int
 );
 
-    wire [`Word] PrId = 32'h00018000;
-
     reg  [`Word] BadVAddr;
     reg  [`Word] Count;
     reg  [`Word] Compare;
     reg  [`Word] EPC;
-    
+
     //Status
     reg          Status_CU0;
     reg          Status_BEV;
@@ -46,7 +46,6 @@ module CP0
     reg          Status_ERL;
     reg          Status_EXL;
     reg          Status_IE;
-
     wire [`Word] Status = {
         3'b0,
         Status_CU0, //28
@@ -68,32 +67,136 @@ module CP0
     reg          Cause_IV;
     reg  [ 7: 0] Cause_IP;
     reg  [ 4: 0] Cause_ExcCode;
-
-`ifdef NSCSCC_Mode
-    wire [`Word] Cause = {
-        Cause_BD,       //31 R
-        1'b0,
-        Cause_CE,       //29:28 R
-        12'b0,
-        Cause_IP,       //15:8 R[15:10] RW[9:8]
-        1'b0,
-        Cause_ExcCode,  //6:2 R
-        2'b0
-    };
-`else
     wire [`Word] Cause = {
         Cause_BD,       //31 R
         1'b0,
         Cause_CE,       //29:28 R
         4'b0,
+    `ifdef NSCSCC_Mode
+        1'b0,
+    `else
         Cause_IV,       //23 RW
+    `endif
         7'b0,
         Cause_IP,       //15:8 R[15:10] RW[9:8]
         1'b0,
         Cause_ExcCode,  //6:2 R
         2'b0
     };
-`endif
+
+    //PrId
+    wire [`Word] PrId = {
+        8'h00,          //Company Options
+        8'h01,          //Company ID
+        8'h80,          //Processor ID
+        8'h00           //Revision
+    };
+
+    //Config
+    reg  [ 2: 0] Config_K23;
+    reg  [ 2: 0] Config_KU;
+    reg  [ 2: 0] Config_K0;
+    wire [`Word] Config = {
+        1'b1,       //31    Config1
+    `ifdef Fixed_Mapping_MMU
+        K23,        //30:28
+        KU,         //27:25
+    `else
+        3'b0,       //30:28
+        3'b0,       //27:25
+    `endif
+        9'b0,
+        1'b0,       //15    BE:Little Endian
+        2'b0,       //14:13 AT:MIPS32
+        3'b0,       //12:10 AR:Release 1
+    `ifdef Fixed_Mapping_MMU
+        3'b011,     // 9: 7 MT:Fixed Mapping
+    `else
+        3'b001,     // 9: 7 MT:Standart TLB
+    `endif
+        3'b0,
+        1'b0,       // 3    VI:0
+        K0          // 2: 0
+    };
+
+    //Config1
+    wire [`Word] Config1 = {
+        1'b0,       //31    Config2
+    `ifdef Fixed_Mapping_MMU
+        6'b0,       //30:25 MMU Size-1
+    `else
+        6'd31,      //30:25 MMU Size-1
+    `endif
+        3'b0,       //24:22 IS
+        3'b0,       //21:19 IL
+        3'b0,       //18:16 IA
+        3'b0,       //15:13 DS
+        3'b0,       //12:10 DL
+        3'b0,       // 9: 7 DA
+        1'b0,       // 6    C2
+        1'b0,       // 5    MD
+        1'b0,       // 4    PC
+        1'b0,       // 3    WR
+        1'b0,       // 2    CA
+        1'b0,       // 1    EP
+        1'b0,       // 0    FP
+    };
+
+    //Index
+    reg             Index_P;
+    reg  [`TLB_Idx] Index__;
+    wire [`Word   ] Index = {Index_P, `Index_Z'b0, Index__};
+
+    //Random
+    reg  [`TLB_Idx] Random__;
+    wire [`Word   ] Random = {`Random_Z'b0, Random__};
+
+    //EntryLo
+    reg  [19: 0] EntryLo0_PFN,  EntryLo1_PFN;
+    reg  [ 2: 0] EntryLo0_C,    EntryLo1_C;
+    reg          EntryLo0_D,    EntryLo1_D;
+    reg          EntryLo0_V,    EntryLo1_V;
+    reg          EntryLo0_G,    EntryLo1_G;
+
+    wire [`Word   ] EntryLo0 = {
+        6'b0,
+        EntryLo0_PFN,   //25: 6
+        EntryLo0_C,     // 5: 3
+        EntryLo0_D,     // 2
+        EntryLo0_V,     // 1
+        EntryLo0_G      // 0
+    };
+    wire [`Word   ] EntryLo1 = {
+        6'b0,
+        EntryLo1_PFN,
+        EntryLo1_C,
+        EntryLo1_D,
+        EntryLo1_V,
+        EntryLo1_G
+    };
+
+    //EntryHi
+    reg  [18: 0] EntryHi_VPN2;
+    reg  [ 7: 0] EntryHi_ASID;
+    wire [`Word] EntryHi = {EntryHi_VPN2, 5'b0, EntryHi_ASID};
+
+    //Context
+    reg  [ 8: 0] Context_PTEBase;
+    reg  [18: 0] Context_BadVPN2;
+    wire [`Word] Context = {
+        Context_PTEBase,
+        Context_BadVPN2,
+        4'b0
+    };
+
+    //PageMask
+    reg  [15: 0] PageMask__;
+    wire [`Word] PageMask = {3'b0, PageMask__, 13'b0};
+
+    //Wired
+    reg  [`TLB_Idx] Wired__;
+    wire [`Word   ] Wired = {`Random_Z'b0, Wired__};
+
 
     wire [`Word] pcm4     = pc - 32'h4;
     wire         timer_eq = (Count ^ Compare) == `ZeroWord;
@@ -102,30 +205,53 @@ module CP0
         if(rst) begin
             timer_int <= `false;
 
-            BadVAddr <= `ZeroWord;
-            Count    <= `ZeroWord;
-            Compare  <= `ZeroWord;
-            EPC      <= `ZeroWord;
-
-            Status_CU0 <= 0;
-            Status_BEV <= 1;
-            Status_IM  <= 0;
-            Status_UM  <= 0;
-            Status_ERL <= 1;
-            Status_EXL <= 0;
-            Status_IE  <= 0;
-
-            Cause_BD      <= 0;
-            Cause_CE      <= 0;
-            Cause_IV      <= 0;
-            Cause_IP      <= 0;
-            Cause_ExcCode <= 0;
+            Index_P         <= 0;
+            Index__         <= 0;
+            Random__        <= `Random_Rst;
+            EntryLo0_PFN    <= 0;
+            EntryLo0_C      <= 0;
+            EntryLo0_D      <= 0;
+            EntryLo0_V      <= 0;
+            EntryLo0_G      <= 0;
+            EntryLo1_PFN    <= 0;
+            EntryLo1_C      <= 0;
+            EntryLo1_D      <= 0;
+            EntryLo1_V      <= 0;
+            EntryLo1_G      <= 0;
+            Context_BadVPN2 <= 0;
+            Context_PTEBase <= 0;
+            PageMask__      <= 0;
+            Wired__         <= 0;
+            BadVAddr        <= 0;
+            Count           <= 0;
+            EntryHi_VPN2    <= 0;
+            EntryHi_ASID    <= 0;
+            Compare         <= 0;
+            Status_CU0      <= 0;
+            Status_BEV      <= 1;
+            Status_IM       <= 0;
+            Status_UM       <= 0;
+            Status_ERL      <= 1;
+            Status_EXL      <= 0;
+            Status_IE       <= 0;
+            Cause_BD        <= 0;
+            Cause_CE        <= 0;
+            Cause_IV        <= 0;
+            Cause_IP        <= 0;
+            Cause_ExcCode   <= 0;
+            EPC             <= 0;
+            Config_K23      <= 0;
+            Config_KU       <= 0;
+            Config_K0       <= 0;
         end
         else begin
             //Count & Compare
             Count <= Count + 32'd1;
             if(Compare != `ZeroWord && timer_eq)
                 timer_int <= `true;
+            
+            //Random
+            Random__ <= (Random__ == Wired__) ? `Random_Rst : Random__ - 1;
             
             //Exceptions
             Cause_IP[7:2] <= intr;
@@ -140,18 +266,19 @@ module CP0
                     `ExcT_SysC,
                     `ExcT_Bp,
                     `ExcT_AdEL,
-                    `ExcT_AdES: begin
+                    `ExcT_AdES,
+                    `ExcT_TLBR,
+                    `ExcT_TLBI,
+                    `ExcT_TLBM: begin
                         if(!Status_EXL) begin
                             EPC       <= inslot ? pcm4 : pc;
                             Cause_BD  <= inslot;
                         end
                         Status_EXL <= `One;
                     end
-                    // `ExcT_TLBR:
-                    // `ExcT_TLBI:
-                    // `ExcT_TLBM:
-                    // `ExcT_IBE:
-                    // `ExcT_DBE:
+                    // `ExcT_IBE,
+                    // `ExcT_DBE,
+                    
                     `ExcT_ERET: begin
                         Status_EXL <= `Zero;
                     end
@@ -160,7 +287,9 @@ module CP0
                 case (exc_type)
                     `ExcT_AdEL,
                     `ExcT_AdES: BadVAddr <= exc_baddr;
-                    
+                    // `ExcT_TLBR,
+                    // `ExcT_TLBI,
+                    // `ExcT_TLBM:
                     `ExcT_CpU:  Cause_CE <= exc_cpnum;
                 endcase
 
@@ -175,21 +304,58 @@ module CP0
                     `ExcT_Bp:   Cause_ExcCode <= `ExcC_Bp;
                     `ExcT_AdEL: Cause_ExcCode <= `ExcC_AdEL;
                     `ExcT_AdES: Cause_ExcCode <= `ExcC_AdES;
-                    // `ExcT_TLBR: Cause_ExcCode <= `ExcC_
-                    // `ExcT_TLBI: Cause_ExcCode <= `ExcC_
-                    // `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS
-                    // `ExcT_IBE:  Cause_ExcCode <= `ExcC_
-                    // `ExcT_DBE:  Cause_ExcCode <= `ExcC_
+                    `ExcT_TLBR: Cause_ExcCode <= tlb_save ? `ExcC_TLBS : `ExcC_TLBL;
+                    `ExcT_TLBI: Cause_ExcCode <= tlb_save ? `ExcC_TLBS : `ExcC_TLBL;
+                    `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS
+                    // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
+                    // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
                 endcase
             end
             else if(wen) begin
                 case (addr)
+                    `CP0_Index: begin
+                        Index__  <= wdata[`TLB_Idx];
+                    end
+
+                    `CP0_EntryLo0: begin
+                        EntryLo0_PFN <= wdata[`PFN];
+                        EntryLo0_C   <= wdata[`CAt];
+                        EntryLo0_D   <= wdata[`Drt];
+                        EntryLo0_V   <= wdata[`Vld];
+                        EntryLo0_G   <= wdata[`Glb];
+                    end
+
+                    `CP0_EntryLo1: begin
+                        EntryLo1_PFN <= wdata[`PFN];
+                        EntryLo1_C   <= wdata[`CAt];
+                        EntryLo1_D   <= wdata[`Drt];
+                        EntryLo1_V   <= wdata[`Vld];
+                        EntryLo1_G   <= wdata[`Glb];
+                    end
+
+                    `CP0_Context: begin
+                        Context_PTEBase <= wdata[`PTEBase];
+                    end
+
+                    `CP0_PageMask: begin
+                        PageMask__ <= wdata[`Mask];
+                    end
+
+                    `CP0_Wired: begin
+                        Wired__ <= wdata[`TLB_Idx];
+                    end
+
                     `CP0_BadVAddr: begin
                         BadVAddr <= wdata;
                     end
 
                     `CP0_Count: begin
                         Count <= wdata;
+                    end
+
+                    `CP0_EntryHi: begin
+                        EntryHi_VPN2 <= wdata[`VPN2];
+                        EntryHi_ASID <= wdata[`ASID];
                     end
 
                     `CP0_Compare: begin
@@ -200,20 +366,26 @@ module CP0
                     `CP0_Status: begin
                         Status_CU0 <= wdata[`CU0];
                         Status_BEV <= wdata[`BEV];
-                        Status_IM  <= wdata[`IM];
-                        Status_UM  <= wdata[`UM];
+                        Status_IM  <= wdata[`IM ];
+                        Status_UM  <= wdata[`UM ];
                         Status_ERL <= wdata[`ERL];
                         Status_EXL <= wdata[`EXL];
-                        Status_IE  <= wdata[`IE];
+                        Status_IE  <= wdata[`IE ];
                     end
 
                     `CP0_Cause: begin
-                        //Cause_IV      <= wdata[`IV];
+                        Cause_IV      <= wdata[`IV ];
                         Cause_IP[1:0] <= wdata[`IPS];
                     end
 
                     `CP0_EPC: begin
                         EPC <= wdata;
+                    end
+
+                    `CP0_Config: begin
+                        Config_K23 <= wdata[`K23];
+                        Config_KU  <= wdata[`KU ];
+                        Config_K0  <= wdata[`K0 ];
                     end
                 endcase
             end
@@ -221,14 +393,23 @@ module CP0
     end
 
     always @(*) begin
-        case (addr)
+        case (addr) 
+            `CP0_Index:    rdata <= Index;
+            `CP0_EntryLo0: rdata <= EntryLo0;
+            `CP0_EntryLo1: rdata <= EntryLo1;
+            `CP0_Context:  rdata <= Context;
+            `CP0_PageMask: rdata <= PageMask;
+            `CP0_Wired:    rdata <= Wired;
             `CP0_BadVAddr: rdata <= BadVAddr;
             `CP0_Count:    rdata <= Count;
+            `CP0_EntryHi:  rdata <= EntryHi;
             `CP0_Compare:  rdata <= Compare;
             `CP0_Status:   rdata <= Status;
             `CP0_Cause:    rdata <= Cause;
             `CP0_EPC:      rdata <= EPC;
             `CP0_PrId:     rdata <= PrId;
+            `CP0_Config:   rdata <= Config;
+            `CP0_Config1:  rdata <= Config1;
             default:       rdata <= `ZeroWord;
         endcase
     end
@@ -237,5 +418,6 @@ module CP0
     assign Status_o = Status;
     assign Cause_o  = Cause;
     assign EPC_o    = EPC;
+    assign Config_o = Config;
 
 endmodule

@@ -177,20 +177,6 @@ module MangoMIPS_Core_Top
         .excp       (if_excp    ),
         .i_en       (if_i_en    )
     );
-    
-    // MMU_Inst mmu_inst (
-    //     .i_en       (if_i_en    ),
-    //     .i_vaddr    (if_i_vaddr ),
-    //     .i_rdata    (if_i_rdata ),
-
-    //     .ibus_en    (ibus_en    ),
-    //     .ibus_paddr (ibus_addr  ),
-    //     .ibus_rdata (ibus_rdata ),
-    //     .ibus_streq (ibus_streq ),
-
-    //     .cp0_Status (cp0_Status ), 
-    //     .stallreq   (streq[`IF])
-    // );
 
     MMU mmu_inst (
         .en         (if_i_en    ),
@@ -418,25 +404,6 @@ module MangoMIPS_Core_Top
         .mem_inslot     (mem_inslot     )   
     );
     
-    // MMU_Data mmu_data (
-    //     .m_en       (mem_m_en   ),
-    //     .m_wen      (mem_m_wen  ),
-    //     .m_vaddr    (mem_m_vaddr),
-    //     .m_wdata    (mem_m_wdata),
-    //     .m_rdata    (mem_m_rdata),
-        
-    //     .dbus_en    (dbus_en    ),
-    //     .dbus_paddr (dbus_addr  ),
-    //     .dbus_rdata (dbus_rdata ),
-    //     .dbus_wen   (dbus_wen   ),
-    //     .dbus_wdata (dbus_wdata ),
-    //     .dbus_streq (dbus_streq ),
-
-    //     .exc_flag   (exc_flag   ),
-    //     .cp0_Status (cp0_Status ), 
-    //     .stallreq (streq[`MEM])
-    // );
-
     MMU mmu_data (
         .en         (mem_m_en   ),
         .wen        (mem_m_wen  ),
@@ -476,7 +443,6 @@ module MangoMIPS_Core_Top
         .cp0_rdata (cp0_rdata   ),
         .resnrdy   (mem_resnrdy )
     );
-
 
     Exception exception (
         .excp_i     (mem_excp   ),
