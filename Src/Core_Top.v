@@ -158,9 +158,9 @@ module MangoMIPS_Core_Top
     wire [`Stages ] stall;
     wire [`Stages ] flush; 
     wire            timer_int;
-    wire [`HardInt] cp0_intr;
+    wire [`HardInt] core_intr;
     
-    assign cp0_intr = {intr[5] || timer_int, intr[4:0]};
+    assign core_intr = {intr[5] || timer_int, intr[4:0]};
   
     PC pc (
         .clk        (clk        ),
@@ -459,7 +459,7 @@ module MangoMIPS_Core_Top
     CP0 coprocessor0 (
         .clk        (clk        ),
         .rst        (rst        ),
-        .intr       (cp0_intr   ),
+        .intr       (core_intr  ),
         .addr       (cp0_addr   ),
         .wen        (cp0_wen    ),
         .rdata      (cp0_rdata  ),
