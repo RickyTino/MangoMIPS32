@@ -44,7 +44,7 @@ module Reg_ID_EX
             ex_opr1    <= `ZeroWord;
             ex_opr2    <= `ZeroWord;
             ex_offset  <= `ZeroWord;
-            ex_cp0sel  <= `CP0_ZeroReg; //0
+            ex_cp0sel  <= `CP0_ZeroReg;
             ex_wraddr  <= `ZeroReg;
             ex_wreg    <= `false;
             ex_excp    <= `Exc_NoExc;
@@ -54,7 +54,6 @@ module Reg_ID_EX
         else begin
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    // ex_pc      <= `ZeroWord;
                     ex_pc      <= id_pc;
                     ex_aluop   <= `ALU_NOP;
                     ex_opr1    <= `ZeroWord;

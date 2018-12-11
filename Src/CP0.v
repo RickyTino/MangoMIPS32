@@ -21,9 +21,22 @@ module CP0
     input  wire [`AddrBus] pc,
     input  wire [`AddrBus] exc_baddr,
     input  wire [`CPNum  ] exc_cpnum,
-    input  wire            tlb_save,
+    input  wire            exc_save,
     input  wire            inslot,
 
+    input  wire            tlbr,
+    input  wire            tlbwi,
+    input  wire            tlbwr,
+    input  wire            tlbp,
+    input  wire [`TLB_Idx] tlb_index,
+    input  wire [`TLB_Itm] tlb_item,
+
+    output wire [`DataBus] Index_o,
+    output wire [`DataBus] Random_o,
+    output wire [`DataBus] EntryLo0_o,
+    output wire [`DataBus] EntryLo1_o,
+    output wire [`DataBus] PageMask_o,
+    output wire [`DataBus] EntryHi_o,
     output wire [`DataBus] Status_o,
     output wire [`DataBus] Cause_o,
     output wire [`DataBus] EPC_o，
@@ -287,9 +300,15 @@ module CP0
                 case (exc_type)
                     `ExcT_AdEL,
                     `ExcT_AdES: BadVAddr <= exc_baddr;
-                    // `ExcT_TLBR,
-                    // `ExcT_TLBI,
-                    // `ExcT_TLBM:
+                    
+                    `ExcT_TLBR,
+                    `ExcT_TLBI,
+                    `ExcT_TLBM: begin
+                        BadVAddr        <= exc_baddr;
+                        Context_BadVPN2 <= exc_baddr[`VPN2];
+                        EntryHi[`VPN2]  <= exc_baddr[`VPN2];
+                    end
+
                     `ExcT_CpU:  Cause_CE <= exc_cpnum;
                 endcase
 
@@ -304,8 +323,8 @@ module CP0
                     `ExcT_Bp:   Cause_ExcCode <= `ExcC_Bp;
                     `ExcT_AdEL: Cause_ExcCode <= `ExcC_AdEL;
                     `ExcT_AdES: Cause_ExcCode <= `ExcC_AdES;
-                    `ExcT_TLBR: Cause_ExcCode <= tlb_save ? `ExcC_TLBS : `ExcC_TLBL;
-                    `ExcT_TLBI: Cause_ExcCode <= tlb_save ? `ExcC_TLBS : `ExcC_TLBL;
+                    `ExcT_TLBR: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
+                    `ExcT_TLBI: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
                     `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS
                     // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
                     // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
@@ -414,10 +433,16 @@ module CP0
         endcase
     end
 
-    assign usermode = Status_UM & ~(Status_ERL | Status_EXL);
-    assign Status_o = Status;
-    assign Cause_o  = Cause;
-    assign EPC_o    = EPC;
-    assign Config_o = Config;
+    assign usermode   = Status_UM & ~(Status_ERL | Status_EXL);
+    assign Index_o    = Index;
+    assign Random_o   = Random;
+    assign EntryLo0_o = EntryLo0;
+    assign EntryLo1_o = EntryLo1;
+    assign PageMask_o = PageMask;
+    assign EntryHi_o  = EntryHi;
+    assign Status_o   = Status;
+    assign Cause_o    = Cause;
+    assign EPC_o      = EPC;
+    assign Config_o   = Config;
 
 endmodule

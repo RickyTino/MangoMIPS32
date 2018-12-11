@@ -71,6 +71,7 @@ module Decode
 
     //Exceptions
     reg  instvalid;
+    reg  instwait;
     reg  exc_sc, exc_bp, exc_cpu, exc_eret;
 
     always @(*) begin
@@ -102,6 +103,7 @@ module Decode
         exc_cpu   <= `false;
         exc_eret  <= `false;
         ecpnum    <= `CP0;
+        instwait  <= `false;
 
         case (opcode)
             `OP_SPECIAL: begin
@@ -703,17 +705,36 @@ module Decode
 
                         `C0_CO: begin
                             case (funct)
-                                //`C0F_TLBR:
-                                //`C0F_TLBWI:
-                                //`C0F_TLBWR:
-                                //`C0F_TLBP:
+                                `C0F_TLBR: begin
+                                    instvalid <= `true;
+                                    aluop     <= `ALU_TLBR;
+                                end
+
+                                `C0F_TLBWI: begin
+                                    instvalid <= `true;
+                                    aluop     <= `ALU_TLBWI;
+                                end
+
+                                `C0F_TLBWR: begin
+                                    instvalid <= `true;
+                                    aluop     <= `ALU_TLBWR;
+                                end
+
+                                `C0F_TLBP: begin
+                                    instvalid <= `true;
+                                    aluop     <= `ALU_TLBP;
+                                end
 
                                 `C0F_ERET: begin
                                     instvalid <= `true;
+                                    aluop     <= `ALU_ERET;
                                     exc_eret  <= `true;
                                 end
 
-                                //`C0F_WAIT:
+                                `C0F_WAIT: begin
+                                    instvalid <= `true;
+                                    aluop     <= `ALU_WAIT;
+                                end
                             endcase
                         end
                     endcase

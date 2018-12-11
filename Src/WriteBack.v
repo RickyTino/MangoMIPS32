@@ -15,7 +15,7 @@ module WriteBack
     output wire            stallreq
 );
 
-    assign stallreq = `false;
+    assign stallreq = (aluop == `ALU_WAIT);
 
     reg [`Word] memdata;
     reg         memtoreg;

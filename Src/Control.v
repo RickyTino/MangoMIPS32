@@ -39,14 +39,14 @@ module Control
                     endcase
                 end
 
-                // `ExcT_TLBR: begin
-                //     case ({bev, exl})
-                //         2'b00: flush_pc <= `Base_Nml;
-                //         2'b01: flush_pc <= `Nml_GenExc;
-                //         2'b10: flush_pc <= `Base_Bts;
-                //         2'b11: flush_pc <= `Bts_GenExc;
-                //     endcase
-                // end
+                `ExcT_TLBR: begin
+                    case ({bev, exl})
+                        2'b00: flush_pc <= `Base_Nml;
+                        2'b01: flush_pc <= `Nml_GenExc;
+                        2'b10: flush_pc <= `Base_Bts;
+                        2'b11: flush_pc <= `Bts_GenExc;
+                    endcase
+                end
 
                 `ExcT_RI,
                 `ExcT_Ov,
@@ -55,8 +55,8 @@ module Control
                 `ExcT_Bp,
                 `ExcT_AdEL,
                 `ExcT_AdES,
-                // `ExcT_TLBI,
-                // `ExcT_TLBM,
+                `ExcT_TLBI,
+                `ExcT_TLBM,
                 // `ExcT_IBE,
                 // `ExcT_DBE,
                 `ExcT_CpU: begin
@@ -74,19 +74,30 @@ module Control
         else begin
             flush_pc <= `ZeroWord;
             casez (stallreq)
-                5'b00001: stall <= 5'b00011;
-                5'b0001?: stall <= 5'b00011;
-                5'b001??: stall <= 5'b00111;
-                5'b01???: stall <= 5'b01111;
-                5'b1????: stall <= 5'b11111;
+                // 5'b00001: stall <= 5'b00011; // IF
+                // 5'b0001?: stall <= 5'b00011; // ID
+                // 5'b001??: stall <= 5'b00111; // EX
+                // 5'b01???: stall <= 5'b01111; // MEM
+                // 5'b1????: stall <= 5'b11111; // WB
+
+                5'b00010: stall <= 5'b00011; // ID
+                5'b001?0: stall <= 5'b00111; // EX
+                5'b00??1: stall <= 5'b01111; // IF
+                5'b01???: stall <= 5'b01111; // MEM
+                5'b1????: stall <= 5'b11111; // WB
                 default:  stall <= 5'b00000;
             endcase
 
             casez (stallreq)
-                5'b00001: flush <= 5'b00100;
-                5'b0001?: flush <= 5'b00100;
-                5'b001??: flush <= 5'b01000;
-                5'b01???: flush <= 5'b10000;
+                // 5'b00001: flush <= 5'b00100; // IF
+                // 5'b0001?: flush <= 5'b00100; // ID
+                // 5'b001??: flush <= 5'b01000; // EX
+                // 5'b01???: flush <= 5'b10000; // MEM
+
+                5'b00010: flush <= 5'b00100; // ID
+                5'b001?0: flush <= 5'b01000; // EX
+                5'b00??1: flush <= 5'b10000; // IF
+                5'b01???: flush <= 5'b10000; // MEM
                 default:  flush <= 5'b00000;
             endcase
         end

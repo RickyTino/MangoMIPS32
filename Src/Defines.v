@@ -5,6 +5,8 @@ Version:    v1.0.1
 **************************************************/
 `include "Config.v"
 
+`ifndef _Defines_v_
+`define _Defines_v_
 /*--------------------Constant--------------------*/
 //Width constant
 `define         ALUOp_W              6
@@ -13,7 +15,6 @@ Version:    v1.0.1
 `define         TLB_Idx_W            5
 `define         TLB_N               32
 `define         TLB_N1              `TLB_N-1
-
 
 //Global constant
 `define         true                 1'b1
@@ -52,7 +53,6 @@ Version:    v1.0.1
 
 /*--------------------Vector--------------------*/
 //Bus Width
-`define         TLB_Itm             94: 0
 `define         DWord               63: 0
 `define         Word                31: 0
 `define         AddrBus             31: 0
@@ -68,7 +68,10 @@ Version:    v1.0.1
 `define         ExcType                `ExcT_W-1:0
 `define         TLB_Idx             `TLB_Idx_W-1:0
 `define         TLB_Sel                 `TLB_N-1:0
-
+`define         TLB_Itm             96: 0
+`define         PageNum             19: 0
+`define         CacheAt              2: 0
+`define         TLBOp                2: 0
 
 //Partial Select
 `define         Hi                  63:32
@@ -255,6 +258,8 @@ Version:    v1.0.1
 `define         ALU_SWR             `ALUOp_W'h2B
 `define         ALU_LL              `ALUOp_W'h2C
 `define         ALU_SC              `ALUOp_W'h2D
+`define         ALU_ERET            `ALUOp_W'h2E
+`define         ALU_WAIT            `ALUOp_W'h2F
 `define         ALU_MFC0            `ALUOp_W'h30
 `define         ALU_MTC0            `ALUOp_W'h31
 `define         ALU_TGE             `ALUOp_W'h32
@@ -263,6 +268,10 @@ Version:    v1.0.1
 `define         ALU_TLTU            `ALUOp_W'h35
 `define         ALU_TEQ             `ALUOp_W'h36
 `define         ALU_TNE             `ALUOp_W'h37
+`define         ALU_TLBR            `ALUOp_W'h38
+`define         ALU_TLBWI           `ALUOp_W'h39
+`define         ALU_TLBWR           `ALUOp_W'h3A
+`define         ALU_TLBP            `ALUOp_W'h3B
 
 /*--------------------Coprocessor 0--------------------*/
 //CP0 Registers
@@ -319,7 +328,7 @@ Version:    v1.0.1
 
 //Fields of CP0-TLB Registers
 //EntryLo
-`define         PFN                 29: 6
+`define         PFN                 25: 6
 `define         CAt                  5: 3
 `define         Drt                  2
 `define         Vld                  1
@@ -410,9 +419,9 @@ Version:    v1.0.1
 `define         kseg3               3'b111
 
 //TLB Item Fields
-`define         TLB_VPN2            94:75
-`define         TLB_ASID            74:67
-`define         TLB_Mask            66:51
+`define         TLB_VPN2            96:78
+`define         TLB_ASID            77:70
+`define         TLB_Mask            69:51
 `define         TLB_G               50
 `define         TLB_PFN0            49:30
 `define         TLB_V0              29
@@ -423,3 +432,12 @@ Version:    v1.0.1
 `define         TLB_D1               3
 `define         TLB_C1               2: 0
 
+//TLB operation
+`define         TOP_NOP
+`define         TOP_TLBR             3'd1
+`define         TOP_TLBWI            3'd2
+`define         TOP_TLBWR            3'd3
+`define         TOP_TLBP             3'd4
+
+/*--------------------End of Defines--------------------*/
+`endif

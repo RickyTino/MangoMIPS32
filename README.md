@@ -5,23 +5,23 @@
 MangoMIPS32 v1.0.1
 
 ## CPU核心参数
-- ISA & PRA: MIPS32 release 1
+- MIPS32 release 1指令集
 - 单发射，顺序执行，五级流水
 - 可配置是否启用延迟槽（配置项位于Config.v中）
 - 暂时只提供NSCSCC-2018 SRAM接口版本
 
 ## 指令集
-实现了95种MIPS32 release 1指令，包含：
+实现了96种MIPS32 release 1指令，包含：
 - 算术、逻辑、移动、空指令
 - 乘、除、乘加指令
-- 跳转、分支、branch likely指令
-- 对齐/非对齐加载存储指令、原子操作指令
+- 跳转、Likely跳转、分支指令
+- 对齐/非对齐加载存储指令、链接加载/条件存储指令
 - 自陷指令
 - 其他特殊指令
 
 ## 特权资源
 - 实现了7个CP0寄存器，11种例外处理
-- 支持用户态与核心态的切换
+- 实现了用户模式和相关异常
 - 除数据相关外，不处理CP0相关
 - 异常处理入口地址参见MIPS32手册
 
@@ -45,7 +45,7 @@ MangoMIPS32 v1.0.1
 - LB/LBU/LH/LHU/LW/LWL/LWR/LL
 - SB/SH/SW/SWL/SWR/SC
 - MFC0/MTC0
-- SYSCALL/BREAK/ERET
+- SYSCALL/BREAK/ERET/WAIT
 - TEQ/TNE/TGE/TGEU/TLT/TLTU
 - TEQI/TNEI/TGEI/TGEIU/TLTI/TLTIU
 

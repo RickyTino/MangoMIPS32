@@ -9,6 +9,12 @@ module Exception
 (
     
     input  wire [`ExcBus ] excp_i,
+    input  wire            i_tlbr,
+    input  wire            i_tlbi,
+    input  wire            d_tlbr,
+    input  wire            d_tlbi,
+    input  wire            d_tlbm,
+    input  wire            d_refs,
     input  wire [`DataBus] cp0_Status,
     input  wire [`DataBus] cp0_Cause,
 
@@ -16,6 +22,7 @@ module Exception
     input  wire [`AddrBus] m_vaddr,
 
     output wire            exc_flag,
+    output reg             exc_save,
     output reg  [`ExcType] exc_type,
     output reg  [`AddrBus] exc_baddr
 );
@@ -28,8 +35,13 @@ module Exception
                     && ~cp0_Status[`EXL];
 
     always @(*) begin
-        excp            <= excp_i;
-        excp[`Exc_Intr] <= exc_intr;
+        excp              <= excp_i;
+        excp[`Exc_Intr  ] <= exc_intr;
+        excp[`Exc_I_TLBR] <= i_tlbr;
+        excp[`Exc_I_TLBI] <= i_tlbi;
+        excp[`Exc_D_TLBR] <= d_tlbr;
+        excp[`Exc_D_TLBI] <= d_tlbi;
+        excp[`Exc_D_TLBM] <= d_tlbm;
     end
 
     assign exc_flag = (excp != `Exc_NoExc); 
@@ -70,13 +82,24 @@ module Exception
         casez (excp)
             `Exc_W'b000000000000000001??,
             `Exc_W'b00000000000000001???,
-            `Exc_W'b0000000000000001????: exc_baddr <= pc;
+            `Exc_W'b0000000000000001????: begin
+                exc_baddr <= pc;
+                exc_save  <= `false;
+            end
+
             `Exc_W'b00000001????????????,
             `Exc_W'b0000001?????????????,
             `Exc_W'b000001??????????????,
             `Exc_W'b00001???????????????,
-            `Exc_W'b0001????????????????: exc_baddr <= m_vaddr;
-            default:                      exc_baddr <= `ZeroWord;
+            `Exc_W'b0001????????????????: begin
+                exc_baddr <= m_vaddr;
+                exc_save  <= d_refs;
+            end
+
+            default: begin
+                exc_baddr <= `ZeroWord;
+                exc_save  <= d_refs;
+            end
         endcase
     end
 

@@ -229,7 +229,6 @@
 - 完成异常处理至MEM段，正在写Exception.v
 - Control.v未完成，留待研究异常入口
 
-
 --------------------------------------------------
 [20181127]
 - inslot 已经从前段往后传
@@ -285,7 +284,33 @@
 - 可是并不知道该怎么捣乱啊，茫然猫头，要不唱首歌
 - 我的名字叫三文鱼——
 - T: ↑我回来一定把这只猫烤了吃
+- T: 猫腿......吸溜......
 - 增加.gitattributes
+
+--------------------------------------------------
+[20181206]
+- T: 为性能牺牲，TLB项数固定位32项，放弃做通用
+- T: 新算法解决bit计数问题，测试中
+- 测试完成，直接使用casez暴力效率最高
+
+--------------------------------------------------
+[20181207]
+- 优化CLO/CLZ算法，改成最优测试结果
+
+--------------------------------------------------
+[20181210]
+- T: TLB、Cache存在暂停流水线同步访问的时序，需要好好思考
+- 改进：ERET现在清零LLbit
+- Q: 所有的流水线暂停都停到MEM段？毕竟停的周期数与停在哪一段是无关的
+- A: 不行，ID段这么做会导致数据相关的解决陷入死循环
+- IF段的暂停停到MEM段，ID段照常（照顾Cache/TLB指令的执行）
+- T: Cache会引起TLB Exception, 但PREF不会。PREF遇到TLBE就不执行就是了
+- 实现了WAIT指令，最终计划实现指令数量为100
+- MMU重构，增加了cached属性
+
+--------------------------------------------------
+[20181211]
+- IF段的暂停停到EX段，TLB操作信号不能在MEM段长留
 
 
 --------------------------------------------------
@@ -294,6 +319,17 @@
 - User Mode CpU & AdEL
 - COP1/COP2 CpU
 
+指令集（计数用）：
+SLL     SRL     SRA     SLLV    SRLV    SRAV    SYNC    PREF    CACHE   WAIT
+AND     OR      XOR     NOR     MOVZ    MOVN    MFHI    MFLO    MTHI    MTLO
+ANDI    ORI     XORI    LUI     ADD     ADDU    SUB     SUBU    SLT     SLTU
+CLO     CLZ     ADDI    ADDIU   SLTI    SLTIU   MULT    MULTU   MADD    MADDU
+MSUB    MSUBU   DIV     DIVU    MUL     SYSCALL BREAK   ERET    MFC0    MTC0
+J       JAL     JR      JALR    BEQ     BNE     BGTZ    BLEZ    BGEZ    BGEZAL
+BLTZ    BLTZAL  BEQL    BNEL    BGTZL   BLEZL   BGEZL   BGEZALL BLTZL   BLTZALL
+LB      LBU     LH      LHU     LW      LWL     LWR     LL      SB      SH
+SW      SWL     SWR     SC      TEQ     TNE     TGE     TGEU    TLT     TLTU
+TEQI    TNEI    TGEI    TGEIU   TLTI    TLTIU   TLBR    TLBWI   TLBWR   TLBP
 
 计划实现的CP0寄存器有：【后面备注批次】
 - Index    (Register  0, Select 0)     //3
@@ -339,3 +375,5 @@
 - 完整的SYNC/PREF
 - ErrorEPC与NMI
 
+总结经验
+- 实际上把ALUOP某种程度上作为了指令的标志，不再只是ALU模块的控制信号；未来优化可以更多考虑空间换时间的问题

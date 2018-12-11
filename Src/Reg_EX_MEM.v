@@ -76,12 +76,8 @@ module Reg_EX_MEM
             mem_inslot  <= `false;
         end
         else begin
-
-            
-
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    // mem_pc      <= `ZeroWord;
                     mem_pc      <= ex_pc;
                     mem_aluop   <= `ALU_NOP;
                     mem_alures  <= `ZeroWord;
