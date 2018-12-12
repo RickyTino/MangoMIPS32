@@ -37,6 +37,7 @@ module ALU_EX
     input  wire            usermode,
     input  wire [`ExcBus ] excp_i,
     output reg  [`ExcBus ] excp_o,
+    output reg  [`TLBOp  ] tlbop,
 
     output wire            stallreq
 );
@@ -354,6 +355,14 @@ module ALU_EX
             `ALU_TNE:  exc_tr <= ~opr_eq;
             default:   exc_tr <= `false;
         endcase
+
+        case (aluop)
+            `ALU_TLBR:  tlbop <= `TOP_TLBR;
+            `ALU_TLBWI: tlbop <= `TOP_TLBWI;
+            `ALU_TLBWR: tlbop <= `TOP_TLBWR;
+            `ALU_TLBP:  tlbop <= `TOP_TLBP;
+            default:    tlbop <= `TOP_NOP;
+        endcase
     end
 
     always @(*) begin
@@ -390,7 +399,7 @@ module ALU_EX
             `ALU_MTC0: alures <= opr2;
             default:   alures <= `ZeroWord;
         endcase
-        
+
         case (aluop)
             `ALU_LB,
             `ALU_LBU,

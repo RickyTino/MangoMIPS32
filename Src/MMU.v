@@ -30,6 +30,7 @@ module MMU
 
     input  wire            exc_flag,
     input  wire [`DataBus] cp0_Status,
+    input  wire [`DataBus] cp0_Config,
     output wire            stallreq
 );
 

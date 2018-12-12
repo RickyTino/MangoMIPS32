@@ -53,14 +53,14 @@ module RegFile
     
     //Data transmission
     wire r1_rvalid  = re1 && (r1addr != `ZeroReg);
-    wire r1_ex_haz  = ( ex_wreg != `WrDisable) && (r1addr == ex_wraddr);
-    wire r1_mem_haz = (mem_wreg != `WrDisable) && (r1addr == mem_wraddr);
-    wire r1_wb_haz  = (      we != `WrDisable) && (r1addr == waddr);
+    wire r1_ex_haz  = ( ex_wreg != `WrDisable) && (r1addr ^ ex_wraddr)  == 0;
+    wire r1_mem_haz = (mem_wreg != `WrDisable) && (r1addr ^ mem_wraddr) == 0;
+    wire r1_wb_haz  = (      we != `WrDisable) && (r1addr ^ waddr)      == 0;
 
     wire r2_rvalid  = re2 && (r2addr != `ZeroReg);
-    wire r2_ex_haz  = ( ex_wreg != `WrDisable) && (r2addr == ex_wraddr);
-    wire r2_mem_haz = (mem_wreg != `WrDisable) && (r2addr == mem_wraddr);
-    wire r2_wb_haz  = (      we != `WrDisable) && (r2addr == waddr);
+    wire r2_ex_haz  = ( ex_wreg != `WrDisable) && (r2addr ^ ex_wraddr)  == 0;
+    wire r2_mem_haz = (mem_wreg != `WrDisable) && (r2addr ^ mem_wraddr) == 0;
+    wire r2_wb_haz  = (      we != `WrDisable) && (r2addr ^ waddr)      == 0;
 
     wire [`Word] r1_ex_rpl,  r2_ex_rpl;
     wire [`Word] r1_mem_rpl, r2_mem_rpl;

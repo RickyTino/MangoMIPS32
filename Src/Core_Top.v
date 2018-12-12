@@ -35,6 +35,14 @@ module MangoMIPS_Core_Top
     wire [`AddrBus] if_i_vaddr;
     wire [`DataBus] if_i_rdata; 
 
+    wire            itlb_en;
+    wire [`AddrBus] itlb_vaddr;
+    wire            itlb_rdy;
+    wire [`AddrBus] itlb_paddr;
+    wire            itlb_cat;
+    wire            exc_i_tlbr;
+    wire            exc_i_tlbi;
+
     wire [`AddrBus] id_pc;
     wire [`AddrBus] id_pcp4;
     wire [`DataBus] id_inst;
@@ -90,6 +98,7 @@ module MangoMIPS_Core_Top
     wire            ex_llb_wen;
     wire            ex_llbit;
     wire [`ExcBus ] ex_excp_o;
+    wire [`TLBOp  ] ex_tlbop; 
 
     wire            ex_m_en;
     wire [`ByteWEn] ex_m_wen;
@@ -110,6 +119,7 @@ module MangoMIPS_Core_Top
     wire            mem_llbit;
     wire [`ExcBus ] mem_excp;
     wire [`CPNum  ] mem_ecpnum;
+    wire [`TLBOp  ] mem_tlbop;
     wire            mem_inslot;
 
     wire            mem_m_en;
@@ -118,7 +128,18 @@ module MangoMIPS_Core_Top
     wire [`DataBus] mem_m_wdata;
     wire [`DataBus] mem_m_rdata;
 
+    wire            dtlb_en;
+    wire [`AddrBus] dtlb_vaddr;
+    wire            dtlb_refs;
+    wire            dtlb_rdy;
+    wire [`AddrBus] dtlb_paddr;
+    wire            dtlb_cat;
+    wire            exc_d_tlbr;
+    wire            exc_d_tlbi;
+    wire            exc_d_tlbm;
+
     wire            exc_flag;
+    wire            exc_save;
     wire [`ExcType] exc_type;
     wire [`AddrBus] exc_baddr;
     wire [`AddrBus] exc_newpc;
@@ -128,10 +149,21 @@ module MangoMIPS_Core_Top
     wire [`CP0Addr] cp0_addr;
     wire [`DataBus] cp0_wdata;
     wire [`DataBus] cp0_rdata;
+    wire            cp0_idxwen;
+    wire            cp0_itmwen;
+    wire [`TLB_Idx] cp0_tlbidx;
+    wire [`TLB_Itm] cp0_tlbitm; 
 
+    wire [`DataBus] cp0_Index;
+    wire [`DataBus] cp0_Random;
+    wire [`DataBus] cp0_EntryLo0;
+    wire [`DataBus] cp0_EntryLo1;
+    wire [`DataBus] cp0_PageMask;
+    wire [`DataBus] cp0_EntryHi;
     wire [`DataBus] cp0_Status;
     wire [`DataBus] cp0_Cause;
     wire [`DataBus] cp0_EPC;
+    wire [`DataBus] cp0_Config;
 
     wire [`DataBus] mem_alures_o;
     wire            mem_resnrdy;
@@ -171,6 +203,8 @@ module MangoMIPS_Core_Top
         .br_flag    (br_flag    ),
         .br_addr    (br_addr    ),
         .usermode   (usermode   ),
+        .i_tlbr     (exc_i_tlbr ),
+        .i_tlbi     (exc_i_tlbi ),
 
         .pc         (if_i_vaddr ),
         .pcp4       (if_pcp4    ),
@@ -190,8 +224,15 @@ module MangoMIPS_Core_Top
         .bus_rdata  (ibus_rdata ),
         .bus_streq  (ibus_streq ),
 
+        .tlb_en     (itlb_en    ),
+        .tlb_vaddr  (itlb_vaddr ),
+        .tlb_rdy    (itlb_rdy   ),
+        .tlb_paddr  (itlb_paddr ),
+        .tlb_cat    (itlb_cat   ),
+
         .exc_flag   (exc_flag   ),
         .cp0_Status (cp0_Status ), 
+        .cp0_Config (cp0_Config ),
         .stallreq   (streq[`IF] )
     );
 
@@ -381,6 +422,7 @@ module MangoMIPS_Core_Top
         .ex_llbit       (ex_llbit       ),
         .ex_excp        (ex_excp_o      ),
         .ex_ecpnum      (ex_ecpnum      ),
+        .ex_tlbop       (ex_tlbop       ),
         .ex_inslot      (ex_inslot      ),
         
         .mem_pc         (mem_pc         ),
@@ -401,6 +443,7 @@ module MangoMIPS_Core_Top
         .mem_llbit      (mem_llbit      ),
         .mem_excp       (mem_excp       ),
         .mem_ecpnum     (mem_ecpnum     ),
+        .mem_tlbop      (mem_tlbop      ),
         .mem_inslot     (mem_inslot     )   
     );
     
@@ -418,8 +461,16 @@ module MangoMIPS_Core_Top
         .bus_wdata  (dbus_wdata ),
         .bus_streq  (dbus_streq ),
 
+        .tlb_en     (dtlb_en    ),
+        .tlb_vaddr  (dtlb_vaddr ),
+        .tlb_refs   (dtlb_refs  ),
+        .tlb_rdy    (dtlb_rdy   ),
+        .tlb_paddr  (dtlb_paddr ),
+        .tlb_cat    (dtlb_cat   ),
+
         .exc_flag   (exc_flag   ),
-        .cp0_Status (cp0_Status ), 
+        .cp0_Status (cp0_Status ),
+        .cp0_Config (cp0_Config ),
         .stallreq   (streq[`MEM])
     );
     
@@ -446,38 +497,56 @@ module MangoMIPS_Core_Top
 
     Exception exception (
         .excp_i     (mem_excp   ),
+        .d_tlbr     (exc_d_tlbr ),
+        .d_tlbi     (exc_d_tlbi ),
+        .d_tlbm     (exc_d_tlbm ),
+        .d_refs     (dtlb_refs  ),
         .cp0_Status (cp0_Status ),
         .cp0_Cause  (cp0_Cause  ),
         .pc         (mem_pc     ),
         .m_vaddr    (mem_m_vaddr),
 
         .exc_flag   (exc_flag   ),
+        .exc_save   (exc_save   ),
         .exc_type   (exc_type   ),
         .exc_baddr  (exc_baddr  )
     );
 
     CP0 coprocessor0 (
-        .clk        (clk        ),
-        .rst        (rst        ),
-        .intr       (core_intr  ),
-        .addr       (cp0_addr   ),
-        .wen        (cp0_wen    ),
-        .rdata      (cp0_rdata  ),
-        .wdata      (cp0_wdata  ),
+        .clk        (clk            ),
+        .rst        (rst            ),
+        .intr       (core_intr      ),
+        .addr       (cp0_addr       ),
+        .wen        (cp0_wen        ),
+        .rdata      (cp0_rdata      ),
+        .wdata      (cp0_wdata      ),
 
-        .exc_flag   (exc_flag   ),
-        .exc_type   (exc_type   ),
-        .pc         (mem_pc     ),
-        .exc_baddr  (exc_baddr  ),
-        .exc_cpnum  (mem_ecpnum ),
-        .inslot     (mem_inslot ),
+        .exc_flag   (exc_flag       ),
+        .exc_save   (exc_save       ),
+        .exc_type   (exc_type       ),
+        .pc         (mem_pc         ),
+        .exc_baddr  (exc_baddr      ),
+        .exc_cpnum  (mem_ecpnum     ),
+        .inslot     (mem_inslot     ),
 
-        .Status_o   (cp0_Status ),
-        .Cause_o    (cp0_Cause  ),
-        .EPC_o      (cp0_EPC    ),
+        .tlb_idxwen (cp0_idxwen     ),
+        .tlb_itmwen (cp0_itmwen     ),
+        .tlb_index  (cp0_tlbidx     ),
+        .tlb_item   (cp0_tlbitm     ),
 
-        .usermode   (usermode   ),
-        .timer_int  (timer_int  )
+        .Index_o    (cp0_Index      ),
+        .Random_o   (cp0_Random     ),
+        .EntryLo0_o (cp0_EntryLo0   ),
+        .EntryLo1_o (cp0_EntryLo1   ),
+        .PageMask_o (cp0_PageMask   ),
+        .EntryHi_o  (cp0_EntryHi    ),
+        .Status_o   (cp0_Status     ),
+        .Cause_o    (cp0_Cause      ),
+        .EPC_o      (cp0_EPC        ),
+        .Config_o   (cp0_Config     ),
+
+        .usermode   (usermode       ),
+        .timer_int  (timer_int      )
     );
 
     Reg_MEM_WB reg_mem_wb (
@@ -545,6 +614,42 @@ module MangoMIPS_Core_Top
         .flush      (flush      ),
         .flush_pc   (exc_newpc  )
     );
+
+`ifndef Fixed_Mapping_MMU
+
+    TLBU tlb (
+        .clk        (clk            ),
+        .rst        (rst            ),
+        .tlb_op     (mem_tlbop      ),
+        .Index      (cp0_Index      ),
+        .Random     (cp0_Random     ),
+        .EntryLo0   (cp0_EntryLo0   ),
+        .EntryLo1   (cp0_EntryLo1   ),
+        .PageMask   (cp0_PageMask   ),
+        .EntryHi    (cp0_EntryHi    ),
+        .immu_en    (itlb_en        ),
+        .immu_vaddr (itlb_vaddr     ),
+        .immu_rdy   (itlb_rdy       ),
+        .immu_paddr (itlb_paddr     ),
+        .immu_cat   (itlb_cat       ),
+        .dmmu_en    (dtlb_en        ),
+        .dmmu_vaddr (dtlb_vaddr     ),
+        .dmmu_refs  (dtlb_refs      ),
+        .dmmu_rdy   (dtlb_rdy       ),
+        .dmmu_paddr (dtlb_paddr     ),
+        .dmmu_cat   (dtlb_cat       ),
+        .cp0_idxwen (cp0_idxwen     ),
+        .cp0_wIndex (cp0_tlbidx     ),
+        .cp0_tlbwen (cp0_itmwen     ),
+        .cp0_tlbitm (cp0_tlbitm     ),
+        .i_tlbr     (exc_i_tlbr     ),
+        .i_tlbi     (exc_i_tlbi     ),
+        .d_tlbr     (exc_d_tlbr     ),
+        .d_tlbi     (exc_d_tlbi     ),
+        .d_tlbm     (exc_d_tlbm     )
+    );
+
+`endif
 
     assign debug_wb_pc     = wb_pc;
     assign debug_wb_wreg   = wb_wreg;

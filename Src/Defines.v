@@ -5,8 +5,6 @@ Version:    v1.0.1
 **************************************************/
 `include "Config.v"
 
-`ifndef _Defines_v_
-`define _Defines_v_
 /*--------------------Constant--------------------*/
 //Width constant
 `define         ALUOp_W              6
@@ -14,7 +12,7 @@ Version:    v1.0.1
 `define         ExcT_W               4
 `define         TLB_Idx_W            5
 `define         TLB_N               32
-`define         TLB_N1              `TLB_N-1
+`define         TLB_N1              31
 
 //Global constant
 `define         true                 1'b1
@@ -444,4 +442,3 @@ Version:    v1.0.1
 `define         ExcC_Tr             5'h0D
 
 /*--------------------End of Defines--------------------*/
-`endif

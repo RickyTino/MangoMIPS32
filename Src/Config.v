@@ -14,7 +14,7 @@ and branch likely instructions.
 */
 //`define No_Branch_Delay_Slot
 /*------------------------------------------------
-Define “NSCSCC_Mode" to meet the requirement of NSCSCC-2018 functional tests.
+Define "NSCSCC_Mode" to meet the requirement of NSCSCC-2018 functional tests.
 Changes in configuration includes:
 - Disabe Cause.IV (Ignore on write and read as zero)
 */
@@ -22,8 +22,12 @@ Changes in configuration includes:
 /*------------------------------------------------
 Define "Fixed_Mapping_MMU" to implement a Fixed Mapping MMU.
 Otherwise implements a standart TLB-Based MMU. 
-(This configuration temporarily does NOT work on current version)
 */
-`define Fixed_Mapping_MMU
+//`define Fixed_Mapping_MMU
+/*------------------------------------------------
+Define "Output_Exception_Info" to output exception information to TCL console 
+during simulation when exceptions occur.
+*/
+//`define Output_Exception_Info
 /*------------------------------------------------
 */

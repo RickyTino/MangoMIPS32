@@ -24,7 +24,7 @@ module ALU_MEM
     output reg  [`CP0Addr] cp0_addr,
     output reg  [`DataBus] cp0_wdata,
     input  wire [`DataBus] cp0_rdata,
-    output reg  [`TLBOp  ] tlb_op,
+    //output reg  [`TLBOp  ] tlb_op,
     output reg             resnrdy
 );
     
@@ -37,7 +37,7 @@ module ALU_MEM
         hilo_wen  <= `false;
         hilo_o    <= hilo_i; 
         alures_o  <= alures_i;
-        tlb_op    <= `TOP_NOP;
+        // tlb_op    <= `TOP_NOP;
         cp0_addr  <= `CP0_ZeroReg;
         cp0_wen   <= `false;
         cp0_wdata <= `ZeroWord;
@@ -117,13 +117,13 @@ module ALU_MEM
             default: resnrdy <= `false;
         endcase
 
-        case (aluop)
-            `ALU_TLBR:  tlb_op <= `TOP_TLBR;
-            `ALU_TLBWI: tlb_op <= `TOP_TLBWI;
-            `ALU_TLBWR: tlb_op <= `TOP_TLBWR;
-            `ALU_TLBP:  tlb_op <= `TOP_TLBP;
-            default:    tlb_op <= `TOP_NOP;
-        endcase
+        // case (aluop)
+        //     `ALU_TLBR:  tlb_op <= `TOP_TLBR;
+        //     `ALU_TLBWI: tlb_op <= `TOP_TLBWI;
+        //     `ALU_TLBWR: tlb_op <= `TOP_TLBWR;
+        //     `ALU_TLBP:  tlb_op <= `TOP_TLBP;
+        //     default:    tlb_op <= `TOP_NOP;
+        // endcase
     end
 
 endmodule

@@ -47,6 +47,22 @@ module TLBU
     output reg             d_tlbm
 );
 
+`ifdef Fixed_Mapping_MMU
+
+    always @(*) begin
+        cp0_idxwen <= `false;
+        cp0_wIndex <= `ZeroWord;
+        cp0_tlbwen <= `false;
+        cp0_tlbitm <= 0;
+        i_tlbi     <= `false;
+        i_tlbr     <= `false;
+        d_tlbi     <= `false;
+        d_tlbr     <= `false;
+        d_tlbm     <= `false;
+    end
+
+`else
+
     reg  [`TLB_Itm] TLB [`TLB_Sel];
 
     reg  [ 7: 0] ilk_asid,  dlk_asid;
@@ -61,15 +77,15 @@ module TLBU
     genvar i;
     generate
         for (i = 0; i < `TLB_N; i = i + 1) begin
-            assign i_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
-                                == (i_vaddr[`VPN2] & ~TLB[i][`TLB_VMask]);
-            assign d_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
-                                == (d_vaddr[`VPN2] & ~TLB[i][`TLB_VMask]);
-            assign p_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
-                                == (EntryHi[`VPN2] & ~TLB[i][`TLB_VMask]);
-            assign i_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] == ilk_asid);
-            assign d_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] == dlk_asid);
-            assign p_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] == EntryHi[`ASID]);
+            assign i_match[i] = ((TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
+                                  ^ (i_vaddr[`VPN2] & ~TLB[i][`TLB_VMask])) == 0;
+            assign d_match[i] = ((TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
+                                  ^ (d_vaddr[`VPN2] & ~TLB[i][`TLB_VMask])) == 0;
+            assign p_match[i] = ((TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
+                                  ^ (EntryHi[`VPN2] & ~TLB[i][`TLB_VMask])) == 0;
+            assign i_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] ^ ilk_asid) == 0;
+            assign d_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] ^ dlk_asid) == 0;
+            assign p_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] ^ EntryHi[`ASID]) == 0;
             assign i_hit[i]   = i_match[i] && i_avlb[i];
             assign d_hit[i]   = d_match[i] && d_avlb[i];
             assign p_hit[i]   = p_match[i] && p_avlb[i];
@@ -296,10 +312,10 @@ module TLBU
     //TLB control & I/O
     reg  [ 1: 0] i_state,   d_state;
 
-    assign immu_rdy = immu_en   && (immu_vaddr   == i_vaddr ) && 
-                      ilk_valid && (EntryHi[`ASID] == ilk_asid);
-    assign dmmu_rdy = dmmu_en   && (dmmu_vaddr   == d_vaddr ) && 
-                      dlk_valid && (EntryHi[`ASID] == dlk_asid);
+    assign immu_rdy = immu_en   && (immu_vaddr     ^ i_vaddr ) == 0 && 
+                      ilk_valid && (EntryHi[`ASID] ^ ilk_asid) == 0;
+    assign dmmu_rdy = dmmu_en   && (dmmu_vaddr     ^ d_vaddr ) == 0 && 
+                      dlk_valid && (EntryHi[`ASID] ^ dlk_asid) == 0;
 
     wire   tlb_nop  = tlb_op == `TOP_NOP;
 
@@ -331,14 +347,16 @@ module TLBU
             d_tlbr     <= `false;
             d_tlbm     <= `false;
 
-            cp0_idxwen  <= `false;
-            cp0_wIndex  <= `ZeroWord;
-            cp0_tlbwen  <= `false;
+            cp0_idxwen <= `false;
+            cp0_wIndex <= `ZeroWord;
+            cp0_tlbwen <= `false;
             cp0_tlbitm <= 0;
         end
         else begin
             case (i_state)
                 `TLB_Idle: begin
+                    i_tlbi    <= `false;
+                    i_tlbr    <= `false;
                     if(immu_en && !immu_rdy && tlb_nop) begin
                         i_state   <= `TLB_Translate;
                         i_vaddr   <= immu_vaddr;
@@ -365,6 +383,9 @@ module TLBU
 
             case (d_state)
                 `TLB_Idle: begin
+                    d_tlbi    <= `false;
+                    d_tlbr    <= `false;
+                    d_tlbm    <= `false;
                     if(dmmu_en && !dmmu_rdy && tlb_nop) begin
                         d_state   <= `TLB_Translate;
                         d_vaddr   <= dmmu_vaddr;
@@ -437,5 +458,7 @@ module TLBU
             end
         end
     end
-    
+
+`endif
+
 endmodule

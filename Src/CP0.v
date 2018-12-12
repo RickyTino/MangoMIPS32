@@ -37,7 +37,7 @@ module CP0
     output wire [`DataBus] EntryHi_o,
     output wire [`DataBus] Status_o,
     output wire [`DataBus] Cause_o,
-    output wire [`DataBus] EPC_o，
+    output wire [`DataBus] EPC_o,
     output wire [`DataBus] Config_o,
 
     output wire            usermode,
@@ -110,8 +110,8 @@ module CP0
     wire [`Word] Config = {
         1'b1,       //31    Config1
     `ifdef Fixed_Mapping_MMU
-        K23,        //30:28
-        KU,         //27:25
+        Config_K23,        //30:28
+        Config_KU,         //27:25
     `else
         3'b0,       //30:28
         3'b0,       //27:25
@@ -127,7 +127,7 @@ module CP0
     `endif
         3'b0,
         1'b0,       // 3    VI:0
-        K0          // 2: 0
+        Config_K0          // 2: 0
     };
 
     //Config1
@@ -150,7 +150,7 @@ module CP0
         1'b0,       // 3    WR
         1'b0,       // 2    CA
         1'b0,       // 1    EP
-        1'b0,       // 0    FP
+        1'b0        // 0    FP
     };
 
     //Index
@@ -262,7 +262,7 @@ module CP0
                 timer_int <= `true;
             
             //Random
-            Random__ <= (Random__ == Wired__) ? `Random_Rst : Random__ - 1;
+            Random__ <= (Random__ ^ Wired__) == 0 ? `Random_Rst : Random__ - 1;
             
             //Exceptions
             Cause_IP[7:2] <= intr;
@@ -304,7 +304,7 @@ module CP0
                     `ExcT_TLBM: begin
                         BadVAddr        <= exc_baddr;
                         Context_BadVPN2 <= exc_baddr[`VPN2];
-                        EntryHi[`VPN2]  <= exc_baddr[`VPN2];
+                        EntryHi_VPN2    <= exc_baddr[`VPN2];
                     end
 
                     `ExcT_CpU:  Cause_CE <= exc_cpnum;
@@ -323,10 +323,30 @@ module CP0
                     `ExcT_AdES: Cause_ExcCode <= `ExcC_AdES;
                     `ExcT_TLBR: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
                     `ExcT_TLBI: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
-                    `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS
+                    `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS;
                     // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
                     // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
                 endcase
+
+                //Displaying
+                `ifdef Output_Exception_Info
+                case (exc_type)
+                    `ExcT_Intr: $display("Interrupt Exception");
+                    `ExcT_CpU:  $display("Coprocessor Unusable Exception");
+                    `ExcT_RI:   $display("Reserved Instruction Exception");
+                    `ExcT_Ov:   $display("Integer Overflow Exception");
+                    `ExcT_Trap: $display("Trap Exception");
+                    `ExcT_SysC: $display("System Call Exception");
+                    `ExcT_Bp:   $display("Breakpoint Exception");
+                    `ExcT_AdEL: $display("Address Error Exception - Load");
+                    `ExcT_AdES: $display("Address Error Exception - Save");
+                    `ExcT_TLBR: $display("TLB Refill Exception");
+                    `ExcT_TLBI: $display("TLB Invalid Exception");
+                    `ExcT_TLBM: $display("TLB Modified Exception");
+                    // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
+                    // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
+                endcase
+                `endif
             end
             else if(tlb_idxwen) begin
                 Index_P <= tlb_index[31];

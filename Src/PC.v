@@ -15,6 +15,8 @@ module PC
     input  wire            br_flag,
     input  wire [`AddrBus] br_addr,
     input  wire            usermode,
+    input  wire            i_tlbr,
+    input  wire            i_tlbi,
     
     output reg  [`AddrBus] pc,
     output wire [`AddrBus] pcp4,
@@ -42,6 +44,8 @@ module PC
     always @(*) begin
         excp <= 0;
         excp[`Exc_I_AdEL] <= (pc[1:0] != 2'b0) || (usermode && pc[31]);
+        excp[`Exc_I_TLBR] <= i_tlbr;
+        excp[`Exc_I_TLBI] <= i_tlbi;
     end
 
 endmodule

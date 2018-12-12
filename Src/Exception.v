@@ -9,8 +9,6 @@ module Exception
 (
     
     input  wire [`ExcBus ] excp_i,
-    input  wire            i_tlbr,
-    input  wire            i_tlbi,
     input  wire            d_tlbr,
     input  wire            d_tlbi,
     input  wire            d_tlbm,
@@ -36,9 +34,7 @@ module Exception
 
     always @(*) begin
         excp              <= excp_i;
-        excp[`Exc_Intr  ] <= exc_intr;
-        excp[`Exc_I_TLBR] <= i_tlbr;
-        excp[`Exc_I_TLBI] <= i_tlbi;
+        excp[`Exc_Intr  ] <= exc_intr; 
         excp[`Exc_D_TLBR] <= d_tlbr;
         excp[`Exc_D_TLBI] <= d_tlbi;
         excp[`Exc_D_TLBM] <= d_tlbm;
@@ -53,7 +49,7 @@ module Exception
             `Exc_W'b000000000000000001??: exc_type <= `ExcT_AdEL;
             `Exc_W'b00000000000000001???: exc_type <= `ExcT_TLBR;
             `Exc_W'b0000000000000001????: exc_type <= `ExcT_TLBI;
-            `Exc_W'b000000000000001?????: exc_type <= `ExcT_BusE;
+            // `Exc_W'b000000000000001?????: exc_type <= `ExcT_BusE;
             `Exc_W'b00000000000001??????: exc_type <= `ExcT_CpU;
             `Exc_W'b0000000000001???????: exc_type <= `ExcT_RI;
             `Exc_W'b000000000001????????: exc_type <= `ExcT_Ov;
@@ -65,19 +61,11 @@ module Exception
             `Exc_W'b000001??????????????: exc_type <= `ExcT_TLBR;
             `Exc_W'b00001???????????????: exc_type <= `ExcT_TLBI;
             `Exc_W'b0001????????????????: exc_type <= `ExcT_TLBM;
-            `Exc_W'b001?????????????????: exc_type <= `ExcT_BusE;
+            // `Exc_W'b001?????????????????: exc_type <= `ExcT_BusE;
             `Exc_W'b01??????????????????: exc_type <= `ExcT_ERET;
             // `Exc_W'b1???????????????????: exc_type <= `ExcT_NoExc;
             default:                      exc_type <= `ExcT_NoExc;
         endcase
-
-        // casez ({excp[`Exc_I_AdEL], excp[`Exc_D_AdEL], excp[`Exc_D_AdES]})
-        //     3'b000: exc_baddr <= `ZeroWord;
-        //     3'b001,
-        //     3'b010,
-        //     3'b011: exc_baddr <= m_vaddr;
-        //     3'b1??: exc_baddr <= pc;
-        // endcase
 
         casez (excp)
             `Exc_W'b000000000000000001??,
