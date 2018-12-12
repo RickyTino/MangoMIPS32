@@ -23,6 +23,7 @@ module MMU
 
     output reg             tlb_en,
     output reg  [`AddrBus] tlb_vaddr,
+    output reg             tlb_refs,
     input  wire            tlb_rdy,
     input  wire [`AddrBus] tlb_paddr,
     input  wire            tlb_cat,

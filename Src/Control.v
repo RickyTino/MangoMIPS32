@@ -82,7 +82,7 @@ module Control
 
                 5'b00010: stall <= 5'b00011; // ID
                 5'b001?0: stall <= 5'b00111; // EX
-                5'b00??1: stall <= 5'b01111; // IF
+                5'b00??1: stall <= 5'b00111; // IF
                 5'b01???: stall <= 5'b01111; // MEM
                 5'b1????: stall <= 5'b11111; // WB
                 default:  stall <= 5'b00000;
@@ -96,7 +96,7 @@ module Control
 
                 5'b00010: flush <= 5'b00100; // ID
                 5'b001?0: flush <= 5'b01000; // EX
-                5'b00??1: flush <= 5'b10000; // IF
+                5'b00??1: flush <= 5'b01000; // IF
                 5'b01???: flush <= 5'b10000; // MEM
                 default:  flush <= 5'b00000;
             endcase

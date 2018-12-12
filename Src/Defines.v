@@ -68,7 +68,7 @@ Version:    v1.0.1
 `define         ExcType                `ExcT_W-1:0
 `define         TLB_Idx             `TLB_Idx_W-1:0
 `define         TLB_Sel                 `TLB_N-1:0
-`define         TLB_Itm             96: 0
+`define         TLB_Itm             97: 0
 `define         PageNum             19: 0
 `define         CacheAt              2: 0
 `define         TLBOp                2: 0
@@ -344,12 +344,45 @@ Version:    v1.0.1
 
 //PageMask
 `define         Mask                28:13
+`define         VMask               31:13
+`define         PMask               31:12
 
 //Zero Fields
 `define         Index_Z             31-`TLB_Idx_W
 `define         Random_Z            32-`TLB_Idx_W
 `define         Wired_Z             32-`TLB_Idx_W
 `define         Random_Rst          `TLB_Idx_W'd`TLB_N1
+
+/*--------------------MMU--------------------*/
+//Virtual Address Segments
+`define         kuseg               3'b0??
+`define         kseg0               3'b100
+`define         kseg1               3'b101
+`define         kseg2               3'b110
+`define         kseg3               3'b111
+
+//TLB Item Fields
+`define         TLB_VPN2            97:79
+`define         TLB_ASID            78:71
+`define         TLB_PMask           70:51
+`define         TLB_VMask           70:52
+`define         TLB_Mask            67:52
+`define         TLB_G               50
+`define         TLB_PFN0            49:30
+`define         TLB_V0              29
+`define         TLB_D0              28
+`define         TLB_C0              27:25
+`define         TLB_PFN1            24: 5
+`define         TLB_V1               4
+`define         TLB_D1               3
+`define         TLB_C1               2: 0
+
+//TLB operation
+`define         TOP_NOP              3'd0
+`define         TOP_TLBR             3'd1
+`define         TOP_TLBWI            3'd2
+`define         TOP_TLBWR            3'd3
+`define         TOP_TLBP             3'd4
 
 /*--------------------Exceptions--------------------*/
 //No exception
@@ -409,35 +442,6 @@ Version:    v1.0.1
 `define         ExcC_CpU            5'h0B
 `define         ExcC_Ov             5'h0C
 `define         ExcC_Tr             5'h0D
-
-/*--------------------MMU--------------------*/
-//Virtual Address Segments
-`define         kuseg               3'b0??
-`define         kseg0               3'b100
-`define         kseg1               3'b101
-`define         kseg2               3'b110
-`define         kseg3               3'b111
-
-//TLB Item Fields
-`define         TLB_VPN2            96:78
-`define         TLB_ASID            77:70
-`define         TLB_Mask            69:51
-`define         TLB_G               50
-`define         TLB_PFN0            49:30
-`define         TLB_V0              29
-`define         TLB_D0              28
-`define         TLB_C0              27:25
-`define         TLB_PFN1            24: 5
-`define         TLB_V1               4
-`define         TLB_D1               3
-`define         TLB_C1               2: 0
-
-//TLB operation
-`define         TOP_NOP
-`define         TOP_TLBR             3'd1
-`define         TOP_TLBWI            3'd2
-`define         TOP_TLBWR            3'd3
-`define         TOP_TLBP             3'd4
 
 /*--------------------End of Defines--------------------*/
 `endif

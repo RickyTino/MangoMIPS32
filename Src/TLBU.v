@@ -24,21 +24,21 @@ module TLBU
 
     input  wire            immu_en,
     input  wire [`AddrBus] immu_vaddr,
-    output reg             immu_rdy,
+    output wire            immu_rdy,
     output reg  [`AddrBus] immu_paddr,
     output reg             immu_cat,
 
     input  wire            dmmu_en,
     input  wire [`AddrBus] dmmu_vaddr,
     input  wire            dmmu_refs,
-    output reg             dmmu_rdy,
+    output wire            dmmu_rdy,
     output reg  [`AddrBus] dmmu_paddr,
     output reg             dmmu_cat,
 
     output reg             cp0_idxwen,
-    output reg  [`TLB_Idx] cp0_wIndex,
+    output reg  [`DataBus] cp0_wIndex,
     output reg             cp0_tlbwen,
-    output reg  [`TLBItem] cp0_tlbitem,
+    output reg  [`TLB_Itm] cp0_tlbitm,
 
     output reg             i_tlbr,
     output reg             i_tlbi,
@@ -47,36 +47,41 @@ module TLBU
     output reg             d_tlbm
 );
 
-    reg  [`TLBItem] TLB [`TLB_Sel];
+    reg  [`TLB_Itm] TLB [`TLB_Sel];
 
     reg  [ 7: 0] ilk_asid,  dlk_asid;
     reg          ilk_valid, dlk_valid;
 
     //TLB translation : stage1
     reg  [`AddrBus] i_vaddr, d_vaddr;
-    wire [`TLB_Sel] i_hit,   d_hit;
-    wire [`TLB_Sel] i_match, d_match;
-    wire [`TLB_Sel] i_avlb,  d_avlb;
+    wire [`TLB_Sel] i_hit,   d_hit,   p_hit;
+    wire [`TLB_Sel] i_match, d_match, p_match;
+    wire [`TLB_Sel] i_avlb,  d_avlb,  p_avlb;
 
     genvar i;
     generate
-        for (i = 0; i < `TLB_N1; i = i + 1) begin
-            assign i_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_Mask])
-                                == (i_vaddr[31:13] & ~TLB[i][`TLB_Mask]);
-            assign d_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_Mask])
-                                == (d_vaddr[31:13] & ~TLB[i][`TLB_Mask]);
+        for (i = 0; i < `TLB_N; i = i + 1) begin
+            assign i_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
+                                == (i_vaddr[`VPN2] & ~TLB[i][`TLB_VMask]);
+            assign d_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
+                                == (d_vaddr[`VPN2] & ~TLB[i][`TLB_VMask]);
+            assign p_match[i] = (TLB[i][`TLB_VPN2] & ~TLB[i][`TLB_VMask])
+                                == (EntryHi[`VPN2] & ~TLB[i][`TLB_VMask]);
             assign i_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] == ilk_asid);
             assign d_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] == dlk_asid);
+            assign p_avlb[i]  = TLB[i][`TLB_G] || (TLB[i][`TLB_ASID] == EntryHi[`ASID]);
             assign i_hit[i]   = i_match[i] && i_avlb[i];
-            assign d_hit[i]   = d_match[i] && i_avlb[i];
+            assign d_hit[i]   = d_match[i] && d_avlb[i];
+            assign p_hit[i]   = p_match[i] && p_avlb[i];
         end
     endgenerate
 
-    reg  [`TLB_Idx] i_hitidx, d_hitidx;
-    wire            i_miss,   d_miss;
+    reg  [`TLB_Idx] i_hitidx, d_hitidx, p_hitidx;
+    wire            i_miss,   d_miss,   p_miss;
 
     assign i_miss = i_hit == 0;
     assign d_miss = d_hit == 0;
+    assign p_miss = p_hit == 0;
     
     always @(*) begin
         casez (i_hit)
@@ -150,6 +155,42 @@ module TLBU
             32'b1???????????????????????????????: d_hitidx <= 31;
             default:							  d_hitidx <= 0;
         endcase
+
+        casez (p_hit)
+            32'b00000000000000000000000000000001: p_hitidx <= 0;
+            32'b0000000000000000000000000000001?: p_hitidx <= 1;
+            32'b000000000000000000000000000001??: p_hitidx <= 2;
+            32'b00000000000000000000000000001???: p_hitidx <= 3;
+            32'b0000000000000000000000000001????: p_hitidx <= 4;
+            32'b000000000000000000000000001?????: p_hitidx <= 5;
+            32'b00000000000000000000000001??????: p_hitidx <= 6;
+            32'b0000000000000000000000001???????: p_hitidx <= 7;
+            32'b000000000000000000000001????????: p_hitidx <= 8;
+            32'b00000000000000000000001?????????: p_hitidx <= 9;
+            32'b0000000000000000000001??????????: p_hitidx <= 10;
+            32'b000000000000000000001???????????: p_hitidx <= 11;
+            32'b00000000000000000001????????????: p_hitidx <= 12;
+            32'b0000000000000000001?????????????: p_hitidx <= 13;
+            32'b000000000000000001??????????????: p_hitidx <= 14;
+            32'b00000000000000001???????????????: p_hitidx <= 15;
+            32'b0000000000000001????????????????: p_hitidx <= 16;
+            32'b000000000000001?????????????????: p_hitidx <= 17;
+            32'b00000000000001??????????????????: p_hitidx <= 18;
+            32'b0000000000001???????????????????: p_hitidx <= 19;
+            32'b000000000001????????????????????: p_hitidx <= 20;
+            32'b00000000001?????????????????????: p_hitidx <= 21;
+            32'b0000000001??????????????????????: p_hitidx <= 22;
+            32'b000000001???????????????????????: p_hitidx <= 23;
+            32'b00000001????????????????????????: p_hitidx <= 24;
+            32'b0000001?????????????????????????: p_hitidx <= 25;
+            32'b000001??????????????????????????: p_hitidx <= 26;
+            32'b00001???????????????????????????: p_hitidx <= 27;
+            32'b0001????????????????????????????: p_hitidx <= 28;
+            32'b001?????????????????????????????: p_hitidx <= 29;
+            32'b01??????????????????????????????: p_hitidx <= 30;
+            32'b1???????????????????????????????: p_hitidx <= 31;
+            default:							  p_hitidx <= 0;
+        endcase
     end
 
     //TLB translation : stage2
@@ -164,29 +205,29 @@ module TLBU
 
     always @(*) begin
         casez (TLB[i_idx][`TLB_Mask])
-            19'b0000000000000000000: i_eob <= 12;
-            19'b0000000000000000011: i_eob <= 14;
-            19'b00000000000000011??: i_eob <= 16;
-            19'b000000000000011????: i_eob <= 18;
-            19'b0000000000011??????: i_eob <= 20;
-            19'b00000000011????????: i_eob <= 22;
-            19'b000000011??????????: i_eob <= 24;
-            19'b0000011????????????: i_eob <= 26;
-            19'b00011??????????????: i_eob <= 28;
-            default:                 i_eob <= 12; //UNDEFINED
+            16'b0000000000000000: i_eob <= 12;
+            16'b0000000000000011: i_eob <= 14;
+            16'b00000000000011??: i_eob <= 16;
+            16'b000000000011????: i_eob <= 18;
+            16'b0000000011??????: i_eob <= 20;
+            16'b00000011????????: i_eob <= 22;
+            16'b000011??????????: i_eob <= 24;
+            16'b0011????????????: i_eob <= 26;
+            16'b11??????????????: i_eob <= 28;
+            default:              i_eob <= 12; //UNDEFINED
         endcase
 
         casez (TLB[d_idx][`TLB_Mask])
-            19'b0000000000000000000: d_eob <= 12;
-            19'b0000000000000000011: d_eob <= 14;
-            19'b00000000000000011??: d_eob <= 16;
-            19'b000000000000011????: d_eob <= 18;
-            19'b0000000000011??????: d_eob <= 20;
-            19'b00000000011????????: d_eob <= 22;
-            19'b000000011??????????: d_eob <= 24;
-            19'b0000011????????????: d_eob <= 26;
-            19'b00011??????????????: d_eob <= 28;
-            default:                 d_eob <= 12; //UNDEFINED
+            16'b0000000000000000: d_eob <= 12;
+            16'b0000000000000011: d_eob <= 14;
+            16'b00000000000011??: d_eob <= 16;
+            16'b000000000011????: d_eob <= 18;
+            16'b0000000011??????: d_eob <= 20;
+            16'b00000011????????: d_eob <= 22;
+            16'b000011??????????: d_eob <= 24;
+            16'b0011????????????: d_eob <= 26;
+            16'b11??????????????: d_eob <= 28;
+            default:              d_eob <= 12; //UNDEFINED
         endcase
 
         if(i_vaddr[i_eob]) begin
@@ -260,12 +301,20 @@ module TLBU
     assign dmmu_rdy = dmmu_en   && (dmmu_vaddr   == d_vaddr ) && 
                       dlk_valid && (EntryHi[`ASID] == dlk_asid);
 
+    wire   tlb_nop  = tlb_op == `TOP_NOP;
+
+    wire [`TLB_Idx] idx_index = Index [`TLB_Idx];
+    wire [`TLB_Idx] idx_rand  = Random[`TLB_Idx];
+
+    integer j;
+
     always @(posedge clk, posedge rst) begin
         if(rst) begin
+            for(j = 0; j < `TLB_N; j = j + 1)
+                TLB[j] <= 0;
             i_state    <= `TLB_Idle;
             i_vaddr    <= `ZeroWord;
-            i_idx      <= 0
-            immu_rdy   <= `false;
+            i_idx      <= 0;
             immu_paddr <= `ZeroWord;
             ilk_asid   <= 0;
             ilk_valid  <= `false;
@@ -274,19 +323,23 @@ module TLBU
 
             d_state    <= `TLB_Idle;
             d_vaddr    <= `ZeroWord;
-            d_idx      <= 0
-            dmmu_rdy   <= `false;
+            d_idx      <= 0;
             dmmu_paddr <= `ZeroWord;
             dlk_asid   <= 0;
             dlk_valid  <= `false;
             d_tlbi     <= `false;
             d_tlbr     <= `false;
             d_tlbm     <= `false;
+
+            cp0_idxwen  <= `false;
+            cp0_wIndex  <= `ZeroWord;
+            cp0_tlbwen  <= `false;
+            cp0_tlbitm <= 0;
         end
         else begin
             case (i_state)
                 `TLB_Idle: begin
-                    if(immu_en && !immu_rdy) begin
+                    if(immu_en && !immu_rdy && tlb_nop) begin
                         i_state   <= `TLB_Translate;
                         i_vaddr   <= immu_vaddr;
                         ilk_asid  <= EntryHi[`ASID];
@@ -295,32 +348,24 @@ module TLBU
                 end
 
                 `TLB_Translate: begin
-                    if(i_miss) begin //TLBRefill
-                        i_tlbr  <= `true;
-                        i_state <= `TLB_Idle;
-                    end
-                    else begin
-                        i_state <= `TLB_Ready;
-                        i_idx   <= i_hitidx;
-                    end
+                    if(i_miss)  //TLBRefill
+                        i_tlbr <= `true;
+                    i_state <= `TLB_Ready;
+                    i_idx   <= i_hitidx;
                 end
 
                 `TLB_Ready: begin
-                    if(!i_vld) begin //TLBInvalid
-                        i_tlbi  <= `true;
-                        i_state <= `TLB_Idle;
-                    end
-                    else begin
-                        ilk_valid  <= `true;
-                        immu_paddr <= i_paddr;
-                        i_state    <= `TLB_Idle;
-                    end
+                    if(!i_vld)  //TLBInvalid
+                        i_tlbi <= `true;
+                    ilk_valid  <= `true;
+                    immu_paddr <= i_paddr;
+                    i_state    <= `TLB_Idle;
                 end
             endcase
 
             case (d_state)
                 `TLB_Idle: begin
-                    if(dmmu_en && !dmmu_rdy) begin
+                    if(dmmu_en && !dmmu_rdy && tlb_nop) begin
                         d_state   <= `TLB_Translate;
                         d_vaddr   <= dmmu_vaddr;
                         dlk_asid  <= EntryHi[`ASID];
@@ -329,32 +374,68 @@ module TLBU
                 end
 
                 `TLB_Translate: begin
-                    if(d_miss) begin //TLBRefill
-                        d_tlbr  <= `true;
-                        d_state <= `TLB_Idle;
-                    end
-                    else begin
-                        d_state <= `TLB_Ready;
-                        d_idx   <= d_hitidx;
-                    end
+                    if(d_miss)  //TLBRefill
+                        d_tlbr <= `true;
+                    d_state <= `TLB_Ready;
+                    d_idx   <= d_hitidx;
                 end
 
                 `TLB_Ready: begin
-                    if(!i_vld) begin //TLBInvalid
-                        d_tlbi  <= `true;
-                        d_state <= `TLB_Idle;
-                    end
-                    else if(!i_drt && dmmu_refs) begin //TLBModified
-                        d_tlbm  <= `true;
-                        d_state <= `TLB_Idle;
-                    end
-                    else begin
-                        dlk_valid  <= `true;
-                        dmmu_paddr <= d_paddr;
-                        d_state    <= `TLB_Idle;
-                    end
+                    if(!d_vld)  //TLBInvalid
+                        d_tlbi <= `true;
+                    if(!d_drt && dmmu_refs)  //TLBModified
+                        d_tlbm <= `true;
+                    dlk_valid  <= `true;
+                    dmmu_paddr <= d_paddr;
+                    d_state    <= `TLB_Idle;
                 end
             endcase
+
+            if(!tlb_nop) begin
+                case (tlb_op)
+                    `TOP_TLBR: begin
+                        cp0_tlbwen <= `true;
+                        cp0_tlbitm <= TLB[idx_index];
+                    end
+
+                    `TOP_TLBWI: begin
+                        TLB[idx_index][`TLB_Mask] <= PageMask[`Mask];
+                        TLB[idx_index][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
+                        TLB[idx_index][`TLB_ASID] <= EntryHi [`ASID];
+                        TLB[idx_index][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
+                        TLB[idx_index][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
+                        TLB[idx_index][`TLB_V0  ] <= EntryLo0[`Vld ];
+                        TLB[idx_index][`TLB_D0  ] <= EntryLo0[`Drt ];
+                        TLB[idx_index][`TLB_C0  ] <= EntryLo0[`CAt ];
+                        TLB[idx_index][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
+                        TLB[idx_index][`TLB_V1  ] <= EntryLo1[`Vld ];
+                        TLB[idx_index][`TLB_D1  ] <= EntryLo1[`Drt ];
+                        TLB[idx_index][`TLB_C1  ] <= EntryLo1[`CAt ];
+                    end
+
+                    `TOP_TLBWR: begin
+                        TLB[idx_rand][`TLB_Mask] <= PageMask[`Mask];
+                        TLB[idx_rand][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
+                        TLB[idx_rand][`TLB_ASID] <= EntryHi [`ASID];
+                        TLB[idx_rand][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
+                        TLB[idx_rand][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
+                        TLB[idx_rand][`TLB_V0  ] <= EntryLo0[`Vld ];
+                        TLB[idx_rand][`TLB_D0  ] <= EntryLo0[`Drt ];
+                        TLB[idx_rand][`TLB_C0  ] <= EntryLo0[`CAt ];
+                        TLB[idx_rand][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
+                        TLB[idx_rand][`TLB_V1  ] <= EntryLo1[`Vld ];
+                        TLB[idx_rand][`TLB_D1  ] <= EntryLo1[`Drt ];
+                        TLB[idx_rand][`TLB_C1  ] <= EntryLo1[`CAt ];
+                    end
+
+                    `TOP_TLBP: begin
+                        cp0_idxwen <= `true;
+                        if(p_miss) cp0_wIndex <= 32'h80000000;
+                        else       cp0_wIndex <= {`Index_Z'b0, p_hitidx};
+                    end
+                endcase
+            end
         end
     end
+    
 endmodule

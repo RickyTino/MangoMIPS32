@@ -24,10 +24,8 @@ module CP0
     input  wire            exc_save,
     input  wire            inslot,
 
-    input  wire            tlbr,
-    input  wire            tlbwi,
-    input  wire            tlbwr,
-    input  wire            tlbp,
+    input  wire            tlb_idxwen,
+    input  wire            tlb_itmwen,
     input  wire [`TLB_Idx] tlb_index,
     input  wire [`TLB_Itm] tlb_item,
 
@@ -329,6 +327,25 @@ module CP0
                     // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
                     // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
                 endcase
+            end
+            else if(tlb_idxwen) begin
+                Index_P <= tlb_index[31];
+                Index__ <= tlb_index[`TLB_Idx];
+            end
+            else if(tlb_itmwen) begin
+                PageMask__   <= tlb_item[`TLB_Mask];
+                EntryHi_VPN2 <= tlb_item[`TLB_VPN2];
+                EntryHi_ASID <= tlb_item[`TLB_ASID];
+                EntryLo0_G   <= tlb_item[`TLB_G];
+                EntryLo0_PFN <= tlb_item[`TLB_PFN0];
+                EntryLo0_V   <= tlb_item[`TLB_V0];
+                EntryLo0_D   <= tlb_item[`TLB_D0];
+                EntryLo0_C   <= tlb_item[`TLB_C0];
+                EntryLo1_G   <= tlb_item[`TLB_G];
+                EntryLo1_PFN <= tlb_item[`TLB_PFN1];
+                EntryLo1_V   <= tlb_item[`TLB_V1];
+                EntryLo1_D   <= tlb_item[`TLB_D1];
+                EntryLo1_C   <= tlb_item[`TLB_C1];
             end
             else if(wen) begin
                 case (addr)
