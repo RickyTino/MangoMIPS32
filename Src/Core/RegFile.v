@@ -3,7 +3,8 @@ Filename:   RegFile.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
-`include "Defines.v"
+`include "../Defines.v"
+`include "../Config.v"
 
 module RegFile
 (

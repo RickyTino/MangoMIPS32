@@ -3,7 +3,8 @@ Filename:   Core_Top.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
-`include "Defines.v"
+`include "../Defines.v"
+`include "../Config.v"
 
 module MangoMIPS_Core_Top
 (
@@ -15,6 +16,8 @@ module MangoMIPS_Core_Top
     output wire [`AddrBus] ibus_addr,
     input  wire [`DataBus] ibus_rdata,
     input  wire            ibus_streq,
+    output wire            ibus_stall,
+    output wire            ibus_cached,
 
     output wire            dbus_en,
     output wire [`AddrBus] dbus_addr,
@@ -22,6 +25,8 @@ module MangoMIPS_Core_Top
     output wire [`ByteWEn] dbus_wen,
     output wire [`DataBus] dbus_wdata,
     input  wire            dbus_streq,
+    output wire            dbus_stall,
+    output wire            dbus_cached,
 
     output wire [`AddrBus] debug_wb_pc,
     output wire [`ByteWEn] debug_wb_wreg,
@@ -42,6 +47,8 @@ module MangoMIPS_Core_Top
     wire            itlb_cat;
     wire            i_tlbr;
     wire            i_tlbi;
+    wire            exc_i_tlbr;
+    wire            exc_i_tlbi;
 
     wire [`AddrBus] id_pc;
     wire [`AddrBus] id_pcp4;
@@ -50,8 +57,6 @@ module MangoMIPS_Core_Top
     wire            id_inslot;
     wire            br_flag;
     wire [`AddrBus] br_addr;
-    wire            exc_i_tlbr;
-    wire            exc_i_tlbi;
 
     wire            r1read;
     wire [`RegAddr] r1addr;
@@ -197,7 +202,9 @@ module MangoMIPS_Core_Top
     wire            timer_int;
     wire [`HardInt] core_intr;
     
-    assign core_intr = {intr[5] || timer_int, intr[4:0]};
+    assign core_intr  = {intr[5] || timer_int, intr[4:0]};
+    assign ibus_stall = stall[`IF ];
+    assign dbus_stall = stall[`MEM];
   
     PC pc (
         .clk        (clk        ),
@@ -228,6 +235,7 @@ module MangoMIPS_Core_Top
         .bus_paddr  (ibus_addr  ),
         .bus_rdata  (ibus_rdata ),
         .bus_streq  (ibus_streq ),
+        .bus_cached (ibus_cached),
 
         .tlb_en     (itlb_en    ),
         .tlb_vaddr  (itlb_vaddr ),
@@ -393,6 +401,7 @@ module MangoMIPS_Core_Top
         .usermode   (usermode   ),
         .excp_i     (ex_excp_i  ),
         .excp_o     (ex_excp_o  ),
+        .tlbop      (ex_tlbop   ),
         .stallreq   (streq[`EX] )
     );
 
@@ -470,6 +479,7 @@ module MangoMIPS_Core_Top
         .bus_wen    (dbus_wen   ),
         .bus_wdata  (dbus_wdata ),
         .bus_streq  (dbus_streq ),
+        .bus_cached (dbus_cached),
 
         .tlb_en     (dtlb_en    ),
         .tlb_vaddr  (dtlb_vaddr ),

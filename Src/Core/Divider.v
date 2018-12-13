@@ -3,7 +3,9 @@ Filename:   Divider.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
-`include "Defines.v"
+`include "../Defines.v"
+`include "../Config.v"
+
 `define DivFree   2'd0
 `define DivByZero 2'd1
 `define DivOn     2'd2
