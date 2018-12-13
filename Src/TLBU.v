@@ -355,13 +355,13 @@ module TLBU
         else begin
             case (i_state)
                 `TLB_Idle: begin
-                    i_tlbi    <= `false;
-                    i_tlbr    <= `false;
                     if(immu_en && !immu_rdy && tlb_nop) begin
                         i_state   <= `TLB_Translate;
                         i_vaddr   <= immu_vaddr;
                         ilk_asid  <= EntryHi[`ASID];
                         ilk_valid <= `false;
+                        i_tlbi    <= `false;
+                        i_tlbr    <= `false;
                     end
                 end
 
@@ -383,14 +383,14 @@ module TLBU
 
             case (d_state)
                 `TLB_Idle: begin
-                    d_tlbi    <= `false;
-                    d_tlbr    <= `false;
-                    d_tlbm    <= `false;
                     if(dmmu_en && !dmmu_rdy && tlb_nop) begin
                         d_state   <= `TLB_Translate;
                         d_vaddr   <= dmmu_vaddr;
                         dlk_asid  <= EntryHi[`ASID];
                         dlk_valid <= `false;
+                        d_tlbi    <= `false;
+                        d_tlbr    <= `false;
+                        d_tlbm    <= `false;
                     end
                 end
 

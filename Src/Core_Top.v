@@ -40,8 +40,8 @@ module MangoMIPS_Core_Top
     wire            itlb_rdy;
     wire [`AddrBus] itlb_paddr;
     wire            itlb_cat;
-    wire            exc_i_tlbr;
-    wire            exc_i_tlbi;
+    wire            i_tlbr;
+    wire            i_tlbi;
 
     wire [`AddrBus] id_pc;
     wire [`AddrBus] id_pcp4;
@@ -50,6 +50,8 @@ module MangoMIPS_Core_Top
     wire            id_inslot;
     wire            br_flag;
     wire [`AddrBus] br_addr;
+    wire            exc_i_tlbr;
+    wire            exc_i_tlbi;
 
     wire            r1read;
     wire [`RegAddr] r1addr;
@@ -134,12 +136,15 @@ module MangoMIPS_Core_Top
     wire            dtlb_rdy;
     wire [`AddrBus] dtlb_paddr;
     wire            dtlb_cat;
-    wire            exc_d_tlbr;
-    wire            exc_d_tlbi;
-    wire            exc_d_tlbm;
+    wire            d_tlbr;
+    wire            d_tlbi;
+    wire            d_tlbm;
 
     wire            exc_flag;
     wire            exc_save;
+    wire            exc_d_tlbr;
+    wire            exc_d_tlbi;
+    wire            exc_d_tlbm;
     wire [`ExcType] exc_type;
     wire [`AddrBus] exc_baddr;
     wire [`AddrBus] exc_newpc;
@@ -229,10 +234,15 @@ module MangoMIPS_Core_Top
         .tlb_rdy    (itlb_rdy   ),
         .tlb_paddr  (itlb_paddr ),
         .tlb_cat    (itlb_cat   ),
+        .tlb_tlbr   (i_tlbr     ),
+        .tlb_tlbi   (i_tlbi     ),
+        .tlb_tlbm   (`false     ),
 
         .exc_flag   (exc_flag   ),
         .cp0_Status (cp0_Status ), 
         .cp0_Config (cp0_Config ),
+        .exc_tlbr   (exc_i_tlbr ),
+        .exc_tlbi   (exc_i_tlbi ),
         .stallreq   (streq[`IF] )
     );
 
@@ -467,10 +477,16 @@ module MangoMIPS_Core_Top
         .tlb_rdy    (dtlb_rdy   ),
         .tlb_paddr  (dtlb_paddr ),
         .tlb_cat    (dtlb_cat   ),
+        .tlb_tlbr   (d_tlbr     ),
+        .tlb_tlbi   (d_tlbi     ),
+        .tlb_tlbm   (d_tlbm     ),
 
         .exc_flag   (exc_flag   ),
         .cp0_Status (cp0_Status ),
         .cp0_Config (cp0_Config ),
+        .exc_tlbr   (exc_d_tlbr ),
+        .exc_tlbi   (exc_d_tlbi ),
+        .exc_tlbm   (exc_d_tlbm ),
         .stallreq   (streq[`MEM])
     );
     
@@ -642,11 +658,11 @@ module MangoMIPS_Core_Top
         .cp0_wIndex (cp0_tlbidx     ),
         .cp0_tlbwen (cp0_itmwen     ),
         .cp0_tlbitm (cp0_tlbitm     ),
-        .i_tlbr     (exc_i_tlbr     ),
-        .i_tlbi     (exc_i_tlbi     ),
-        .d_tlbr     (exc_d_tlbr     ),
-        .d_tlbi     (exc_d_tlbi     ),
-        .d_tlbm     (exc_d_tlbm     )
+        .i_tlbr     (i_tlbr         ),
+        .i_tlbi     (i_tlbi         ),
+        .d_tlbr     (d_tlbr         ),
+        .d_tlbi     (d_tlbi         ),
+        .d_tlbm     (d_tlbm         )
     );
 
 `endif

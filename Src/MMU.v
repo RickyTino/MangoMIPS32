@@ -27,10 +27,17 @@ module MMU
     input  wire            tlb_rdy,
     input  wire [`AddrBus] tlb_paddr,
     input  wire            tlb_cat,
+    input  wire            tlb_tlbr,
+    input  wire            tlb_tlbi,
+    input  wire            tlb_tlbm,
 
     input  wire            exc_flag,
     input  wire [`DataBus] cp0_Status,
     input  wire [`DataBus] cp0_Config,
+    output reg             exc_tlbr,
+    output reg             exc_tlbi,
+    output reg             exc_tlbm,
+
     output wire            stallreq
 );
 
@@ -45,6 +52,9 @@ module MMU
         bus_en     <= `false;
         bus_paddr  <= `ZeroWord;
         bus_cached <= `false;
+        exc_tlbr   <= `false;
+        exc_tlbi   <= `false;
+        exc_tlbm   <= `false;
 
         if(en && !exc_flag) begin
             bus_en <= `true;
@@ -89,39 +99,45 @@ module MMU
         bus_en     <= `false;
         bus_paddr  <= `ZeroWord;
         bus_cached <= `false;
+        exc_tlbr   <= `false;
+        exc_tlbi   <= `false;
+        exc_tlbm   <= `false;
 
-        if(en && !exc_flag) begin
-            case (vaddr[`Seg])
-                `kseg0: begin //kseg0: unmapped
+        // if(en && !exc_flag) begin
+        case (vaddr[`Seg])
+            `kseg0: begin //kseg0: unmapped
+                bus_paddr  <= {3'b000, vaddr[28:0]};
+                bus_en     <= en && !exc_flag;
+                bus_cached <= cp0_Config[`K0];
+            end
+            
+            `kseg1: begin //kseg1: unmapped, uncached
+                bus_paddr  <= {3'b000, vaddr[28:0]};
+                bus_en     <= en && !exc_flag;
+                bus_cached <= `false;
+            end
+            
+            default: begin //kseg2, kseg3, kuseg: mapped
+                if(cp0_Status[`ERL]) begin
                     bus_paddr  <= {3'b000, vaddr[28:0]};
-                    bus_en     <= `true;
-                    bus_cached <= cp0_Config[`K0];
-                end
-                
-                `kseg1: begin //kseg1: unmapped, uncached
-                    bus_paddr  <= {3'b000, vaddr[28:0]};
-                    bus_en     <= `true;
+                    bus_en     <= en && !exc_flag;
                     bus_cached <= `false;
                 end
-                
-                default: begin //kseg2, kseg3, kuseg: mapped
-                    if(cp0_Status[`ERL]) begin
-                        bus_paddr  <= {3'b000, vaddr[28:0]};
-                        bus_en     <= `true;
-                        bus_cached <= `false;
-                    end
-                    else if(en) begin
-                        tlb_en     <= `true;
-                        tlb_refs   <= wen != `WrDisable;
-                        tlb_vaddr  <= vaddr;
-                        tlb_streq  <= !tlb_rdy;
-                        bus_paddr  <= tlb_paddr;
-                        bus_en     <= tlb_rdy;
-                        bus_cached <= tlb_cat;
-                    end
+                else if(en) begin
+                    tlb_en     <= `true;
+                    tlb_refs   <= wen != `WrDisable;
+                    tlb_vaddr  <= vaddr;
+                    tlb_streq  <= !tlb_rdy;
+                    bus_paddr  <= tlb_paddr;
+                    bus_en     <= tlb_rdy & !exc_flag;
+                    bus_cached <= tlb_cat;
+                    exc_tlbr   <= tlb_tlbr & tlb_rdy;
+                    exc_tlbi   <= tlb_tlbi & tlb_rdy;
+                    exc_tlbm   <= tlb_tlbm & tlb_rdy;
                 end
-            endcase
-        end
+            end
+        endcase
+        // end
     end
 `endif
 
