@@ -120,7 +120,7 @@ module mycpu_top
     wire        dbus_bvalid;
     wire        dbus_bready;
 
-    MangoMIPS_AXI_Top mangomips32 (
+    MangoMIPS_Top mangomips32 (
         .aclk           (aclk           ),
         .aresetn        (aresetn        ),
         .intr           (int            ),

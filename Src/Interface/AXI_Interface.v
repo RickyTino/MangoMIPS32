@@ -1,5 +1,5 @@
-`include "../Defines.v"
 `include "../Config.v"
+`include "../Defines.v"
 
 module AXI_Interface (
     input  wire        aclk,

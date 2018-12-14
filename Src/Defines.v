@@ -3,7 +3,7 @@ Filename:   Defines.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
-// `include "Config.v"
+// `include "../Config.v"
 
 /*--------------------Constant--------------------*/
 //Width constant

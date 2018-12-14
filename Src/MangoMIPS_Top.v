@@ -4,9 +4,9 @@ Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
 `include "Defines.v"
-`include "Config.v"
+`include "../Config.v"
 
-module MangoMIPS_AXI_Top
+module MangoMIPS_Top
 (
     input  wire        aclk,
     input  wire        aresetn,
