@@ -16,6 +16,7 @@ module Reg_MEM_WB
     input  wire [`AddrBus] mem_pc,
     input  wire [`ALUOp  ] mem_aluop, 
     input  wire [`DataBus] mem_alures,
+    input  wire [`DataBus] mem_mulres,
     input  wire [`AddrBus] mem_m_vaddr,
     input  wire [`DataBus] mem_m_rdata,
     input  wire [`ByteWEn] mem_wreg,
@@ -28,6 +29,7 @@ module Reg_MEM_WB
     output reg  [`AddrBus] wb_pc,
     output reg  [`ALUOp  ] wb_aluop, 
     output reg  [`DataBus] wb_alures,
+    output reg  [`DataBus] wb_mulres,
     output reg  [`AddrBus] wb_m_vaddr, 
     output reg  [`DataBus] wb_m_rdata,
     output reg  [`ByteWEn] wb_wreg,
@@ -43,6 +45,7 @@ module Reg_MEM_WB
             wb_pc       <= `ZeroWord;
             wb_aluop    <= `ALU_NOP;
             wb_alures   <= `ZeroWord;
+            wb_mulres   <= `ZeroWord;
             wb_m_vaddr  <= `ZeroWord;
             wb_m_rdata  <= `ZeroWord;
             wb_wreg     <= `WrDisable;
@@ -58,6 +61,7 @@ module Reg_MEM_WB
                     wb_pc       <= mem_pc;
                     wb_aluop    <= `ALU_NOP;
                     wb_alures   <= `ZeroWord;
+                    wb_mulres   <= `ZeroWord;
                     wb_m_vaddr  <= `ZeroWord;
                     wb_m_rdata  <= `ZeroWord;
                     wb_wreg     <= `WrDisable;
@@ -71,6 +75,7 @@ module Reg_MEM_WB
                     wb_pc       <= mem_pc;
                     wb_aluop    <= mem_aluop;
                     wb_alures   <= mem_alures;
+                    wb_mulres   <= mem_mulres;
                     wb_m_vaddr  <= mem_m_vaddr;
                     wb_m_rdata  <= mem_m_rdata;
                     wb_wreg     <= mem_wreg;

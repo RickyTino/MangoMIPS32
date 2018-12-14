@@ -176,6 +176,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] cp0_Config;
 
     wire [`DataBus] mem_alures_o;
+    wire [`DataBus] mem_mulres;
     wire            mem_resnrdy;
     wire            mem_hilo_wen;
     wire [`DWord  ] mem_hilo;
@@ -183,6 +184,7 @@ module MangoMIPS_Core_Top
     wire [`AddrBus] wb_pc;
     wire [`ALUOp  ] wb_aluop;
     wire [`DataBus] wb_alures;
+    wire [`DataBus] wb_mulres;
     wire [`AddrBus] wb_m_vaddr;
     wire [`DataBus] wb_m_rdata; 
     wire [`ByteWEn] wb_wreg;
@@ -512,6 +514,7 @@ module MangoMIPS_Core_Top
         .exc_flag  (exc_flag    ),
 
         .alures_o  (mem_alures_o),
+        .mulres    (mem_mulres  ),
         .hilo_wen  (mem_hilo_wen),
         .hilo_o    (mem_hilo    ),
         .cp0_wen   (cp0_wen     ),
@@ -584,6 +587,7 @@ module MangoMIPS_Core_Top
         .mem_pc         (mem_pc         ),
         .mem_aluop      (mem_aluop      ),
         .mem_alures     (mem_alures_o   ),
+        .mem_mulres     (mem_mulres     ),
         .mem_m_vaddr    (mem_m_vaddr    ),
         .mem_m_rdata    (mem_m_rdata    ),
         .mem_wreg       (mem_wreg       ),
@@ -596,6 +600,7 @@ module MangoMIPS_Core_Top
         .wb_pc          (wb_pc          ),
         .wb_aluop       (wb_aluop       ),
         .wb_alures      (wb_alures      ),
+        .wb_mulres      (wb_mulres      ),
         .wb_m_vaddr     (wb_m_vaddr     ),
         .wb_m_rdata     (wb_m_rdata     ),
         .wb_wreg        (wb_wreg        ),
@@ -609,6 +614,7 @@ module MangoMIPS_Core_Top
     WriteBack writeback (
         .aluop      (wb_aluop   ),
         .alures     (wb_alures  ),
+        .mulres     (wb_mulres  ),
         .m_vaddr    (wb_m_vaddr ),
         .m_rdata    (wb_m_rdata ),
         .wrdata     (wb_wrdata  ),

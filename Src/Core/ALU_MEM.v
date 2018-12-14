@@ -19,13 +19,13 @@ module ALU_MEM
     input  wire            exc_flag,
 
     output reg  [`DataBus] alures_o,
+    output wire [`DataBus] mulres,
     output reg             hilo_wen,
     output reg  [`DWord  ] hilo_o,
     output reg             cp0_wen,
     output reg  [`CP0Addr] cp0_addr,
     output reg  [`DataBus] cp0_wdata,
     input  wire [`DataBus] cp0_rdata,
-    //output reg  [`TLBOp  ] tlb_op,
     output reg             resnrdy
 );
     
@@ -34,11 +34,12 @@ module ALU_MEM
     wire [`DWord] umres = reslo + (reshi << 16);
     wire [`DWord] smres = mul_s ? ~umres + 64'b1 : umres;
 
+    assign mulres = smres;
+
     always @(*) begin
         hilo_wen  <= `false;
         hilo_o    <= hilo_i; 
         alures_o  <= alures_i;
-        // tlb_op    <= `TOP_NOP;
         cp0_addr  <= `CP0_ZeroReg;
         cp0_wen   <= `false;
         cp0_wdata <= `ZeroWord;
@@ -46,7 +47,7 @@ module ALU_MEM
         case (aluop)
             `ALU_MFHI: alures_o <= hilo_i[`Hi];
             `ALU_MFLO: alures_o <= hilo_i[`Lo];
-            `ALU_MUL:  alures_o <= smres[31:0];
+            //`ALU_MUL:  alures_o <= smres[31:0];
 
             `ALU_MTHI: begin
                 hilo_wen <= `true;
@@ -107,6 +108,7 @@ module ALU_MEM
         endcase
 
         case (aluop)
+            `ALU_MUL,
             `ALU_LB,
             `ALU_LBU,
             `ALU_LH,
@@ -118,13 +120,6 @@ module ALU_MEM
             default: resnrdy <= `false;
         endcase
 
-        // case (aluop)
-        //     `ALU_TLBR:  tlb_op <= `TOP_TLBR;
-        //     `ALU_TLBWI: tlb_op <= `TOP_TLBWI;
-        //     `ALU_TLBWR: tlb_op <= `TOP_TLBWR;
-        //     `ALU_TLBP:  tlb_op <= `TOP_TLBP;
-        //     default:    tlb_op <= `TOP_NOP;
-        // endcase
     end
 
 endmodule
