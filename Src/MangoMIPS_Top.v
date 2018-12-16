@@ -4,7 +4,7 @@ Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
 `include "Defines.v"
-`include "../Config.v"
+`include "Config.v"
 
 module MangoMIPS_Top
 (

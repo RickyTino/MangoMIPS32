@@ -252,9 +252,15 @@ module CP0
             Cause_IP        <= 0;
             Cause_ExcCode   <= 0;
             EPC             <= 0;
-            Config_K23      <= 0;
-            Config_KU       <= 0;
-            Config_K0       <= 0;
+            `ifdef NSCSCC_Mode
+            Config_K23      <= 3'd3;
+            Config_KU       <= 3'd3;
+            Config_K0       <= 3'd3;
+            `else
+            Config_K23      <= 3'd2;
+            Config_KU       <= 3'd2;
+            Config_K0       <= 3'd2;
+            `endif
         end
         else begin
             //Count & Compare

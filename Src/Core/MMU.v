@@ -62,7 +62,7 @@ module MMU
             case (vaddr[`Seg])
                 `kseg0: begin  //kseg0: unmapped
                     bus_paddr  <= {3'b000, vaddr[28:0]};
-                    bus_cached <= cp0_Config[`K0];
+                    bus_cached <= cp0_Config[`K0] == 3'd3;
                 end
                 
                 `kseg1: begin //kseg1: unmapped, uncached
@@ -72,12 +72,12 @@ module MMU
                 
                 `kseg2, `kseg3: begin //kseg2 & kseg3: mapped
                     bus_paddr  <= vaddr;
-                    bus_cached <= cp0_Config[`K23];
+                    bus_cached <= cp0_Config[`K23] == 3'd3;
                 end
 
                 default: begin //kuseg: mapped
                     bus_paddr  <= cp0_Status[`ERL] ? vaddr : {vaddr[31:28] + 4'd4, vaddr[27:0]};
-                    bus_cached <= cp0_Config[`KU];
+                    bus_cached <= cp0_Config[`KU] == 3'd3;
                 end
             endcase
         end
@@ -109,7 +109,7 @@ module MMU
             `kseg0: begin //kseg0: unmapped
                 bus_paddr  <= {3'b000, vaddr[28:0]};
                 bus_en     <= en && !exc_flag;
-                bus_cached <= cp0_Config[`K0];
+                bus_cached <= cp0_Config[`K0] == 3'd3;
             end
             
             `kseg1: begin //kseg1: unmapped, uncached
