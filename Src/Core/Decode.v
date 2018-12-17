@@ -958,9 +958,18 @@ module Decode
                 r2read    <= `true;
             end
             
-            `OP_CACHE: begin //Temporarily decode as nop
+            `OP_CACHE: begin
                 instvalid <= `true;
                 exc_cpu   <= usermode && !cp0_Status[`CU0];
+                // case (rt)
+                //     `CA_III:
+                //     `CA_DIWI:
+                //     `CA_IIST:
+                //     `CA_DIST:
+                //     `CA_IHI:
+                //     `CA_DHI:
+                //     `CA_DHWI:
+                // endcase
             end
 
             `OP_LL: begin

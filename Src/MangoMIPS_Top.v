@@ -1,5 +1,5 @@
 /********************MangoMIPS32*******************
-Filename:   AXI_Top.v
+Filename:   MangoMIPS_Top.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/

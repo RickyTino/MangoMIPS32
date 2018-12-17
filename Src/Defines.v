@@ -210,6 +210,15 @@ Version:    v1.0.1
 `define         C0F_ERET            6'b011000
 `define         C0F_WAIT            6'b100000
 
+//Rt: Opcode = CACHE
+`define         CA_III              5'b00000
+`define         CA_DIWI             5'b00001
+`define         CA_IIST             5'b01000
+`define         CA_DIST             5'b01001
+`define         CA_IHI              5'b10000
+`define         CA_DHI              5'b10001
+`define         CA_DHWI             5'b10101
+
 /*--------------------ALU Op--------------------*/
 `define         ALU_NOP             `ALUOp_W'h00
 `define         ALU_AND             `ALUOp_W'h01
@@ -292,10 +301,10 @@ Version:    v1.0.1
 `define         CP0_EBase           {5'd15, 3'd1}
 `define         CP0_Config          {5'd16, 3'd0}
 `define         CP0_Config1         {5'd16, 3'd1}
-`define         CP0_TagLo0          {5'd28, 3'd0}
-`define         CP0_TagLo1          {5'd28, 3'd2}
-`define         CP0_TagHi0          {5'd29, 3'd0}
-`define         CP0_TagHi1          {5'd29, 3'd2}
+`define         CP0_ITagLo          {5'd28, 3'd0}
+`define         CP0_DTagLo          {5'd28, 3'd2}
+`define         CP0_ITagHi          {5'd29, 3'd0}
+`define         CP0_DTagHi          {5'd29, 3'd2}
 `define         CP0_ErrorEPC        {5'd30, 3'd0}
 
 //Fields of Status Register

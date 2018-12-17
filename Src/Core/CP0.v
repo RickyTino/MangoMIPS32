@@ -49,6 +49,8 @@ module CP0
     reg  [`Word] Count;
     reg  [`Word] Compare;
     reg  [`Word] EPC;
+    reg  [`Word] ITagHi;
+    reg  [`Word] DTagHi;
 
     //Status
     reg          Status_CU0;
@@ -132,6 +134,8 @@ module CP0
     };
 
     //Config1
+    `define  IS  3'd`ICache_N - 3'd1
+    `define  DS  3'd`DCache_N - 3'd1
     wire [`Word] Config1 = {
         1'b0,       //31    Config2
     `ifdef Fixed_Mapping_MMU
@@ -139,11 +143,11 @@ module CP0
     `else
         6'd31,      //30:25 MMU Size-1
     `endif
-        3'b0,       //24:22 IS
-        3'b0,       //21:19 IL
+        `IS,        //24:22 IS
+        3'd5,       //21:19 IL = 5 64B
         3'b0,       //18:16 IA
-        3'b0,       //15:13 DS
-        3'b0,       //12:10 DL
+        `DS,        //15:13 DS
+        3'd5,       //12:10 DL = 5 64B
         3'b0,       // 9: 7 DA
         1'b0,       // 6    C2
         1'b0,       // 5    MD
@@ -208,6 +212,10 @@ module CP0
     //Wired
     reg  [`TLB_Idx] Wired__;
     wire [`Word   ] Wired = {`Random_Z'b0, Wired__};
+
+    //ITagLo
+
+    //DTagLo
 
 
     wire [`Word] pcm4     = pc - 32'h4;

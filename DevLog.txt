@@ -330,6 +330,22 @@
 - NSCSCC模式下FM-MMU复位K0/KU/K23可缓存，TLB-MMU复位K0可缓存。
 
 --------------------------------------------------
+[20181217]
+- T: TagHi和TagLo按照龙芯手册实现即可
+- 添加了CACHE指令编码定义
+- 细微优化ALU_MEM
+- Decode的Cache指令位置预留了编码
+- T: PREF指令无限延后，SYNC指令就作为空指令
+- Config添加了Cache配置项
+- T: Cache的宏定义项不放进defines，因为全局一般用不着
+- Inst_Cache 开发中
+- T: inst cache的cache指令问题
+- Q: dist_mem貌似只有一个写端口，在DCache里怎么用要思考
+- T: 使用一个信号，对写的情况进行多路选择
+- 
+
+
+--------------------------------------------------
 [特别笔记区段]
 需要的几场特别调试：
 - User Mode CpU & AdEL
@@ -347,25 +363,32 @@ LB      LBU     LH      LHU     LW      LWL     LWR     LL      SB      SH
 SW      SWL     SWR     SC      TEQ     TNE     TGE     TGEU    TLT     TLTU
 TEQI    TNEI    TGEI    TGEIU   TLTI    TLTIU   TLBR    TLBWI   TLBWR   TLBP
 
+CACHE操作类型：
+- I-Index Invalidate
+- D-Index Writeback Invalidate
+- I/D-Index Store Tag
+- I/D-Hit Invalidate
+- D-Hit Writeback Invalidate
+
 计划实现的CP0寄存器有：【后面备注批次】
-- Index    (Register  0, Select 0)     //3
-- Random   (Register  1, Select 0)     //3
-- EntryLo0 (Register  2, Select 0)     //3
-- EntryLo1 (Register  3, Select 0)     //3
-- Context  (Register  4, Select 0)     //3
-- PageMask (Register  5, Select 0)     //3
-- Wired    (Register  6, Select 0)     //3
+- Index    (Register  0, Select 0)     
+- Random   (Register  1, Select 0)     
+- EntryLo0 (Register  2, Select 0)     
+- EntryLo1 (Register  3, Select 0)     
+- Context  (Register  4, Select 0)     
+- PageMask (Register  5, Select 0)     
+- Wired    (Register  6, Select 0)     
 - BadVAddr (Register  8, Select 0)     
 - Count    (Register  9, Select 0)     
-- EntryHi  (Register 10, Select 0)     //3
+- EntryHi  (Register 10, Select 0)     
 - Compare  (Register 11, Select 0)     
 - Status   (Register 12, Select 0)     
 - Cause    (Register 13, Select 0)     
 - EPC      (Register 14, Select 0)     
 - PrId     (Register 15, Select 0)     
 - EBase    (Register 15, Select 1)     //4 //可能不实现
-- Config   (Register 16, Select 0)     //2
-- Config1  (Register 16, Select 1)     //2
+- Config   (Register 16, Select 0)     
+- Config1  (Register 16, Select 1)     
 - TagLo    (Register 28, Select 0, 2)  //4
 - TagHi    (Register 29, Select 0, 2)  //4
 
@@ -388,7 +411,7 @@ TEQI    TNEI    TGEI    TGEIU   TLTI    TLTIU   TLBR    TLBWI   TLBWR   TLBP
 - ERET
 
 对MIPS32R1的全面适配，以下工作放到最后：
-- 完整的SYNC/PREF
+- 完整的PREF
 - ErrorEPC与NMI
 
 总结经验

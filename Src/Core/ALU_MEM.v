@@ -37,8 +37,6 @@ module ALU_MEM
     assign mulres = smres;
 
     always @(*) begin
-        hilo_wen  <= `false;
-        hilo_o    <= hilo_i; 
         alures_o  <= alures_i;
         cp0_addr  <= `CP0_ZeroReg;
         cp0_wen   <= `false;
@@ -47,8 +45,20 @@ module ALU_MEM
         case (aluop)
             `ALU_MFHI: alures_o <= hilo_i[`Hi];
             `ALU_MFLO: alures_o <= hilo_i[`Lo];
-            //`ALU_MUL:  alures_o <= smres[31:0];
 
+            `ALU_MFC0: begin
+                cp0_addr <= cp0sel;
+                alures_o <= cp0_rdata;
+            end
+
+            `ALU_MTC0: begin
+                cp0_addr  <= cp0sel;
+                cp0_wen   <= !exc_flag;
+                cp0_wdata <= alures_i;
+            end
+        endcase
+
+        case (aluop)
             `ALU_MTHI: begin
                 hilo_wen <= `true;
                 hilo_o   <= {alures_i, hilo_i[`Lo]};
@@ -95,15 +105,9 @@ module ALU_MEM
                 hilo_o   <= divres;
             end
 
-            `ALU_MFC0: begin
-                cp0_addr <= cp0sel;
-                alures_o <= cp0_rdata;
-            end
-
-            `ALU_MTC0: begin
-                cp0_addr  <= cp0sel;
-                cp0_wen   <= !exc_flag;
-                cp0_wdata <= alures_i;
+            default: begin
+                hilo_wen <= `false;
+                hilo_o   <= hilo_i;
             end
         endcase
 

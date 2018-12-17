@@ -35,3 +35,14 @@ Version:    v1.0.1
 //`define Output_Exception_Info
 
 // ------------------------------------------------
+// The value of "ICache_N" and "DCache_N" refers to the size of inst-cache and 
+// data-cache in the way described below:
+// Cache_Size | 2KB     4KB     8KB     16KB    32KB    64KB    128KB
+// Cache_N    | 0       1       2       3       4       5       6
+// Note that the result is UNPREDICTABLE if this value is set different from the
+// actual size of the implemented cache.
+
+`define     ICache_N     2
+`define     DCache_N     2
+
+// ------------------------------------------------
