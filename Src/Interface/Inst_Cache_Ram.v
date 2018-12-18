@@ -10,66 +10,48 @@ Version:    v1.0.1
 `define         RamAddr     (8 + `N) : 0
 
 module Inst_Cache_Ram (
-    input  wire            clk,
-    input  wire            wpb,
-    input  wire            ena,   enb,
-    input  wire [`ByteWEn] wea,   web,
-    input  wire [`RamAddr] addra, addrb,
-    input  wire [`DataBus] dina,  dinb,
-    output wire [`DataBus] douta, doutb
+    input  wire             clk,
+    input  wire [`ByteWEn]  wen,
+    input  wire [`RamAddr]  adw,
+    input  wire [`RamAddr]  adr,
+    input  wire [`DataBus]  din,
+    output wire [`DataBus]  dout
 );
 
-    wire [`ByteWEn] wen = wpb ? web  : wea;
-    wire [`DataBus] din = wpb ? dinb : dina;
-
-    ICache_RAM_Unit unit0 (
+    ICache_Ram_Unit unit0 (
         .clk    (clk            ),
-        .a      (addra          ),
-        .dpra   (addrb          ),
-        .d      (din  [`Byte0]  ),
-        .we     (wen  [0]       ),
-        .spo    (douta[`Byte0]  ),
-        .dpo    (doutb[`Byte0]  )
+        .we     (wen [0]        ),
+        .a      (adw            ),
+        .d      (din [`Byte0]   ),
+        .dpra   (adr            ),
+        .dpo    (dout[`Byte0]   )
     );
 
-    ICache_RAM_Unit unit1 (
+    ICache_Ram_Unit unit1 (
         .clk    (clk            ),
-        .a      (addra          ),
-        .dpra   (addrb          ),
-        .d      (din  [`Byte1]  ),
-        .we     (wen  [1]       ),
-        .spo    (douta[`Byte1]  ),
-        .dpo    (doutb[`Byte1]  )
+        .we     (wen [1]        ),
+        .a      (adw            ),
+        .d      (din [`Byte1]   ),
+        .dpra   (adr            ),
+        .dpo    (dout[`Byte1]   )
     );
 
-    ICache_RAM_Unit unit2 (
+    ICache_Ram_Unit unit2 (
         .clk    (clk            ),
-        .a      (addra          ),
-        .dpra   (addrb          ),
-        .d      (din  [`Byte2]  ),
-        .we     (wen  [2]       ),
-        .spo    (douta[`Byte2]  ),
-        .dpo    (doutb[`Byte2]  )
+        .we     (wen [2]        ),
+        .a      (adw            ),
+        .d      (din [`Byte2]   ),
+        .dpra   (adr            ),
+        .dpo    (dout[`Byte2]   )
     );
     
-    ICache_RAM_Unit unit3 (
+    ICache_Ram_Unit unit3 (
         .clk    (clk            ),
-        .a      (addra          ),
-        .dpra   (addrb          ),
-        .d      (din  [`Byte3]  ),
-        .we     (wen  [3]       ),
-        .spo    (douta[`Byte3]  ),
-        .dpo    (doutb[`Byte3]  )
+        .we     (wen [3]        ),
+        .a      (adw            ),
+        .d      (din [`Byte3]   ),
+        .dpra   (adr            ),
+        .dpo    (dout[`Byte3]   )
     );
 
 endmodule
-
-// ICache_RAM_Unit your_instance_name (
-//   .a(a),        // input wire [10 : 0] a
-//   .d(d),        // input wire [7 : 0] d
-//   .dpra(dpra),  // input wire [10 : 0] dpra
-//   .clk(clk),    // input wire clk
-//   .we(we),      // input wire we
-//   .spo(spo),    // output wire [7 : 0] spo
-//   .dpo(dpo)    // output wire [7 : 0] dpo
-// );

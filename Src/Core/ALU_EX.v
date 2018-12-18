@@ -84,7 +84,7 @@ module ALU_EX
         //         default: clzres[1:0] <= 2'b00;
         //     endcase
         // end
-        case (clzopr)
+        casez (clzopr)
             32'b00000000000000000000000000000000: clzres <= 32;
             32'b00000000000000000000000000000001: clzres <= 31;
             32'b0000000000000000000000000000001?: clzres <= 30;

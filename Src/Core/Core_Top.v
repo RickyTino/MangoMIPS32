@@ -161,7 +161,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] cp0_rdata;
     wire            cp0_idxwen;
     wire            cp0_itmwen;
-    wire [`TLB_Idx] cp0_tlbidx;
+    wire [`DataBus] cp0_tlbidx;
     wire [`TLB_Itm] cp0_tlbitm; 
 
     wire [`DataBus] cp0_Index;

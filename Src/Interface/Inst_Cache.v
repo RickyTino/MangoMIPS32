@@ -16,8 +16,6 @@ Version:    v1.0.1
 `define         ptag        (20 - `N) : 0
 `define         RamAddr     ( 8 + `N) : 0
 
-
-
 module Inst_Cache (
     input  wire        aclk,
     input  wire        aresetn,
@@ -38,20 +36,20 @@ module Inst_Cache (
     input  wire        rvalid,
     output wire        rready,
     output wire [ 3:0] awid,
-    output reg  [31:0] awaddr,
-    output reg  [ 3:0] awlen,
+    output wire [31:0] awaddr,
+    output wire [ 3:0] awlen,
     output wire [ 2:0] awsize,
     output wire [ 1:0] awburst,
     output wire [ 1:0] awlock,
     output wire [ 3:0] awcache,
     output wire [ 2:0] awprot,
-    output reg         awvalid,
+    output wire        awvalid,
     input  wire        awready,
     output wire [ 3:0] wid,
-    output reg  [31:0] wdata,
-    output reg  [ 3:0] wstrb,
-    output reg         wlast,
-    output reg         wvalid,
+    output wire [31:0] wdata,
+    output wire [ 3:0] wstrb,
+    output wire        wlast,
+    output wire        wvalid,
     input  wire        wready,
     input  wire [ 3:0] bid,
     input  wire [ 1:0] bresp,
@@ -75,203 +73,179 @@ module Inst_Cache (
     assign arprot   = 3'b0;
     assign rready   = 1'b1;
     assign awid     = 4'b0;
+    assign awaddr   = 32'b0;
+    assign awlen    = 4'b0;
     assign awsize   = 3'b010;
     assign awburst  = 2'b01;
     assign awlock   = 2'b0;
     assign awcache  = 4'b0;
     assign awprot   = 3'b0;
+    assign awvalid  = 1'b0;
     assign wid      = 4'b0;
+    assign wdata    = 32'b0;
+    assign wstrb    = 4'b0;
+    assign wlast    = 1'b0;
+    assign wvalid   = 1'b0;
     assign bready   = 1'b1;
 
-    wire rreq = bus_en & !refs;
+    //Cached Channel
+    wire            cached;
+    
+    `ifdef NSCSCC_Mode
+        assign cached = 1'b1;
+    `else
+        assign cached = bus_cached;
+    `endif
+    
+    reg  [`ByteWEn] ca_wen;
+    reg  [`RamAddr] ca_adw;
+    reg  [`RamAddr] ca_adr;
+    reg  [`DataBus] ca_din;
+    wire [`DataBus] ca_dout;
 
-    //Cached Datapath
-    reg             ena,   enb;
-    reg  [`ByteWEn] wea,   web;
-    reg  [`RamAddr] addra, addrb;
-    reg  [`DataBus] dina,  dinb;
-    wire [`DataBus] douta, doutb;
-
-    Inst_Cache_RAM icacheram (
-      .clk      (clk),
-      .wpb      (wportb),
-      .ena      (ena),
-      .wea      (wea),
-      .addra    (addra),
-      .dina     (dina),
-      .douta    (douta),
-      .enb      (enb),
-      .web      (web),
-      .addrb    (addrb),
-      .dinb     (dinb),
-      .doutb    (doutb)
+    Inst_Cache_Ram icacheram (
+      .clk  (aclk   ),
+      .wen  (ca_wen ),
+      .adw  (ca_adw ),
+      .adr  (ca_adr ),
+      .din  (ca_din ),
+      .dout (ca_dout)
     );
 
     reg  [`ptag] ca_ptag  [`lines];
     reg          ca_valid [`lines];
-    reg          ca_dirty [`lines];
 
     wire [`index] ad_index = bus_addr[`ad_idx ];
     wire [`ptag ] ad_ptag  = bus_addr[`ad_ptag];
     wire [`ptag ] ln_ptag  = ca_ptag [ad_index];
     wire          ln_valid = ca_valid[ad_index];
-    wire          ln_dirty = ca_dirty[ad_index];
     wire          ln_adhit = ln_ptag == ad_ptag;
     wire          ln_hit   = ln_adhit && ln_valid;
-    // wire         ln_wb    = !ln_hit && ln_valid && ln_dirty; 
 
-    //Uncached Datapath
+    //Uncached Channel
     reg [`Word] uc_data;
     reg [`Word] uc_addr;
     reg         uc_valid;
     wire        uc_hit = (uc_addr ^ bus_addr) == 0 && uc_valid;
-    reg         w_rdy;
 
     reg         r_streq;
-    reg         w_streq;
-
-
-    assign bus_streq = r_streq | w_streq;
+    assign bus_streq = r_streq; // hit invalidate?
 
     always @(*) begin
         r_streq <= `false;
-        w_streq <= `false;
-        ena     <= `false;
-        wea     <= `false;
-        addra   <= `false;
-        dina    <= `false;
+        ca_adr   <= 0;
         
         if(bus_en) begin
-            if(bus_cached) begin
-                if(ln_hit) begin
-                    ena   <= !bus_stall;
-                    wea   <= bus_wen;
-                    addra <= bus_addr[`ad_ramad];
-                    dina  <= bus_wdata;
-                end
-                else begin
-                    r_streq <= `true;
-                end
+            if(cached) begin
+                if(ln_hit) ca_adr <= bus_addr[`ad_ramad];
+                else r_streq <= `true;
             end
-            else begin
-                if(refs) w_streq <= !w_rdy;
-                else     r_streq <= !uc_hit;
-            end
+            else r_streq <= !uc_hit;
         end
     end
 
-    reg [`Word] rlk_addr;
-    reg [`Word] wlk_addr;
-    reg [`Word] wlk_data;
-    reg [ 3: 0] wlk_strb;
-    reg [ 1: 0] r_state, w_state;
-
+    reg  [ 3: 0 ] r_cnt;
+    reg  [ 1: 0 ] r_state;
+    reg  [`Word ] rlk_addr;
+    reg           rlk_cached;
+    wire [`index] rlk_index = rlk_addr[`ad_idx];
+	
+	integer i;
     always @(posedge aclk, negedge aresetn) begin
         if(!aresetn) begin
-            r_state  <= 0;
-            w_state  <= 0;
+            for(i = 0; i < `lineN; i = i + 1) begin
+                ca_ptag [i] <= 0;
+                ca_valid[i] <= `false;
+            end
+            r_state    <= 0;
+            r_cnt      <= 0;
+            rlk_addr   <= `ZeroWord;
+            rlk_cached <= `false;
 
             arid     <= 0;
             araddr   <= 0;
             arlen    <= 0;
             arvalid  <= 0;
-            awaddr   <= 0;
-            awlen    <= 0;
-            awvalid  <= 0;
-            wdata    <= 0;
-            wstrb    <= 0;
-            wlast    <= 0;
-            wvalid   <= 0;
+
+            ca_wen   <= `WrDisable;
+            ca_adw   <= 0;
+            ca_din   <= `ZeroWord;
 
             uc_data  <= `ZeroWord;
             uc_addr  <= `ZeroWord;
             uc_valid <= `false;
-            w_rdy    <= `false;
-            rlk_addr <= `ZeroWord;
-            wlk_addr <= `ZeroWord;
-            wlk_data <= `ZeroWord;
-            wlk_strb <= 0;
         end
         else begin
             arid     <= 0;
             araddr   <= 0;
             arlen    <= 0;
             arvalid  <= 0;
-            awaddr   <= 0;
-            awlen    <= 0;
-            awvalid  <= 0;
-            wdata    <= 0;
-            wstrb    <= 0;
-            wlast    <= 0;
-            wvalid   <= 0;
 
-            uc_valid <= `false;
-            w_rdy    <= `false;
+            // uc_valid <= `false;
 
             case (r_state)
                 0: 
-                if(rreq && !uc_hit) begin
-                    rlk_addr <= bus_addr;
-                    r_state  <= 1;
+                if(cached) begin
+                    if(bus_en && !ln_hit) begin
+                        rlk_addr   <= {bus_addr[31:6], 6'b0};
+                        rlk_cached <= cached;
+                        r_cnt      <= 0;
+                        r_state    <= 1;
+                        ca_ptag [ad_index] <= bus_addr[`ad_ptag];
+                        ca_valid[ad_index] <= `false;
+                    end
                 end
-                
+                else begin
+                    if(bus_en && !uc_hit) begin
+                        rlk_addr   <= bus_addr;
+                        rlk_cached <= cached;
+                        r_state    <= 1;
+                    end
+                end
+
                 1: 
                 if(arvalid && arready) r_state <= 2;
                 else begin
-                    arid    <= 4'b0010;
-                    araddr  <= rlk_addr;
-                    arlen   <= 4'h0;
+                    if(rlk_cached) begin
+                        arid   <= 4'b0001;
+                        araddr  <= rlk_addr;
+                        arlen   <= 4'hF;
+                    end
+                    else begin
+                        arid    <= 4'b0010;
+                        araddr  <= rlk_addr;
+                        arlen   <= 4'h0;
+                    end
                     arvalid <= `true;
                 end
 
                 2:
                 if(rvalid) begin
-                    uc_data <= rdata;
-                    uc_addr <= rlk_addr;
+                    if(rlk_cached) begin
+                        ca_wen <= 4'hF;
+                        ca_adw <= {rlk_index, r_cnt};
+                        ca_din <= rdata;
+                        r_cnt  <= r_cnt + 1;
+                        if(rlast) ca_valid[rlk_index] <= `true;
+                    end
+                    else begin
+                        uc_data <= rdata;
+                        uc_addr <= rlk_addr;
+                        if(rlast) uc_valid <= `true;
+                    end
                     if(rlast) r_state <= 3;
                 end
 
-                3: begin
-                    uc_valid <= `true;
-                    if((bus_stall ^ r_streq) == 0) r_state <= 0;
-                end
-            endcase
-
-            case (w_state)
-                0:
-                if(wreq && !w_rdy) begin
-                    wlk_addr <= bus_addr;
-                    wlk_data <= bus_wdata;
-                    wlk_strb <= bus_wen;
-                    w_state  <= 1;
-                end
-
-                1:
-                if(awvalid && awready) w_state <= 2;
-                else begin
-                    awaddr  <= wlk_addr;
-                    awlen   <= 4'h0;
-                    awvalid <= `true;
-                end
-
-                2:
-                if(wvalid && wready) w_state <= 3;
-                else begin
-                    wdata  <= wlk_data;
-                    wstrb  <= wlk_strb;
-                    wvalid <= `true;
-                    wlast  <= `true;
-                end
-
                 3:
-                if(bvalid) begin
-                    w_state <= 0;
-                    w_rdy  <= `true;
-                end
+                if((bus_stall ^ r_streq) == 0) begin
+					r_state <= 0;
+					uc_valid <= `false;
+				end
+                
             endcase
         end
     end
 
-    assign bus_rdata = uc_data;
+    assign bus_rdata = rlk_cached ? ca_dout : uc_data;
 
 endmodule

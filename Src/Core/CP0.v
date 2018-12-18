@@ -27,7 +27,7 @@ module CP0
 
     input  wire            tlb_idxwen,
     input  wire            tlb_itmwen,
-    input  wire [`TLB_Idx] tlb_index,
+    input  wire [`DataBus] tlb_index,
     input  wire [`TLB_Itm] tlb_item,
 
     output wire [`DataBus] Index_o,
