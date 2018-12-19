@@ -17,6 +17,7 @@ module Divider
     input  wire            rst,
     input  wire            start,
     input  wire            abandon,
+    input  wire            stall,
     input  wire            signdiv,
     input  wire [`DataBus] opr1,
     input  wire [`DataBus] opr2,
@@ -96,7 +97,7 @@ module Divider
                 `DivEnd: begin
                     res   <= {dividend[64:33], dividend[31:0]};
                     ready <= `true;
-                    if(!start) begin
+                    if(!start && !stall) begin
                         state <= `DivFree;
                         ready <= `false;
                         res   <= `ZeroDWord;

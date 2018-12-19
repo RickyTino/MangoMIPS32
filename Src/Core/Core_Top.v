@@ -412,6 +412,7 @@ module MangoMIPS_Core_Top
         .rst        (rst        ),
         .start      (div_start  ),
         .abandon    (flush[`EX] ),
+        .stall      (stall[`EX] ),
         .signdiv    (div_signed ),
         .opr1       (ex_opr1    ),
         .opr2       (ex_opr2    ),

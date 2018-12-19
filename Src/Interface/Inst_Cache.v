@@ -91,7 +91,7 @@ module Inst_Cache (
     //Cached Channel
     wire            cached;
     
-    `ifdef NSCSCC_Mode
+    `ifdef IF_Force_Cached
         assign cached = 1'b1;
     `else
         assign cached = bus_cached;

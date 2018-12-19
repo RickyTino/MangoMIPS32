@@ -60,10 +60,6 @@ module ALU_EX
     reg  [`Word] clzopr;
     reg  [`Word] clzres;
 
-    // wire [15:0] part1 = clzres[4] ? clzopr[15: 0] : clzopr[31:16];
-    // wire [ 7:0] part2 = clzres[3] ? part1 [ 7: 0] : part1 [15: 8];
-    // wire [ 3:0] part3 = clzres[2] ? part2 [ 3: 0] : part2 [ 7: 4];
-    
     always @(*) begin
         case (aluop)
             `ALU_CLO:  clzopr <= ~opr1;
@@ -71,19 +67,6 @@ module ALU_EX
             default:   clzopr <= `ZeroWord;
         endcase
 
-        // if(clzopr == `ZeroWord) clzres <= 32'd32;
-        // else begin
-        //     clzres[31:5] <= 27'b0;
-        //     clzres[4]    <= (clzopr[31:16] == 16'b0);
-        //     clzres[3]    <= (part1 [15: 8] ==  8'b0);
-        //     clzres[2]    <= (part2 [ 7: 4] ==  4'b0);
-        //     casez (part3)
-        //         4'b0001: clzres[1:0] <= 2'b11;
-        //         4'b001?: clzres[1:0] <= 2'b10;
-        //         4'b01??: clzres[1:0] <= 2'b01;
-        //         default: clzres[1:0] <= 2'b00;
-        //     endcase
-        // end
         casez (clzopr)
             32'b00000000000000000000000000000000: clzres <= 32;
             32'b00000000000000000000000000000001: clzres <= 31;

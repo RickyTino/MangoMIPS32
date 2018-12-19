@@ -86,7 +86,7 @@ module CP0
         1'b0,
         Cause_CE,       //29:28 R
         4'b0,
-    `ifdef NSCSCC_Mode
+    `ifdef Disable_Cause_IV
         1'b0,
     `else
         Cause_IV,       //23 RW
@@ -260,7 +260,7 @@ module CP0
             Cause_IP        <= 0;
             Cause_ExcCode   <= 0;
             EPC             <= 0;
-            `ifdef NSCSCC_Mode
+            `ifdef Reset_Cacheable
             Config_K23      <= 3'd3;
             Config_KU       <= 3'd3;
             Config_K0       <= 3'd3;
