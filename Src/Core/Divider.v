@@ -81,7 +81,9 @@ module Divider
                 
                 `DivOn: begin
                     if(cnt != 6'd32) begin
-                        dividend <= temp[32] ? {dividend[63:0], 1'b0} : {temp[31:0], dividend[31:0], 1'b1};
+                        dividend <= temp[32] ? 
+                                    {dividend[63:0], 1'b0} : 
+                                    {temp[31:0], dividend[31:0], 1'b1};
                         cnt      <= cnt + 1;
                     end
                     else begin

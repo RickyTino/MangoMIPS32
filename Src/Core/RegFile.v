@@ -35,12 +35,12 @@ module RegFile
 );
 
     reg [`Word] GPR [0:31];
-    integer i;
+    integer j;
     
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            for(i = 0; i < 32; i = i + 1)
-                GPR[i] <= `ZeroWord;
+            for(j = 0; j < 32; j = j + 1)
+                GPR[j] <= `ZeroWord;
         end
         else begin
             if(waddr != `ZeroReg) begin
@@ -53,69 +53,109 @@ module RegFile
     end
     
     //Data transmission
-    wire r1_rvalid  = re1 && (r1addr != `ZeroReg);
-    wire r1_ex_haz  = ( ex_wreg != `WrDisable) && (r1addr ^ ex_wraddr)  == 0;
-    wire r1_mem_haz = (mem_wreg != `WrDisable) && (r1addr ^ mem_wraddr) == 0;
-    wire r1_wb_haz  = (      we != `WrDisable) && (r1addr ^ waddr)      == 0;
+    // wire r1_rvalid  = re1 && (r1addr != `ZeroReg);
+    // wire r1_ex_haz  = ( ex_wreg != `WrDisable) && (r1addr ^ ex_wraddr)  == 0;
+    // wire r1_mem_haz = (mem_wreg != `WrDisable) && (r1addr ^ mem_wraddr) == 0;
+    // wire r1_wb_haz  = (      we != `WrDisable) && (r1addr ^ waddr)      == 0;
 
-    wire r2_rvalid  = re2 && (r2addr != `ZeroReg);
-    wire r2_ex_haz  = ( ex_wreg != `WrDisable) && (r2addr ^ ex_wraddr)  == 0;
-    wire r2_mem_haz = (mem_wreg != `WrDisable) && (r2addr ^ mem_wraddr) == 0;
-    wire r2_wb_haz  = (      we != `WrDisable) && (r2addr ^ waddr)      == 0;
+    // wire r2_rvalid  = re2 && (r2addr != `ZeroReg);
+    // wire r2_ex_haz  = ( ex_wreg != `WrDisable) && (r2addr ^ ex_wraddr)  == 0;
+    // wire r2_mem_haz = (mem_wreg != `WrDisable) && (r2addr ^ mem_wraddr) == 0;
+    // wire r2_wb_haz  = (      we != `WrDisable) && (r2addr ^ waddr)      == 0;
 
-    wire [`Word] r1_ex_rpl,  r2_ex_rpl;
-    wire [`Word] r1_mem_rpl, r2_mem_rpl;
-    wire [`Word] r1_wb_rpl,  r2_wb_rpl;
+    // wire [`Word] r1_ex_rpl,  r2_ex_rpl;
+    // wire [`Word] r1_mem_rpl, r2_mem_rpl;
+    // wire [`Word] r1_wb_rpl,  r2_wb_rpl;
 
-    assign r1_ex_rpl[`Byte0] = ex_wreg[0] ? ex_alures[`Byte0] : GPR[r1addr][`Byte0];
-    assign r1_ex_rpl[`Byte1] = ex_wreg[1] ? ex_alures[`Byte1] : GPR[r1addr][`Byte1];
-    assign r1_ex_rpl[`Byte2] = ex_wreg[2] ? ex_alures[`Byte2] : GPR[r1addr][`Byte2];
-    assign r1_ex_rpl[`Byte3] = ex_wreg[3] ? ex_alures[`Byte3] : GPR[r1addr][`Byte3];
+    // assign r1_ex_rpl[`Byte0] = ex_wreg[0] ? ex_alures[`Byte0] : GPR[r1addr][`Byte0];
+    // assign r1_ex_rpl[`Byte1] = ex_wreg[1] ? ex_alures[`Byte1] : GPR[r1addr][`Byte1];
+    // assign r1_ex_rpl[`Byte2] = ex_wreg[2] ? ex_alures[`Byte2] : GPR[r1addr][`Byte2];
+    // assign r1_ex_rpl[`Byte3] = ex_wreg[3] ? ex_alures[`Byte3] : GPR[r1addr][`Byte3];
 
-    assign r1_mem_rpl[`Byte0] = mem_wreg[0] ? mem_alures[`Byte0] : GPR[r1addr][`Byte0];
-    assign r1_mem_rpl[`Byte1] = mem_wreg[1] ? mem_alures[`Byte1] : GPR[r1addr][`Byte1];
-    assign r1_mem_rpl[`Byte2] = mem_wreg[2] ? mem_alures[`Byte2] : GPR[r1addr][`Byte2];
-    assign r1_mem_rpl[`Byte3] = mem_wreg[3] ? mem_alures[`Byte3] : GPR[r1addr][`Byte3];
+    // assign r1_mem_rpl[`Byte0] = mem_wreg[0] ? mem_alures[`Byte0] : GPR[r1addr][`Byte0];
+    // assign r1_mem_rpl[`Byte1] = mem_wreg[1] ? mem_alures[`Byte1] : GPR[r1addr][`Byte1];
+    // assign r1_mem_rpl[`Byte2] = mem_wreg[2] ? mem_alures[`Byte2] : GPR[r1addr][`Byte2];
+    // assign r1_mem_rpl[`Byte3] = mem_wreg[3] ? mem_alures[`Byte3] : GPR[r1addr][`Byte3];
 
-    assign r1_wb_rpl[`Byte0] = we[0] ? wdata[`Byte0] : GPR[r1addr][`Byte0];
-    assign r1_wb_rpl[`Byte1] = we[1] ? wdata[`Byte1] : GPR[r1addr][`Byte1];
-    assign r1_wb_rpl[`Byte2] = we[2] ? wdata[`Byte2] : GPR[r1addr][`Byte2];
-    assign r1_wb_rpl[`Byte3] = we[3] ? wdata[`Byte3] : GPR[r1addr][`Byte3];
+    // assign r1_wb_rpl[`Byte0] = we[0] ? wdata[`Byte0] : GPR[r1addr][`Byte0];
+    // assign r1_wb_rpl[`Byte1] = we[1] ? wdata[`Byte1] : GPR[r1addr][`Byte1];
+    // assign r1_wb_rpl[`Byte2] = we[2] ? wdata[`Byte2] : GPR[r1addr][`Byte2];
+    // assign r1_wb_rpl[`Byte3] = we[3] ? wdata[`Byte3] : GPR[r1addr][`Byte3];
 
-    assign r2_ex_rpl[`Byte0] = ex_wreg[0] ? ex_alures[`Byte0] : GPR[r2addr][`Byte0];
-    assign r2_ex_rpl[`Byte1] = ex_wreg[1] ? ex_alures[`Byte1] : GPR[r2addr][`Byte1];
-    assign r2_ex_rpl[`Byte2] = ex_wreg[2] ? ex_alures[`Byte2] : GPR[r2addr][`Byte2];
-    assign r2_ex_rpl[`Byte3] = ex_wreg[3] ? ex_alures[`Byte3] : GPR[r2addr][`Byte3];
+    // assign r2_ex_rpl[`Byte0] = ex_wreg[0] ? ex_alures[`Byte0] : GPR[r2addr][`Byte0];
+    // assign r2_ex_rpl[`Byte1] = ex_wreg[1] ? ex_alures[`Byte1] : GPR[r2addr][`Byte1];
+    // assign r2_ex_rpl[`Byte2] = ex_wreg[2] ? ex_alures[`Byte2] : GPR[r2addr][`Byte2];
+    // assign r2_ex_rpl[`Byte3] = ex_wreg[3] ? ex_alures[`Byte3] : GPR[r2addr][`Byte3];
 
-    assign r2_mem_rpl[`Byte0] = mem_wreg[0] ? mem_alures[`Byte0] : GPR[r2addr][`Byte0];
-    assign r2_mem_rpl[`Byte1] = mem_wreg[1] ? mem_alures[`Byte1] : GPR[r2addr][`Byte1];
-    assign r2_mem_rpl[`Byte2] = mem_wreg[2] ? mem_alures[`Byte2] : GPR[r2addr][`Byte2];
-    assign r2_mem_rpl[`Byte3] = mem_wreg[3] ? mem_alures[`Byte3] : GPR[r2addr][`Byte3];
+    // assign r2_mem_rpl[`Byte0] = mem_wreg[0] ? mem_alures[`Byte0] : GPR[r2addr][`Byte0];
+    // assign r2_mem_rpl[`Byte1] = mem_wreg[1] ? mem_alures[`Byte1] : GPR[r2addr][`Byte1];
+    // assign r2_mem_rpl[`Byte2] = mem_wreg[2] ? mem_alures[`Byte2] : GPR[r2addr][`Byte2];
+    // assign r2_mem_rpl[`Byte3] = mem_wreg[3] ? mem_alures[`Byte3] : GPR[r2addr][`Byte3];
 
-    assign r2_wb_rpl[`Byte0] = we[0] ? wdata[`Byte0] : GPR[r2addr][`Byte0];
-    assign r2_wb_rpl[`Byte1] = we[1] ? wdata[`Byte1] : GPR[r2addr][`Byte1];
-    assign r2_wb_rpl[`Byte2] = we[2] ? wdata[`Byte2] : GPR[r2addr][`Byte2];
-    assign r2_wb_rpl[`Byte3] = we[3] ? wdata[`Byte3] : GPR[r2addr][`Byte3];
+    // assign r2_wb_rpl[`Byte0] = we[0] ? wdata[`Byte0] : GPR[r2addr][`Byte0];
+    // assign r2_wb_rpl[`Byte1] = we[1] ? wdata[`Byte1] : GPR[r2addr][`Byte1];
+    // assign r2_wb_rpl[`Byte2] = we[2] ? wdata[`Byte2] : GPR[r2addr][`Byte2];
+    // assign r2_wb_rpl[`Byte3] = we[3] ? wdata[`Byte3] : GPR[r2addr][`Byte3];
 
-    always @(*) begin
-        casez ({r1_rvalid, r1_ex_haz, r1_mem_haz, r1_wb_haz})
-            4'b0???: r1data <= `ZeroWord;
-            4'b11??: r1data <= r1_ex_rpl;
-            4'b101?: r1data <= r1_mem_rpl;
-            4'b1001: r1data <= r1_wb_rpl;
-            default: r1data <= GPR[r1addr];
-        endcase
+    // always @(*) begin
+    //     casez ({r1_rvalid, r1_ex_haz, r1_mem_haz, r1_wb_haz})
+    //         4'b0???: r1data <= `ZeroWord;
+    //         4'b11??: r1data <= r1_ex_rpl;
+    //         4'b101?: r1data <= r1_mem_rpl;
+    //         4'b1001: r1data <= r1_wb_rpl;
+    //         default: r1data <= GPR[r1addr];
+    //     endcase
 
-        casez ({r2_rvalid, r2_ex_haz, r2_mem_haz, r2_wb_haz})
-            4'b0???: r2data <= `ZeroWord;
-            4'b11??: r2data <= r2_ex_rpl;
-            4'b101?: r2data <= r2_mem_rpl;
-            4'b1001: r2data <= r2_wb_rpl;
-            default: r2data <= GPR[r2addr];
-        endcase
-    end
+    //     casez ({r2_rvalid, r2_ex_haz, r2_mem_haz, r2_wb_haz})
+    //         4'b0???: r2data <= `ZeroWord;
+    //         4'b11??: r2data <= r2_ex_rpl;
+    //         4'b101?: r2data <= r2_mem_rpl;
+    //         4'b1001: r2data <= r2_wb_rpl;
+    //         default: r2data <= GPR[r2addr];
+    //     endcase
+    // end
 
-    assign hazard_ex  = (r1_ex_haz  && r1_rvalid) || (r2_ex_haz  && r2_rvalid);
-    assign hazard_mem = (r1_mem_haz && r1_rvalid) || (r2_mem_haz && r2_rvalid);
+    // assign hazard_ex  = (r1_ex_haz  && r1_rvalid) || (r2_ex_haz  && r2_rvalid);
+    // assign hazard_mem = (r1_mem_haz && r1_rvalid) || (r2_mem_haz && r2_rvalid);
+
+    wire            r1_rvalid  = re1      &&   (r1addr != `ZeroReg);
+    wire [`ByteWEn] r1_ex_haz  = ex_wreg  & {4{(r1addr ^ ex_wraddr)  == 0}};
+    wire [`ByteWEn] r1_mem_haz = mem_wreg & {4{(r1addr ^ mem_wraddr) == 0}};
+    wire [`ByteWEn] r1_wb_haz  = we       & {4{(r1addr ^ waddr)      == 0}};
+    
+    wire            r2_rvalid  = re2      &&   (r2addr != `ZeroReg);
+    wire [`ByteWEn] r2_ex_haz  = ex_wreg  & {4{(r2addr ^ ex_wraddr)  == 0}};
+    wire [`ByteWEn] r2_mem_haz = mem_wreg & {4{(r2addr ^ mem_wraddr) == 0}};
+    wire [`ByteWEn] r2_wb_haz  = we       & {4{(r2addr ^ waddr)      == 0}};
+    
+    `define  ByteI  8*i+7 : 8*i
+    
+    genvar i;
+    generate
+        for(i = 0; i < 4; i = i + 1) begin
+            always @(*) begin
+                casez ({r1_rvalid, r1_ex_haz[i], r1_mem_haz[i], r1_wb_haz[i]})
+                    4'b0???: r1data[`ByteI] <= `ZeroByte;
+                    4'b11??: r1data[`ByteI] <= ex_alures  [`ByteI];
+                    4'b101?: r1data[`ByteI] <= mem_alures [`ByteI];
+                    4'b1001: r1data[`ByteI] <= wdata      [`ByteI];
+                    default: r1data[`ByteI] <= GPR[r1addr][`ByteI];
+                endcase
+                
+                casez ({r2_rvalid, r2_ex_haz[i], r2_mem_haz[i], r2_wb_haz[i]})
+                    4'b0???: r2data[`ByteI] <= `ZeroByte;
+                    4'b11??: r2data[`ByteI] <= ex_alures  [`ByteI];
+                    4'b101?: r2data[`ByteI] <= mem_alures [`ByteI];
+                    4'b1001: r2data[`ByteI] <= wdata      [`ByteI];
+                    default: r2data[`ByteI] <= GPR[r2addr][`ByteI];
+                endcase
+            end
+        end
+    endgenerate
+    
+    assign hazard_ex  = ((r1_ex_haz  != `WrDisable) && r1_rvalid) || 
+                        ((r2_ex_haz  != `WrDisable) && r2_rvalid);
+    assign hazard_mem = ((r1_mem_haz != `WrDisable) && r1_rvalid) || 
+                        ((r2_mem_haz != `WrDisable) && r2_rvalid);
 
 endmodule

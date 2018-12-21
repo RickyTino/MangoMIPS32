@@ -99,7 +99,7 @@ module Inst_Cache (
     
     reg  [`ByteWEn] ca_wen;
     reg  [`RamAddr] ca_adw;
-    reg  [`RamAddr] ca_adr;
+    wire [`RamAddr] ca_adr;
     reg  [`DataBus] ca_din;
     wire [`DataBus] ca_dout;
 
@@ -119,8 +119,7 @@ module Inst_Cache (
     wire [`ptag ] ad_ptag  = bus_addr[`ad_ptag];
     wire [`ptag ] ln_ptag  = ca_ptag [ad_index];
     wire          ln_valid = ca_valid[ad_index];
-    wire          ln_adhit = ln_ptag == ad_ptag;
-    wire          ln_hit   = ln_adhit && ln_valid;
+    wire          ln_hit   = (ln_ptag ^ ad_ptag) == 0 && ln_valid;
 
     //Uncached Channel
     reg [`Word] uc_data;
@@ -128,29 +127,19 @@ module Inst_Cache (
     reg         uc_valid;
     wire        uc_hit = (uc_addr ^ bus_addr) == 0 && uc_valid;
 
-    reg         r_streq;
-    assign bus_streq = r_streq; // hit invalidate?
+    assign ca_adr    = bus_addr[`ad_ramad];
+    wire   r_streq   = !bus_en ? `false  :
+                       cached  ? !ln_hit : !uc_hit;
 
-    always @(*) begin
-        r_streq <= `false;
-        ca_adr   <= 0;
-        
-        if(bus_en) begin
-            if(cached) begin
-                if(ln_hit) ca_adr <= bus_addr[`ad_ramad];
-                else r_streq <= `true;
-            end
-            else r_streq <= !uc_hit;
-        end
-    end
+    assign bus_streq = r_streq; // hit invalidate?
 
     reg  [ 3: 0 ] r_cnt;
     reg  [ 1: 0 ] r_state;
     reg  [`Word ] rlk_addr;
     reg           rlk_cached;
     wire [`index] rlk_index = rlk_addr[`ad_idx];
-	
-	integer i;
+    
+    integer i;
     always @(posedge aclk, negedge aresetn) begin
         if(!aresetn) begin
             for(i = 0; i < `lineN; i = i + 1) begin
@@ -180,8 +169,6 @@ module Inst_Cache (
             araddr   <= 0;
             arlen    <= 0;
             arvalid  <= 0;
-
-            // uc_valid <= `false;
 
             case (r_state)
                 0: 
@@ -238,9 +225,9 @@ module Inst_Cache (
 
                 3:
                 if((bus_stall ^ r_streq) == 0) begin
-					r_state <= 0;
-					uc_valid <= `false;
-				end
+                    r_state <= 0;
+                    uc_valid <= `false;
+                end
                 
             endcase
         end

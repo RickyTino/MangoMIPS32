@@ -20,6 +20,7 @@ Version:    v1.0.1
 `define         One                  1'b1
 `define         Zero                 1'b0
 `define         ZeroReg              5'h0
+`define         ZeroByte             8'h0
 `define         ZeroWord            32'h0
 `define         ZeroDWord           64'h0
 `define         WrDisable            4'h0

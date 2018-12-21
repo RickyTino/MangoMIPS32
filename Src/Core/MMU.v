@@ -132,9 +132,9 @@ module MMU
                     bus_paddr  <= tlb_paddr;
                     bus_en     <= tlb_rdy & !exc_flag;
                     bus_cached <= tlb_cat;
-                    exc_tlbr   <= tlb_tlbr & tlb_rdy;
-                    exc_tlbi   <= tlb_tlbi & tlb_rdy;
-                    exc_tlbm   <= tlb_tlbm & tlb_rdy;
+                    exc_tlbr   <= tlb_tlbr;// & tlb_rdy;
+                    exc_tlbi   <= tlb_tlbi;// & tlb_rdy;
+                    exc_tlbm   <= tlb_tlbm;// & tlb_rdy;
                 end
             end
         endcase

@@ -28,6 +28,7 @@ module TLBU
     output wire            immu_rdy,
     output reg  [`AddrBus] immu_paddr,
     output reg             immu_cat,
+    input  wire            immu_stall,
 
     input  wire            dmmu_en,
     input  wire [`AddrBus] dmmu_vaddr,
@@ -35,6 +36,7 @@ module TLBU
     output wire            dmmu_rdy,
     output reg  [`AddrBus] dmmu_paddr,
     output reg             dmmu_cat,
+    input  wire            dmmu_stall,
 
     output reg             cp0_idxwen,
     output reg  [`DataBus] cp0_wIndex,
@@ -220,8 +222,11 @@ module TLBU
 
     reg  [`AddrBus] i_paddr, d_paddr;
 
+    wire [`TLB_Itm] i_itm = TLB[i_idx];
+    wire [`TLB_Itm] d_itm = TLB[d_idx];
+
     always @(*) begin
-        casez (TLB[i_idx][`TLB_Mask])
+        casez (i_itm[`TLB_Mask])
             16'b0000000000000000: i_eob <= 12;
             16'b0000000000000011: i_eob <= 14;
             16'b00000000000011??: i_eob <= 16;
@@ -234,7 +239,7 @@ module TLBU
             default:              i_eob <= 12; //UNDEFINED
         endcase
 
-        casez (TLB[d_idx][`TLB_Mask])
+        casez (d_itm[`TLB_Mask])
             16'b0000000000000000: d_eob <= 12;
             16'b0000000000000011: d_eob <= 14;
             16'b00000000000011??: d_eob <= 16;
@@ -248,40 +253,30 @@ module TLBU
         endcase
 
         if(i_vaddr[i_eob]) begin
-            i_pfn <= TLB[i_idx][`TLB_PFN1];
-            i_vld <= TLB[i_idx][`TLB_V1  ];
-            i_cat <= TLB[i_idx][`TLB_C1  ];
-            i_drt <= TLB[i_idx][`TLB_D1  ];
+            i_pfn <= i_itm[`TLB_PFN1];
+            i_vld <= i_itm[`TLB_V1  ];
+            i_cat <= i_itm[`TLB_C1  ];
+            i_drt <= i_itm[`TLB_D1  ];
         end
         else begin
-            i_pfn <= TLB[i_idx][`TLB_PFN0];
-            i_vld <= TLB[i_idx][`TLB_V0  ];
-            i_cat <= TLB[i_idx][`TLB_C0  ];
-            i_drt <= TLB[i_idx][`TLB_D0  ];
+            i_pfn <= i_itm[`TLB_PFN0];
+            i_vld <= i_itm[`TLB_V0  ];
+            i_cat <= i_itm[`TLB_C0  ];
+            i_drt <= i_itm[`TLB_D0  ];
         end
 
         if(d_vaddr[d_eob]) begin
-            d_pfn <= TLB[d_idx][`TLB_PFN1];
-            d_vld <= TLB[d_idx][`TLB_V1  ];
-            d_cat <= TLB[d_idx][`TLB_C1  ];
-            d_drt <= TLB[d_idx][`TLB_D1  ];
+            d_pfn <= d_itm[`TLB_PFN1];
+            d_vld <= d_itm[`TLB_V1  ];
+            d_cat <= d_itm[`TLB_C1  ];
+            d_drt <= d_itm[`TLB_D1  ];
         end
         else begin
-            d_pfn <= TLB[d_idx][`TLB_PFN0];
-            d_vld <= TLB[d_idx][`TLB_V0  ];
-            d_cat <= TLB[d_idx][`TLB_C0  ];
-            d_drt <= TLB[d_idx][`TLB_D0  ];
+            d_pfn <= d_itm[`TLB_PFN0];
+            d_vld <= d_itm[`TLB_V0  ];
+            d_cat <= d_itm[`TLB_C0  ];
+            d_drt <= d_itm[`TLB_D0  ];
         end
-
-        case (i_cat)
-            3'd3:    immu_cat <= `true;
-            default: immu_cat <= `false;
-        endcase
-
-        case (d_cat)
-            3'd3:    dmmu_cat <= `true;
-            default: dmmu_cat <= `false;
-        endcase
 
         case (i_eob)
             12:      i_paddr <= {i_pfn[19: 0], i_vaddr[11:0]};
@@ -313,10 +308,13 @@ module TLBU
     //TLB control & I/O
     reg  [ 1: 0] i_state,   d_state;
 
-    assign immu_rdy = immu_en   && (immu_vaddr     ^ i_vaddr ) == 0 && 
-                      ilk_valid && (EntryHi[`ASID] ^ ilk_asid) == 0;
-    assign dmmu_rdy = dmmu_en   && (dmmu_vaddr     ^ d_vaddr ) == 0 && 
-                      dlk_valid && (EntryHi[`ASID] ^ dlk_asid) == 0;
+    // assign immu_rdy = immu_en   && (immu_vaddr     ^ i_vaddr ) == 0 && 
+    //                   ilk_valid && (EntryHi[`ASID] ^ ilk_asid) == 0;
+    // assign dmmu_rdy = dmmu_en   && (dmmu_vaddr     ^ d_vaddr ) == 0 && 
+    //                   dlk_valid && (EntryHi[`ASID] ^ dlk_asid) == 0;
+    assign immu_rdy = immu_en && ilk_valid;
+    assign dmmu_rdy = dmmu_en && dlk_valid;
+
 
     wire   tlb_nop  = tlb_op == `TOP_NOP;
 
@@ -333,6 +331,7 @@ module TLBU
             i_vaddr    <= `ZeroWord;
             i_idx      <= 0;
             immu_paddr <= `ZeroWord;
+            immu_cat   <= `false;
             ilk_asid   <= 0;
             ilk_valid  <= `false;
             i_tlbi     <= `false;
@@ -342,6 +341,7 @@ module TLBU
             d_vaddr    <= `ZeroWord;
             d_idx      <= 0;
             dmmu_paddr <= `ZeroWord;
+            dmmu_cat   <= `false;
             dlk_asid   <= 0;
             dlk_valid  <= `false;
             d_tlbi     <= `false;
@@ -360,9 +360,6 @@ module TLBU
                         i_state   <= `TLB_Translate;
                         i_vaddr   <= immu_vaddr;
                         ilk_asid  <= EntryHi[`ASID];
-                        ilk_valid <= `false;
-                        i_tlbi    <= `false;
-                        i_tlbr    <= `false;
                     end
                 end
 
@@ -378,7 +375,17 @@ module TLBU
                         i_tlbi <= `true;
                     ilk_valid  <= `true;
                     immu_paddr <= i_paddr;
-                    i_state    <= `TLB_Idle;
+                    case (i_cat)
+                        3'd3:    immu_cat <= `true;
+                        default: immu_cat <= `false;
+                    endcase
+                    
+                    if(!immu_stall) begin
+                        i_state   <= `TLB_Idle;
+                        ilk_valid <= `false;
+                        i_tlbi    <= `false;
+                        i_tlbr    <= `false;
+                    end
                 end
             endcase
 
@@ -388,10 +395,6 @@ module TLBU
                         d_state   <= `TLB_Translate;
                         d_vaddr   <= dmmu_vaddr;
                         dlk_asid  <= EntryHi[`ASID];
-                        dlk_valid <= `false;
-                        d_tlbi    <= `false;
-                        d_tlbr    <= `false;
-                        d_tlbm    <= `false;
                     end
                 end
 
@@ -409,7 +412,18 @@ module TLBU
                         d_tlbm <= `true;
                     dlk_valid  <= `true;
                     dmmu_paddr <= d_paddr;
-                    d_state    <= `TLB_Idle;
+                    case (d_cat)
+                        3'd3:    dmmu_cat <= `true;
+                        default: dmmu_cat <= `false;
+                    endcase
+
+                    if(!dmmu_stall) begin
+                        dlk_valid <= `false;
+                        d_tlbi    <= `false;
+                        d_tlbr    <= `false;
+                        d_tlbm    <= `false;
+                        d_state   <= `TLB_Idle;
+                    end
                 end
             endcase
 

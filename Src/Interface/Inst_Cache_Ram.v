@@ -6,8 +6,8 @@ Version:    v1.0.1
 `include "../Config.v"
 `include "../Defines.v"
 
-`define         N           `ICache_N
-`define         RamAddr     (8 + `N) : 0
+//`define         N           `ICache_N
+//`define         RamAddr     (8 + `N) : 0
 
 module Inst_Cache_Ram (
     input  wire             clk,
