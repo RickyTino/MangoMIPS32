@@ -214,9 +214,7 @@ module CP0
     wire [`Word   ] Wired = {`Random_Z'b0, Wired__};
 
     //ITagLo
-
     //DTagLo
-
 
     wire [`Word] pcm4     = pc - 32'h4;
     wire         timer_eq = (Count ^ Compare) == `ZeroWord;
@@ -345,22 +343,22 @@ module CP0
 
                 //Displaying
                 `ifdef Output_Exception_Info
-                case (exc_type)
-                    `ExcT_Intr: $display("Interrupt Exception");
-                    `ExcT_CpU:  $display("Coprocessor Unusable Exception");
-                    `ExcT_RI:   $display("Reserved Instruction Exception");
-                    `ExcT_Ov:   $display("Integer Overflow Exception");
-                    `ExcT_Trap: $display("Trap Exception");
-                    `ExcT_SysC: $display("System Call Exception");
-                    `ExcT_Bp:   $display("Breakpoint Exception");
-                    `ExcT_AdEL: $display("Address Error Exception - Load");
-                    `ExcT_AdES: $display("Address Error Exception - Save");
-                    `ExcT_TLBR: $display("TLB Refill Exception");
-                    `ExcT_TLBI: $display("TLB Invalid Exception");
-                    `ExcT_TLBM: $display("TLB Modified Exception");
-                    // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
-                    // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
-                endcase
+                    case (exc_type)
+                        `ExcT_Intr: $display("Interrupt Exception");
+                        `ExcT_CpU:  $display("Coprocessor Unusable Exception");
+                        `ExcT_RI:   $display("Reserved Instruction Exception");
+                        `ExcT_Ov:   $display("Integer Overflow Exception");
+                        `ExcT_Trap: $display("Trap Exception");
+                        `ExcT_SysC: $display("System Call Exception");
+                        `ExcT_Bp:   $display("Breakpoint Exception");
+                        `ExcT_AdEL: $display("Address Error Exception - Load");
+                        `ExcT_AdES: $display("Address Error Exception - Save");
+                        `ExcT_TLBR: $display("TLB Refill Exception");
+                        `ExcT_TLBI: $display("TLB Invalid Exception");
+                        `ExcT_TLBM: $display("TLB Modified Exception");
+                        // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
+                        // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
+                    endcase
                 `endif
             end
             else if(tlb_idxwen) begin

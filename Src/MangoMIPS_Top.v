@@ -135,7 +135,8 @@ module MangoMIPS_Top
         .debug_wb_wrdata(debug_wb_wrdata)
     );
 
-    Inst_Cache inst_axi (
+    Inst_Cache inst_cache (
+//    AXI_Interface inst_axi (
         .aclk       (aclk           ),
         .aresetn    (aresetn        ),
         .arid       (ibus_arid      ),

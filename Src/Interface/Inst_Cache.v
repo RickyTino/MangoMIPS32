@@ -97,7 +97,7 @@ module Inst_Cache (
         assign cached = bus_cached;
     `endif
     
-    reg  [`ByteWEn] ca_wen;
+    reg             ca_wen;
     reg  [`RamAddr] ca_adw;
     wire [`RamAddr] ca_adr;
     reg  [`DataBus] ca_din;
@@ -156,7 +156,7 @@ module Inst_Cache (
             arlen    <= 0;
             arvalid  <= 0;
 
-            ca_wen   <= `WrDisable;
+            ca_wen   <= `false;
             ca_adw   <= 0;
             ca_din   <= `ZeroWord;
 
@@ -169,6 +169,10 @@ module Inst_Cache (
             araddr   <= 0;
             arlen    <= 0;
             arvalid  <= 0;
+            
+            ca_wen   <= `false;
+            ca_adw   <= 0;
+            ca_din   <= `ZeroWord;
 
             case (r_state)
                 0: 
@@ -209,11 +213,11 @@ module Inst_Cache (
                 2:
                 if(rvalid) begin
                     if(rlk_cached) begin
-                        ca_wen <= 4'hF;
+                        ca_wen <= `true;
                         ca_adw <= {rlk_index, r_cnt};
                         ca_din <= rdata;
                         r_cnt  <= r_cnt + 1;
-                        if(rlast) ca_valid[rlk_index] <= `true;
+                        // if(rlast) ca_valid[rlk_index] <= `true;
                     end
                     else begin
                         uc_data <= rdata;
@@ -223,11 +227,13 @@ module Inst_Cache (
                     if(rlast) r_state <= 3;
                 end
 
-                3:
-                if((bus_stall ^ r_streq) == 0) begin
-                    r_state <= 0;
-                    uc_valid <= `false;
-                end
+                3: begin
+					if(rlk_cached) ca_valid[rlk_index] <= `true;
+					if((bus_stall ^ r_streq) == 0) begin
+						r_state <= 0;
+						uc_valid <= `false;
+					end
+				end
                 
             endcase
         end
