@@ -6,16 +6,6 @@ Version:    v1.0.1
 `include "../Config.v"
 `include "../Defines.v"
 
-`define         N           `ICache_N
-`define         lineN       2 ** (5 + `N)
-`define         lines       `lineN - 1 : 0
-`define         ad_ptag     31 : (11 + `N)
-`define         ad_idx      (10 + `N) : 6
-`define         ad_ramad    (10 + `N) : 2
-`define         index       ( 4 + `N) : 0
-`define         ptag        (20 - `N) : 0
-`define         RamAddr     ( 8 + `N) : 0
-
 module Inst_Cache (
     input  wire        aclk,
     input  wire        aresetn,
@@ -98,12 +88,12 @@ module Inst_Cache (
     `endif
     
     reg             ca_wen;
-    reg  [`RamAddr] ca_adw;
-    wire [`RamAddr] ca_adr;
+    reg  [`I_ramad] ca_adw;
+    wire [`I_ramad] ca_adr;
     reg  [`DataBus] ca_din;
     wire [`DataBus] ca_dout;
 
-    Inst_Cache_Ram icacheram (
+    Inst_Cache_Ram icache_ram (
       .clk  (aclk   ),
       .wen  (ca_wen ),
       .adw  (ca_adw ),
@@ -112,14 +102,14 @@ module Inst_Cache (
       .dout (ca_dout)
     );
 
-    reg  [`ptag] ca_ptag  [`lines];
-    reg          ca_valid [`lines];
+    reg  [`I_ptag] ca_ptag  [`I_lnNum];
+    reg            ca_valid [`I_lnNum];
 
-    wire [`index] ad_index = bus_addr[`ad_idx ];
-    wire [`ptag ] ad_ptag  = bus_addr[`ad_ptag];
-    wire [`ptag ] ln_ptag  = ca_ptag [ad_index];
-    wire          ln_valid = ca_valid[ad_index];
-    wire          ln_hit   = (ln_ptag ^ ad_ptag) == 0 && ln_valid;
+    wire [`I_idx ] ad_idx   = bus_addr[`I_addr_idx ];
+    wire [`I_ptag] ad_ptag  = bus_addr[`I_addr_ptag];
+    wire [`I_ptag] ln_ptag  = ca_ptag [ad_idx];
+    wire           ln_valid = ca_valid[ad_idx];
+    wire           ln_hit   = (ln_ptag ^ ad_ptag) == 0 && ln_valid;
 
     //Uncached Channel
     reg [`Word] uc_data;
@@ -127,9 +117,9 @@ module Inst_Cache (
     reg         uc_valid;
     wire        uc_hit = (uc_addr ^ bus_addr) == 0 && uc_valid;
 
-    assign ca_adr    = bus_addr[`ad_ramad];
-    wire   r_streq   = !bus_en ? `false  :
-                       cached  ? !ln_hit : !uc_hit;
+    assign ca_adr  = bus_addr[`I_addr_ramad];
+    wire   r_streq = !bus_en ? `false  :
+                     cached  ? !ln_hit : !uc_hit;
 
     assign bus_streq = r_streq; // hit invalidate?
 
@@ -137,15 +127,19 @@ module Inst_Cache (
     reg  [ 1: 0 ] r_state;
     reg  [`Word ] rlk_addr;
     reg           rlk_cached;
-    wire [`index] rlk_index = rlk_addr[`ad_idx];
+
+    wire [`I_idx] rlk_idx = rlk_addr[`I_addr_idx];
     
     integer i;
+    initial begin
+        for(i = 0; i < `I_lineN; i = i + 1) begin
+            ca_ptag [i] <= 0;
+            ca_valid[i] <= `false;
+        end
+    end
+
     always @(posedge aclk, negedge aresetn) begin
         if(!aresetn) begin
-            for(i = 0; i < `lineN; i = i + 1) begin
-                ca_ptag [i] <= 0;
-                ca_valid[i] <= `false;
-            end
             r_state    <= 0;
             r_cnt      <= 0;
             rlk_addr   <= `ZeroWord;
@@ -179,17 +173,17 @@ module Inst_Cache (
                 if(cached) begin
                     if(bus_en && !ln_hit) begin
                         rlk_addr   <= {bus_addr[31:6], 6'b0};
-                        rlk_cached <= cached;
+                        rlk_cached <= `true;
                         r_cnt      <= 0;
                         r_state    <= 1;
-                        ca_ptag [ad_index] <= bus_addr[`ad_ptag];
-                        ca_valid[ad_index] <= `false;
+                        ca_ptag [ad_idx] <= bus_addr[`I_addr_ptag];
+                        ca_valid[ad_idx] <= `false;
                     end
                 end
                 else begin
                     if(bus_en && !uc_hit) begin
                         rlk_addr   <= bus_addr;
-                        rlk_cached <= cached;
+                        rlk_cached <= `false;
                         r_state    <= 1;
                     end
                 end
@@ -198,7 +192,7 @@ module Inst_Cache (
                 if(arvalid && arready) r_state <= 2;
                 else begin
                     if(rlk_cached) begin
-                        arid   <= 4'b0001;
+                        arid   <= 4'b0011;
                         araddr  <= rlk_addr;
                         arlen   <= 4'hF;
                     end
@@ -214,10 +208,10 @@ module Inst_Cache (
                 if(rvalid) begin
                     if(rlk_cached) begin
                         ca_wen <= `true;
-                        ca_adw <= {rlk_index, r_cnt};
+                        ca_adw <= {rlk_idx, r_cnt};
                         ca_din <= rdata;
                         r_cnt  <= r_cnt + 1;
-                        // if(rlast) ca_valid[rlk_index] <= `true;
+                        // if(rlast) ca_valid[rlk_idx] <= `true;
                     end
                     else begin
                         uc_data <= rdata;
@@ -228,7 +222,7 @@ module Inst_Cache (
                 end
 
                 3: begin
-					if(rlk_cached) ca_valid[rlk_index] <= `true;
+					if(rlk_cached) ca_valid[rlk_idx] <= `true;
 					if((bus_stall ^ r_streq) == 0) begin
 						r_state <= 0;
 						uc_valid <= `false;
@@ -239,6 +233,6 @@ module Inst_Cache (
         end
     end
 
-    assign bus_rdata = rlk_cached ? ca_dout : uc_data;
+    assign bus_rdata = cached ? ca_dout : uc_data;
 
 endmodule

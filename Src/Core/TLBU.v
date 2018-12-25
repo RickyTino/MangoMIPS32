@@ -322,11 +322,13 @@ module TLBU
     wire [`TLB_Idx] idx_rand  = Random[`TLB_Idx];
 
     integer j;
+    initial begin
+        for(j = 0; j < `TLB_N; j = j + 1)
+            TLB[j] <= 0;
+    end
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            for(j = 0; j < `TLB_N; j = j + 1)
-                TLB[j] <= 0;
             i_state    <= `TLB_Idle;
             i_vaddr    <= `ZeroWord;
             i_idx      <= 0;

@@ -6,14 +6,11 @@ Version:    v1.0.1
 `include "../Config.v"
 `include "../Defines.v"
 
-//`define         N           `ICache_N
-//`define         RamAddr     (8 + `N) : 0
-
 module Inst_Cache_Ram (
     input  wire             clk,
     input  wire             wen,
-    input  wire [`RamAddr]  adw,
-    input  wire [`RamAddr]  adr,
+    input  wire [`I_ramad]  adw,
+    input  wire [`I_ramad]  adr,
     input  wire [`DataBus]  din,
     output wire [`DataBus]  dout
 );

@@ -6,27 +6,20 @@ Version:    v1.0.1
 `include "../Config.v"
 `include "../Defines.v"
 
-`define         N           `DCache_N
-`define         RamAddr     (8 + `N) : 0
-
 module Data_Cache_Ram (
     input  wire             clk,
     input  wire             enb,
-    input  wire [`ByteWEn]  wea,    web,
-    input  wire [`RamAddr]  addra,  addrb,
-    input  wire [`DataBus]  dina,   dinb,
-    output wire [`DataBus]  douta,  doutb
+    input  wire [`ByteWEn]  wea,  web,
+    input  wire [`D_ramad]  ada,  adb,
+    input  wire [`DataBus]  dina, dinb,
+    output wire [`DataBus]  dout
 );
     
-    wire [`RamAddr] addr = enb ? addrb : addra;
-    wire [`ByteWEn] wen  = enb ? web   : wea;
-    wire [`DataBus] din  = enb ? dinb  : dina;
-    wire [`DataBus] dout;
+    wire [`D_ramad] addr = enb ? adb  : ada;
+    wire [`ByteWEn] wen  = enb ? web  : wea;
+    wire [`DataBus] din  = enb ? dinb : dina;
     
-    assign douta = dout;
-    assign doutb = dout;
-    
-    DCache_Ram_Unit unit0 (
+    DCache_Ram_IP unit0 (
         .clk    (clk            ),
         .we     (wen [0]        ),
         .a      (addr           ),
@@ -34,7 +27,7 @@ module Data_Cache_Ram (
         .spo    (dout[`Byte0]   )
     );
 
-    DCache_Ram_Unit unit1 (
+    DCache_Ram_IP unit1 (
         .clk    (clk            ),
         .we     (wen [1]        ),
         .a      (addr           ),
@@ -42,7 +35,7 @@ module Data_Cache_Ram (
         .spo    (dout[`Byte1]   )
     );
 
-    DCache_Ram_Unit unit2 (
+    DCache_Ram_IP unit2 (
         .clk    (clk            ),
         .we     (wen [2]        ),
         .a      (addr           ),
@@ -50,7 +43,7 @@ module Data_Cache_Ram (
         .spo    (dout[`Byte2]   )
     );
     
-    DCache_Ram_Unit unit3 (
+    DCache_Ram_IP unit3 (
         .clk    (clk            ),
         .we     (wen [3]        ),
         .a      (addr           ),

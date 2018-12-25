@@ -186,7 +186,8 @@ module MangoMIPS_Top
         .bus_cached (inst_cached    )
     );
 
-    AXI_Interface data_axi (
+//    AXI_Interface data_axi (
+    Data_Cache data_cache (
         .aclk       (aclk           ),
         .aresetn    (aresetn        ),
         .arid       (dbus_arid      ),

@@ -451,4 +451,27 @@ Version:    v1.0.1
 `define         ExcC_Ov             5'h0C
 `define         ExcC_Tr             5'h0D
 
+/*--------------------Cache--------------------*/
+//Inst Cache
+`define         I_N             `ICache_N
+`define         I_lineN         2 ** (5 + `I_N)
+`define         I_lnNum         `I_lineN - 1 : 0
+`define         I_addr_ptag     31 : (11 + `I_N)
+`define         I_addr_idx      (10 + `I_N) : 6
+`define         I_addr_ramad    (10 + `I_N) : 2
+`define         I_ptag          (20 - `I_N) : 0
+`define         I_idx           ( 4 + `I_N) : 0
+`define         I_ramad         ( 8 + `I_N) : 0
+
+//Data Cache
+`define         D_N             `DCache_N
+`define         D_lineN         2 ** (5 + `D_N)
+`define         D_lnNum         `D_lineN - 1 : 0
+`define         D_addr_ptag     31 : (11 + `D_N)
+`define         D_addr_idx      (10 + `D_N) : 6
+`define         D_addr_ramad    (10 + `D_N) : 2
+`define         D_ptag          (20 - `D_N) : 0
+`define         D_idx           ( 4 + `D_N) : 0
+`define         D_ramad         ( 8 + `D_N) : 0
+
 /*--------------------End of Defines--------------------*/
