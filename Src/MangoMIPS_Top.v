@@ -107,10 +107,13 @@ module MangoMIPS_Top
     wire            data_streq;
     wire            data_stall;
     wire            data_cached;
+
+    reg             resetn;
+    always @(posedge clk) resetn <= aresetn;
     
     MangoMIPS_Core_Top mips_core (
         .clk            (aclk       ),
-        .rst            (~aresetn   ),
+        .rst            (~resetn    ),
         .intr           (intr       ),
         
         .ibus_en        (inst_en    ),
@@ -138,7 +141,7 @@ module MangoMIPS_Top
     Inst_Cache inst_cache (
 //    AXI_Interface inst_axi (
         .aclk       (aclk           ),
-        .aresetn    (aresetn        ),
+        .aresetn    (resetn         ),
         .arid       (ibus_arid      ),
         .araddr     (ibus_araddr    ),
         .arlen      (ibus_arlen     ),
@@ -189,7 +192,7 @@ module MangoMIPS_Top
 //    AXI_Interface data_axi (
     Data_Cache data_cache (
         .aclk       (aclk           ),
-        .aresetn    (aresetn        ),
+        .aresetn    (resetn         ),
         .arid       (dbus_arid      ),
         .araddr     (dbus_araddr    ),
         .arlen      (dbus_arlen     ),
