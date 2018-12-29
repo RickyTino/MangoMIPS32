@@ -469,7 +469,7 @@ module TLBU
                     `TOP_TLBP: begin
                         cp0_idxwen <= `true;
                         if(p_miss) cp0_wIndex <= 32'h80000000;
-                        else       cp0_wIndex <= {`Index_Z'b0, p_hitidx};
+                        else       cp0_wIndex <= {32'b0, p_hitidx};
                     end
                 endcase
             end

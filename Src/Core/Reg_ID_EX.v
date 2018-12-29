@@ -15,6 +15,7 @@ module Reg_ID_EX
 
     input  wire [`AddrBus] id_pc,
     input  wire [`ALUOp  ] id_aluop,
+    input  wire [`CacheOp] id_cacheop,
     input  wire [`DataBus] id_opr1,
     input  wire [`DataBus] id_opr2,
     input  wire [`DataBus] id_offset,
@@ -27,6 +28,7 @@ module Reg_ID_EX
 
     output reg  [`AddrBus] ex_pc,
     output reg  [`ALUOp  ] ex_aluop,
+    output reg  [`CacheOp] ex_cacheop,
     output reg  [`DataBus] ex_opr1,
     output reg  [`DataBus] ex_opr2,
     output reg  [`DataBus] ex_offset,
@@ -42,6 +44,7 @@ module Reg_ID_EX
         if(rst) begin
             ex_pc      <= `ZeroWord;
             ex_aluop   <= `ALU_NOP;
+            ex_cacheop <= `COP_NOP;
             ex_opr1    <= `ZeroWord;
             ex_opr2    <= `ZeroWord;
             ex_offset  <= `ZeroWord;
@@ -57,6 +60,7 @@ module Reg_ID_EX
                 2'b10, 2'b11: begin
                     ex_pc      <= id_pc;
                     ex_aluop   <= `ALU_NOP;
+                    ex_cacheop <= `COP_NOP;
                     ex_opr1    <= `ZeroWord;
                     ex_opr2    <= `ZeroWord;
                     ex_offset  <= `ZeroWord;
@@ -70,6 +74,7 @@ module Reg_ID_EX
                 2'b00: begin
                     ex_pc      <= id_pc;
                     ex_aluop   <= id_aluop;
+                    ex_cacheop <= id_cacheop;
                     ex_opr1    <= id_opr1;
                     ex_opr2    <= id_opr2;
                     ex_offset  <= id_offset;

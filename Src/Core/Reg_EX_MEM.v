@@ -15,6 +15,7 @@ module Reg_EX_MEM
 
     input  wire [`AddrBus] ex_pc,
     input  wire [`ALUOp  ] ex_aluop, 
+    input  wire [`CacheOp] ex_cacheop,
     input  wire [`DataBus] ex_alures,
     input  wire [`DWord  ] ex_mulhi,
     input  wire [`DWord  ] ex_mullo,
@@ -36,6 +37,7 @@ module Reg_EX_MEM
     
     output reg  [`AddrBus] mem_pc,
     output reg  [`ALUOp  ] mem_aluop, 
+    output reg  [`CacheOp] mem_cacheop,
     output reg  [`DataBus] mem_alures,
     output reg  [`DWord  ] mem_mulhi,
     output reg  [`DWord  ] mem_mullo,
@@ -60,6 +62,7 @@ module Reg_EX_MEM
         if(rst) begin
             mem_pc      <= `ZeroWord;
             mem_aluop   <= `ALU_NOP;
+            mem_cacheop <= `COP_NOP;
             mem_alures  <= `ZeroWord;
             mem_mulhi   <= `ZeroDWord;
             mem_mullo   <= `ZeroDWord;
@@ -84,6 +87,7 @@ module Reg_EX_MEM
                 2'b10, 2'b11: begin
                     mem_pc      <= ex_pc;
                     mem_aluop   <= `ALU_NOP;
+                    mem_cacheop <= `COP_NOP;
                     mem_alures  <= `ZeroWord;
                     mem_mulhi   <= `ZeroDWord;
                     mem_mullo   <= `ZeroDWord;
@@ -106,6 +110,7 @@ module Reg_EX_MEM
                 2'b00: begin
                     mem_pc      <= ex_pc;
                     mem_aluop   <= ex_aluop;
+                    mem_cacheop <= ex_cacheop;
                     mem_alures  <= ex_alures;
                     mem_mulhi   <= ex_mulhi;
                     mem_mullo   <= ex_mullo;

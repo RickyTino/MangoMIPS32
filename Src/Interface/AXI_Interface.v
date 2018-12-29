@@ -158,13 +158,12 @@ module AXI_Interface (
                 if(rvalid) begin
                     uc_data <= rdata;
                     uc_addr <= rlk_addr;
+                    uc_valid <= `true;
                     if(rlast) r_state <= 3;
                 end
 
-                3: begin
-                    uc_valid <= `true;
-                    if((bus_stall ^ r_streq) == 0) r_state <= 0;
-                end
+                3: if((bus_stall ^ r_streq) == 0) r_state <= 0;
+
             endcase
 
             case (w_state)

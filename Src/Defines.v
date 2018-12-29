@@ -10,6 +10,7 @@ Version:    v1.0.1
 `define         ALUOp_W              6
 `define         Exc_W               20
 `define         ExcT_W               4
+`define         CacheOp_W            3
 `define         TLB_Idx_W            5
 `define         TLB_N               32
 `define         TLB_N1              31
@@ -40,6 +41,11 @@ Version:    v1.0.1
 `define         CP2                  2'd2
 `define         CP3                  2'd3
 
+//Save/Load Width
+`define         SL_Word              2'b00
+`define         SL_Byte              2'b10
+`define         SL_HWord             2'b11
+
 //Entrance address
 `define         Reset_Entrance          32'hBFC00000
 
@@ -62,7 +68,9 @@ Version:    v1.0.1
 `define         Stages               4: 0
 `define         ByteWEn              3: 0
 `define         CPNum                1: 0
+`define         SLWidth              1: 0
 `define         ALUOp                 `ALUOp_W-1:0
+`define         CacheOp             `CacheOp_W-1:0
 `define         ExcBus                  `Exc_W-1:0
 `define         ExcType                `ExcT_W-1:0
 `define         TLB_Idx             `TLB_Idx_W-1:0
@@ -237,6 +245,7 @@ Version:    v1.0.1
 `define         ALU_SUBU            `ALUOp_W'h0D
 `define         ALU_CLZ             `ALUOp_W'h0E
 `define         ALU_CLO             `ALUOp_W'h0F
+
 `define         ALU_MOV             `ALUOp_W'h10
 `define         ALU_MFHI            `ALUOp_W'h11
 `define         ALU_MTHI            `ALUOp_W'h12
@@ -252,6 +261,7 @@ Version:    v1.0.1
 `define         ALU_DIV             `ALUOp_W'h1C
 `define         ALU_DIVU            `ALUOp_W'h1D
 `define         ALU_BAL             `ALUOp_W'h1E
+
 `define         ALU_LB              `ALUOp_W'h20
 `define         ALU_LBU             `ALUOp_W'h21
 `define         ALU_LH              `ALUOp_W'h22
@@ -266,8 +276,8 @@ Version:    v1.0.1
 `define         ALU_SWR             `ALUOp_W'h2B
 `define         ALU_LL              `ALUOp_W'h2C
 `define         ALU_SC              `ALUOp_W'h2D
-`define         ALU_ERET            `ALUOp_W'h2E
-`define         ALU_WAIT            `ALUOp_W'h2F
+`define         ALU_CACHE           `ALUOp_W'h2E
+
 `define         ALU_MFC0            `ALUOp_W'h30
 `define         ALU_MTC0            `ALUOp_W'h31
 `define         ALU_TGE             `ALUOp_W'h32
@@ -280,6 +290,8 @@ Version:    v1.0.1
 `define         ALU_TLBWI           `ALUOp_W'h39
 `define         ALU_TLBWR           `ALUOp_W'h3A
 `define         ALU_TLBP            `ALUOp_W'h3B
+`define         ALU_ERET            `ALUOp_W'h3C
+`define         ALU_WAIT            `ALUOp_W'h3D
 
 /*--------------------Coprocessor 0--------------------*/
 //CP0 Registers
@@ -356,9 +368,9 @@ Version:    v1.0.1
 `define         PMask               31:12
 
 //Zero Fields
-`define         Index_Z             31-`TLB_Idx_W
-`define         Random_Z            32-`TLB_Idx_W
-`define         Wired_Z             32-`TLB_Idx_W
+`define         Index_Z              30:`TLB_Idx_W
+`define         Random_Z             31:`TLB_Idx_W
+`define         Wired_Z              31:`TLB_Idx_W
 `define         Random_Rst          `TLB_Idx_W'd`TLB_N1
 
 /*--------------------MMU--------------------*/
@@ -453,25 +465,35 @@ Version:    v1.0.1
 
 /*--------------------Cache--------------------*/
 //Inst Cache
-`define         I_N             `ICache_N
-`define         I_lineN         2 ** (5 + `I_N)
-`define         I_lnNum         `I_lineN - 1 : 0
-`define         I_addr_ptag     31 : (11 + `I_N)
-`define         I_addr_idx      (10 + `I_N) : 6
-`define         I_addr_ramad    (10 + `I_N) : 2
-`define         I_ptag          (20 - `I_N) : 0
-`define         I_idx           ( 4 + `I_N) : 0
-`define         I_ramad         ( 8 + `I_N) : 0
+`define         I_N                 `ICache_N
+`define         I_lineN             2 ** (5 + `I_N)
+`define         I_lnNum             `I_lineN - 1 : 0
+`define         I_addr_ptag         31 : (11 + `I_N)
+`define         I_addr_idx          (10 + `I_N) : 6
+`define         I_addr_ramad        (10 + `I_N) : 2
+`define         I_ptag              (20 - `I_N) : 0
+`define         I_idx               ( 4 + `I_N) : 0
+`define         I_ramad             ( 8 + `I_N) : 0
 
 //Data Cache
-`define         D_N             `DCache_N
-`define         D_lineN         2 ** (5 + `D_N)
-`define         D_lnNum         `D_lineN - 1 : 0
-`define         D_addr_ptag     31 : (11 + `D_N)
-`define         D_addr_idx      (10 + `D_N) : 6
-`define         D_addr_ramad    (10 + `D_N) : 2
-`define         D_ptag          (20 - `D_N) : 0
-`define         D_idx           ( 4 + `D_N) : 0
-`define         D_ramad         ( 8 + `D_N) : 0
+`define         D_N                 `DCache_N
+`define         D_lineN             2 ** (5 + `D_N)
+`define         D_lnNum             `D_lineN - 1 : 0
+`define         D_addr_ptag         31 : (11 + `D_N)
+`define         D_addr_idx          (10 + `D_N) : 6
+`define         D_addr_ramad        (10 + `D_N) : 2
+`define         D_ptag              (20 - `D_N) : 0
+`define         D_idx               ( 4 + `D_N) : 0
+`define         D_ramad             ( 8 + `D_N) : 0
+
+//Cache Op
+`define         COP_NOP             `CacheOp_W'b000
+`define         COP_III             `CacheOp_W'b001
+`define         COP_DIWI            `CacheOp_W'b010
+`define         COP_IIST            `CacheOp_W'b011
+`define         COP_DIST            `CacheOp_W'b100
+`define         COP_IHI             `CacheOp_W'b101
+`define         COP_DHI             `CacheOp_W'b110
+`define         COP_DHWI            `CacheOp_W'b111
 
 /*--------------------End of Defines--------------------*/

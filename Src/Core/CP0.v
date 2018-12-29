@@ -161,11 +161,18 @@ module CP0
     //Index
     reg             Index_P;
     reg  [`TLB_Idx] Index__;
-    wire [`Word   ] Index = {Index_P, `Index_Z'b0, Index__};
+    wire [`Word   ] Index;
+
+    assign Index [   31   ] = Index_P;
+    assign Index [`Index_Z] = 0;
+    assign Index [`TLB_Idx] = Index__;
 
     //Random
     reg  [`TLB_Idx] Random__;
-    wire [`Word   ] Random = {`Random_Z'b0, Random__};
+    wire [`Word   ] Random;
+    
+    assign Random [`Random_Z] = 0;
+    assign Random [`TLB_Idx ] = Random__;
 
     //EntryLo
     reg  [19: 0] EntryLo0_PFN,  EntryLo1_PFN;
@@ -211,7 +218,9 @@ module CP0
 
     //Wired
     reg  [`TLB_Idx] Wired__;
-    wire [`Word   ] Wired = {`Random_Z'b0, Wired__};
+    wire [`Word   ] Wired;
+    assign Wired [`Wired_Z] = 0;
+    assign Wired [`TLB_Idx] = Wired__;
 
     //ITagLo
     //DTagLo

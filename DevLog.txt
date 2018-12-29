@@ -416,8 +416,30 @@
 - 性能测试：I8K, D8K, 50.056@90MHz
 
 --------------------------------------------------
+[20181228]
+- defines增加了CacheOp定义和ALU_CACHE
+- 根据指令类型微调了ALUOp编码，提高译码效率
+- 译码段增加Cache指令译码
+- 执行阶段增加Cache指令的地址计算和AdEL异常（用户态下），与LB/LBU共用一个case项
+- T: Cache的Index和Hit操作的区别在于，前者取出地址中的某一段作为index，操作必定成功；后者只有tag完全命中才操作成功
+- T: 由于是直接映射Cache，Index操作中的Way不必设置
+- T: 与TLB联动时，dbus_en可作为paddr准备好的标志
+- T: 进一步的，单独送en、cache地址、cache命令给ICache；DCache则可以直接使用dbus_en和dbus_addr
+- 修复CP0 Index/Wired/Random寄存器数值异常的问题 
+
+--------------------------------------------------
+[20181229]
+- 无Cache测试通过PMON。
+- T: axi的地址必须32位对齐【针对soc_up】
+- [已回滚]MMU出来的物理地址就将末两位裁掉
+- AXI_Interface 修复了等待时反复访存bug
+- MangoMIPS32对外接口改为单个AXI接口。
+- T: lb/sb和lh/sh的操作需要体现在AXI总线上，不能直接全32位操作
+
+--------------------------------------------------
 [特别笔记区段]
 需要的几场特别调试：
+- CacheOp
 - User Mode CpU & AdEL
 - COP1/COP2 CpU
 

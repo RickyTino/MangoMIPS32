@@ -163,7 +163,7 @@ module ALU_EX
     wire [`AddrBus] sl_addr = opr1 + offset;
     reg  [`ByteWEn] sel_l, sel_r;
     reg             exc_adel, exc_ades;
-    wire            exc_user = usermode && sl_addr[31];
+    wire            exc_user = usermode & sl_addr[31];
 
     always @(*) begin
         m_en     <= `false;
@@ -178,7 +178,8 @@ module ALU_EX
 
         case (aluop)
             `ALU_LB,
-            `ALU_LBU:begin
+            `ALU_LBU,
+            `ALU_CACHE:begin
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
                 exc_adel <= exc_user;

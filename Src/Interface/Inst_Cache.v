@@ -1,59 +1,63 @@
 /********************MangoMIPS32*******************
-Filename:   Inst_Cache.v
-Author:     RickyTino
-Version:    v1.0.1
+Filename :    Inst_Cache.v
+Author :      RickyTino
+Version :     v1.0.1
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
 
 module Inst_Cache (
-    input  wire        aclk,
-    input  wire        aresetn,
-    output reg  [ 3:0] arid,
-    output reg  [31:0] araddr,
-    output reg  [ 3:0] arlen,
-    output wire [ 2:0] arsize,
-    output wire [ 1:0] arburst,
-    output wire [ 1:0] arlock,
-    output wire [ 3:0] arcache,
-    output wire [ 2:0] arprot,
-    output reg         arvalid,
-    input  wire        arready,
-    input  wire [ 3:0] rid,
-    input  wire [31:0] rdata,
-    input  wire [ 1:0] rresp,
-    input  wire        rlast,
-    input  wire        rvalid,
-    output wire        rready,
-    output wire [ 3:0] awid,
-    output wire [31:0] awaddr,
-    output wire [ 3:0] awlen,
-    output wire [ 2:0] awsize,
-    output wire [ 1:0] awburst,
-    output wire [ 1:0] awlock,
-    output wire [ 3:0] awcache,
-    output wire [ 2:0] awprot,
-    output wire        awvalid,
-    input  wire        awready,
-    output wire [ 3:0] wid,
-    output wire [31:0] wdata,
-    output wire [ 3:0] wstrb,
-    output wire        wlast,
-    output wire        wvalid,
-    input  wire        wready,
-    input  wire [ 3:0] bid,
-    input  wire [ 1:0] bresp,
-    input  wire        bvalid,
-    output wire        bready,
+    input  wire            aclk,
+    input  wire            aresetn,
+    output reg  [  3 : 0 ] arid,
+    output reg  [ 31 : 0 ] araddr,
+    output reg  [  3 : 0 ] arlen,
+    output wire [  2 : 0 ] arsize,
+    output wire [  1 : 0 ] arburst,
+    output wire [  1 : 0 ] arlock,
+    output wire [  3 : 0 ] arcache,
+    output wire [  2 : 0 ] arprot,
+    output reg             arvalid,
+    input  wire            arready,
+    input  wire [  3 : 0 ] rid,
+    input  wire [ 31 : 0 ] rdata,
+    input  wire [  1 : 0 ] rresp,
+    input  wire            rlast,
+    input  wire            rvalid,
+    output wire            rready,
+    output wire [  3 : 0 ] awid,
+    output wire [ 31 : 0 ] awaddr,
+    output wire [  3 : 0 ] awlen,
+    output wire [  2 : 0 ] awsize,
+    output wire [  1 : 0 ] awburst,
+    output wire [  1 : 0 ] awlock,
+    output wire [  3 : 0 ] awcache,
+    output wire [  2 : 0 ] awprot,
+    output wire            awvalid,
+    input  wire            awready,
+    output wire [  3 : 0 ] wid,
+    output wire [ 31 : 0 ] wdata,
+    output wire [  3 : 0 ] wstrb,
+    output wire            wlast,
+    output wire            wvalid,
+    input  wire            wready,
+    input  wire [  3 : 0 ] bid,
+    input  wire [  1 : 0 ] bresp,
+    input  wire            bvalid,
+    output wire            bready,
 
-    input  wire        bus_en,
-    input  wire [ 3:0] bus_wen,
-    input  wire [31:0] bus_addr,
-    output wire [31:0] bus_rdata,
-    input  wire [31:0] bus_wdata,
-    output wire        bus_streq,
-    input  wire        bus_stall,
-    input  wire        bus_cached
+    input  wire            bus_en,
+    input  wire [`ByteWEn] bus_wen,
+    input  wire [`AddrBus] bus_addr,
+    output wire [`DataBus] bus_rdata,
+    input  wire [`DataBus] bus_wdata,
+    output wire            bus_streq,
+    input  wire            bus_stall,
+    input  wire            bus_cached,
+
+    input  wire [`CacheOp] cacheop,
+    input  wire            cop_en,
+    input  wire [`AddrBus] cop_addr
 );
 
     assign arsize   = 3'b010;
@@ -118,13 +122,13 @@ module Inst_Cache (
     wire        uc_hit = (uc_addr ^ bus_addr) == 0 && uc_valid;
 
     assign ca_adr  = bus_addr[`I_addr_ramad];
-    wire   r_streq = !bus_en ? `false  :
-                     cached  ? !ln_hit : !uc_hit;
+    wire   r_streq = !bus_en ? `false   : 
+                     cached  ? !ln_hit  :  !uc_hit;
 
     assign bus_streq = r_streq; // hit invalidate?
 
-    reg  [ 3: 0 ] r_cnt;
-    reg  [ 1: 0 ] r_state;
+    reg  [ 3 :  0 ] r_cnt;
+    reg  [ 1 :  0 ] r_state;
     reg  [`Word ] rlk_addr;
     reg           rlk_cached;
 
@@ -169,10 +173,10 @@ module Inst_Cache (
             ca_din   <= `ZeroWord;
 
             case (r_state)
-                0: 
+                0 :  
                 if(cached) begin
                     if(bus_en && !ln_hit) begin
-                        rlk_addr   <= {bus_addr[31:6], 6'b0};
+                        rlk_addr   <= {bus_addr[31 : 6], 6'b0};
                         rlk_cached <= `true;
                         r_cnt      <= 0;
                         r_state    <= 1;
@@ -188,7 +192,7 @@ module Inst_Cache (
                     end
                 end
 
-                1: 
+                1 :  
                 if(arvalid && arready) r_state <= 2;
                 else begin
                     if(rlk_cached) begin
@@ -204,7 +208,7 @@ module Inst_Cache (
                     arvalid <= `true;
                 end
 
-                2:
+                2 : 
                 if(rvalid) begin
                     if(rlk_cached) begin
                         ca_wen <= `true;
@@ -221,7 +225,7 @@ module Inst_Cache (
                     if(rlast) r_state <= 3;
                 end
 
-                3: begin
+                3 :  begin
 					if(rlk_cached) ca_valid[rlk_idx] <= `true;
 					if((bus_stall ^ r_streq) == 0) begin
 						r_state <= 0;
@@ -233,6 +237,6 @@ module Inst_Cache (
         end
     end
 
-    assign bus_rdata = cached ? ca_dout : uc_data;
+    assign bus_rdata = cached ? ca_dout  :  uc_data;
 
 endmodule

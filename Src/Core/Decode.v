@@ -21,11 +21,12 @@ module Decode
 
     output wire [`DataBus] opr1,
     output wire [`DataBus] opr2,
-    output  reg [`ALUOp  ] aluop,
+    output reg  [`ALUOp  ] aluop,
+    output reg  [`CacheOp] cacheop,
     output wire [`DataBus] offset,
     output wire [`CP0Addr] cp0sel,
-    output  reg            wreg,
-    output  reg [`RegAddr] wraddr,
+    output reg             wreg,
+    output reg  [`RegAddr] wraddr,
 
     input  wire            ex_resnrdy,
     input  wire            mem_resnrdy,
@@ -88,6 +89,7 @@ module Decode
     always @(*) begin
         instvalid <= `false;
         aluop     <= `ALU_NOP;
+        cacheop   <= `COP_NOP;
         r1read    <= `false;
         r2read    <= `false;
         wreg      <= `false;
@@ -959,17 +961,46 @@ module Decode
             end
             
             `OP_CACHE: begin
-                instvalid <= `true;
+                // instvalid <= `true;
                 exc_cpu   <= usermode && !cp0_Status[`CU0];
-                // case (rt)
-                //     `CA_III:
-                //     `CA_DIWI:
-                //     `CA_IIST:
-                //     `CA_DIST:
-                //     `CA_IHI:
-                //     `CA_DHI:
-                //     `CA_DHWI:
-                // endcase
+                aluop     <= `ALU_CACHE;
+                r1read    <= `true;
+                case (rt)
+                    `CA_III: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_III;
+                    end
+
+                    `CA_DIWI: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_DIWI;
+                    end
+
+                    `CA_IIST: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_IIST;
+                    end
+                    
+                    `CA_DIST: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_DIST;
+                    end
+                    
+                    `CA_IHI: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_IHI;
+                    end
+                    
+                    `CA_DHI: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_DHI;
+                    end
+                    
+                    `CA_DHWI: begin
+                        instvalid <= `true;
+                        cacheop   <= `COP_DHWI;
+                    end
+                endcase
             end
 
             `OP_LL: begin
