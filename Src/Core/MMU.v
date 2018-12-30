@@ -13,12 +13,14 @@ module MMU
     input  wire [`AddrBus] vaddr,
     input  wire [`DataBus] wdata,
     output wire [`DataBus] rdata,
+    input  wire [`AXISize] size,
 
     output reg             bus_en,
     output wire [`ByteWEn] bus_wen,
     output reg  [`AddrBus] bus_paddr,
     output wire [`DataBus] bus_wdata,
     input  wire [`DataBus] bus_rdata,
+    output wire [`AXISize] bus_size,
     input  wire            bus_streq,
     output reg             bus_cached,
 
@@ -46,6 +48,7 @@ module MMU
 
     assign bus_wen   = en ? wen : `WrDisable;
     assign bus_wdata = wdata;
+    assign bus_size  = size;
     assign rdata     = en ? bus_rdata : `ZeroWord;
     assign stallreq  = bus_streq;
 
@@ -84,6 +87,7 @@ module MMU
 
     assign bus_wen   = en ? wen : `WrDisable;
     assign bus_wdata = wdata;
+    assign bus_size  = size;
     assign rdata     = en ? bus_rdata : `ZeroWord;
     assign stallreq  = bus_streq || tlb_streq;
 

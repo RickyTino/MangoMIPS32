@@ -24,9 +24,11 @@ module MangoMIPS_Core_Top
     input  wire [`DataBus] dbus_rdata,
     output wire [`ByteWEn] dbus_wen,
     output wire [`DataBus] dbus_wdata,
+    output wire [`AXISize] dbus_size,
     input  wire            dbus_streq,
     output wire            dbus_stall,
     output wire            dbus_cached,
+    output wire [`CacheOp] cacheop,
 
     output wire [`AddrBus] debug_wb_pc,
     output wire [`ByteWEn] debug_wb_wreg,
@@ -72,6 +74,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] id_offset;
     wire [`CP0Addr] id_cp0sel;
     wire [`ALUOp  ] id_aluop;
+    wire [`CacheOp] id_cacheop;
     wire            id_wreg;
     wire [`RegAddr] id_wraddr;
     wire [`ExcBus ] id_excp_o;
@@ -81,6 +84,7 @@ module MangoMIPS_Core_Top
 
     wire [`AddrBus] ex_pc;
     wire [`ALUOp  ] ex_aluop;
+    wire [`CacheOp] ex_cacheop;
     wire [`DataBus] ex_opr1;
     wire [`DataBus] ex_opr2;
     wire [`DataBus] ex_offset;
@@ -111,9 +115,11 @@ module MangoMIPS_Core_Top
     wire [`ByteWEn] ex_m_wen;
     wire [`AddrBus] ex_m_vaddr;
     wire [`DataBus] ex_m_wdata;
+    wire [`AXISize] ex_m_size;
     
     wire [`AddrBus] mem_pc;
     wire [`ALUOp  ] mem_aluop;
+    wire [`CacheOp] mem_cacheop;
     wire [`DataBus] mem_alures_i;
     wire [`DWord  ] mem_mulhi;
     wire [`DWord  ] mem_mullo;
@@ -134,6 +140,7 @@ module MangoMIPS_Core_Top
     wire [`AddrBus] mem_m_vaddr;
     wire [`DataBus] mem_m_wdata;
     wire [`DataBus] mem_m_rdata;
+    wire [`AXISize] mem_m_size;
 
     wire            dtlb_en;
     wire [`AddrBus] dtlb_vaddr;
@@ -232,6 +239,7 @@ module MangoMIPS_Core_Top
         .vaddr      (if_i_vaddr ),
         .wdata      (`ZeroWord  ),
         .rdata      (if_i_rdata ),
+        .size       (`ASize_Word   ),
 
         .bus_en     (ibus_en    ),
         .bus_paddr  (ibus_addr  ),
@@ -267,6 +275,7 @@ module MangoMIPS_Core_Top
         .if_pcp4        (if_pcp4    ),
         .if_inst        (ibus_rdata ),
         .if_excp        (if_excp    ),
+
         .id_isbranch    (id_isbranch),
         .id_pc          (id_pc      ),
         .id_pcp4        (id_pcp4    ),
@@ -290,6 +299,7 @@ module MangoMIPS_Core_Top
         .opr1           (id_opr1    ),
         .opr2           (id_opr2    ),
         .aluop          (id_aluop   ),
+        .cacheop        (id_cacheop ),
         .offset         (id_offset  ),
         .cp0sel         (id_cp0sel  ),
         .wreg           (id_wreg    ),
@@ -350,6 +360,7 @@ module MangoMIPS_Core_Top
 
         .id_pc      (id_pc      ),
         .id_aluop   (id_aluop   ),
+        .id_cacheop (id_cacheop ),
         .id_opr1    (id_opr1    ),
         .id_opr2    (id_opr2    ),
         .id_offset  (id_offset  ),
@@ -362,6 +373,7 @@ module MangoMIPS_Core_Top
 
         .ex_pc      (ex_pc      ),
         .ex_aluop   (ex_aluop   ),
+        .ex_cacheop (ex_cacheop ),
         .ex_opr1    (ex_opr1    ),
         .ex_opr2    (ex_opr2    ),
         .ex_offset  (ex_offset  ),
@@ -393,6 +405,7 @@ module MangoMIPS_Core_Top
         .m_wen      (ex_m_wen   ),
         .m_vaddr    (ex_m_vaddr ),
         .m_wdata    (ex_m_wdata ),
+        .m_size     (ex_m_size  ),
         .wreg       (ex_wreg    ),
         .wregsel    (ex_wregsel ),
 
@@ -428,6 +441,7 @@ module MangoMIPS_Core_Top
 
         .ex_pc          (ex_pc          ),
         .ex_aluop       (ex_aluop       ),
+        .ex_cacheop     (ex_cacheop     ),
         .ex_alures      (ex_alures      ),
         .ex_mulhi       (ex_mulhi       ),
         .ex_mullo       (ex_mullo       ),
@@ -438,6 +452,7 @@ module MangoMIPS_Core_Top
         .ex_m_wen       (ex_m_wen       ),
         .ex_m_vaddr     (ex_m_vaddr     ),
         .ex_m_wdata     (ex_m_wdata     ),
+        .ex_m_size      (ex_m_size      ),
         .ex_wreg        (ex_wregsel     ),
         .ex_wraddr      (ex_wraddr      ),
         .ex_llb_wen     (ex_llb_wen     ),
@@ -449,6 +464,7 @@ module MangoMIPS_Core_Top
         
         .mem_pc         (mem_pc         ),
         .mem_aluop      (mem_aluop      ),
+        .mem_cacheop    (mem_cacheop    ),
         .mem_alures     (mem_alures_i   ),
         .mem_mulhi      (mem_mulhi      ),
         .mem_mullo      (mem_mullo      ),
@@ -459,6 +475,7 @@ module MangoMIPS_Core_Top
         .mem_m_wen      (mem_m_wen      ),
         .mem_m_vaddr    (mem_m_vaddr    ),
         .mem_m_wdata    (mem_m_wdata    ),
+        .mem_m_size     (mem_m_size     ),
         .mem_wreg       (mem_wreg       ),
         .mem_wraddr     (mem_wraddr     ),
         .mem_llb_wen    (mem_llb_wen    ),
@@ -475,12 +492,14 @@ module MangoMIPS_Core_Top
         .vaddr      (mem_m_vaddr),
         .wdata      (mem_m_wdata),
         .rdata      (mem_m_rdata),
-        
+        .size       (mem_m_size ),
+
         .bus_en     (dbus_en    ),
         .bus_paddr  (dbus_addr  ),
         .bus_rdata  (dbus_rdata ),
         .bus_wen    (dbus_wen   ),
         .bus_wdata  (dbus_wdata ),
+        .bus_size   (dbus_size  ),
         .bus_streq  (dbus_streq ),
         .bus_cached (dbus_cached),
 

@@ -42,9 +42,9 @@ Version:    v1.0.1
 `define         CP3                  2'd3
 
 //Save/Load Width
-`define         SL_Word              2'b00
-`define         SL_Byte              2'b10
-`define         SL_HWord             2'b11
+`define         ASize_Byte              2'b00
+`define         ASize_Half              2'b01
+`define         ASize_Word              2'b10
 
 //Entrance address
 `define         Reset_Entrance          32'hBFC00000
@@ -68,7 +68,7 @@ Version:    v1.0.1
 `define         Stages               4: 0
 `define         ByteWEn              3: 0
 `define         CPNum                1: 0
-`define         SLWidth              1: 0
+`define         AXISize              1: 0
 `define         ALUOp                 `ALUOp_W-1:0
 `define         CacheOp             `CacheOp_W-1:0
 `define         ExcBus                  `Exc_W-1:0

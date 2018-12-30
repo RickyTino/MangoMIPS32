@@ -28,6 +28,7 @@ module ALU_EX
     output reg  [`ByteWEn] m_wen, 
     output reg  [`AddrBus] m_vaddr,
     output reg  [`DataBus] m_wdata,
+    output reg  [`AXISize] m_size,
     input  wire            wreg,
     output reg  [`ByteWEn] wregsel,
 
@@ -170,6 +171,7 @@ module ALU_EX
         m_wen    <= `WrDisable;
         m_vaddr  <= `ZeroWord;
         m_wdata  <= `ZeroWord;
+        m_size   <= `ASize_Word;
         wregsel  <= {4{wreg}};
         llb_wen  <= `false;
         llbit_o  <= llbit_i;
@@ -177,11 +179,17 @@ module ALU_EX
         exc_ades <= `false;
 
         case (aluop)
-            `ALU_LB,
-            `ALU_LBU,
             `ALU_CACHE:begin
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
+                exc_adel <= exc_user;
+            end
+
+            `ALU_LB,
+            `ALU_LBU:begin
+                m_en     <= `true;
+                m_vaddr  <= sl_addr;
+                m_size   <= `ASize_Byte;
                 exc_adel <= exc_user;
             end
 
@@ -189,6 +197,7 @@ module ALU_EX
             `ALU_LHU: begin
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
+                m_size   <= `ASize_Half;
                 exc_adel <= exc_user || sl_addr[0];
             end
 
@@ -216,6 +225,7 @@ module ALU_EX
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
                 m_wdata  <= {4{opr2[7:0]}};
+                m_size   <= `ASize_Byte;
                 exc_ades <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: m_wen <= 4'b0001;
@@ -229,6 +239,7 @@ module ALU_EX
                 m_en     <= `true;
                 m_vaddr  <= sl_addr;
                 m_wdata  <= {2{opr2[15:0]}};
+                m_size   <= `ASize_Half;
                 exc_ades <= exc_user || sl_addr[0];
                 case (sl_addr[1:0])
                     2'b00:   m_wen <= 4'b0011;
@@ -298,6 +309,7 @@ module ALU_EX
                 m_vaddr <= sl_addr;
                 llb_wen <= `true;
                 llbit_o <= `One;
+                exc_adel <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_SC: if(llbit_i) begin
@@ -305,6 +317,7 @@ module ALU_EX
                 m_vaddr <= sl_addr;
                 m_wdata <= opr2;
                 m_wen   <= 4'b1111;
+                exc_ades <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_ERET: begin

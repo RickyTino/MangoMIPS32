@@ -49,85 +49,14 @@ module MangoMIPS_Top
     input  wire        m_bvalid,
     output wire        m_bready,
 
-    // output wire [ 3:0] ibus_arid,
-    // output wire [31:0] ibus_araddr,
-    // output wire [ 3:0] ibus_arlen,
-    // output wire [ 2:0] ibus_arsize,
-    // output wire [ 1:0] ibus_arburst,
-    // output wire [ 1:0] ibus_arlock,
-    // output wire [ 3:0] ibus_arcache,
-    // output wire [ 2:0] ibus_arprot,
-    // output wire        ibus_arvalid,
-    // input  wire        ibus_arready,
-    // input  wire [ 3:0] ibus_rid,
-    // input  wire [31:0] ibus_rdata,
-    // input  wire [ 1:0] ibus_rresp,
-    // input  wire        ibus_rlast,
-    // input  wire        ibus_rvalid,
-    // output wire        ibus_rready,
-    // output wire [ 3:0] ibus_awid,
-    // output wire [31:0] ibus_awaddr,
-    // output wire [ 3:0] ibus_awlen,
-    // output wire [ 2:0] ibus_awsize,
-    // output wire [ 1:0] ibus_awburst,
-    // output wire [ 1:0] ibus_awlock,
-    // output wire [ 3:0] ibus_awcache,
-    // output wire [ 2:0] ibus_awprot,
-    // output wire        ibus_awvalid,
-    // input  wire        ibus_awready,
-    // output wire [ 3:0] ibus_wid,
-    // output wire [31:0] ibus_wdata,
-    // output wire [ 3:0] ibus_wstrb,
-    // output wire        ibus_wlast,
-    // output wire        ibus_wvalid,
-    // input  wire        ibus_wready,
-    // input  wire [ 3:0] ibus_bid,
-    // input  wire [ 1:0] ibus_bresp,
-    // input  wire        ibus_bvalid,
-    // output wire        ibus_bready,
-
-    // output wire [ 3:0] dbus_arid,
-    // output wire [31:0] dbus_araddr,
-    // output wire [ 3:0] dbus_arlen,
-    // output wire [ 2:0] dbus_arsize,
-    // output wire [ 1:0] dbus_arburst,
-    // output wire [ 1:0] dbus_arlock,
-    // output wire [ 3:0] dbus_arcache,
-    // output wire [ 2:0] dbus_arprot,
-    // output wire        dbus_arvalid,
-    // input  wire        dbus_arready,
-    // input  wire [ 3:0] dbus_rid,
-    // input  wire [31:0] dbus_rdata,
-    // input  wire [ 1:0] dbus_rresp,
-    // input  wire        dbus_rlast,
-    // input  wire        dbus_rvalid,
-    // output wire        dbus_rready,
-    // output wire [ 3:0] dbus_awid,
-    // output wire [31:0] dbus_awaddr,
-    // output wire [ 3:0] dbus_awlen,
-    // output wire [ 2:0] dbus_awsize,
-    // output wire [ 1:0] dbus_awburst,
-    // output wire [ 1:0] dbus_awlock,
-    // output wire [ 3:0] dbus_awcache,
-    // output wire [ 2:0] dbus_awprot,
-    // output wire        dbus_awvalid,
-    // input  wire        dbus_awready,
-    // output wire [ 3:0] dbus_wid,
-    // output wire [31:0] dbus_wdata,
-    // output wire [ 3:0] dbus_wstrb,
-    // output wire        dbus_wlast,
-    // output wire        dbus_wvalid,
-    // input  wire        dbus_wready,
-    // input  wire [ 3:0] dbus_bid,
-    // input  wire [ 1:0] dbus_bresp,
-    // input  wire        dbus_bvalid,
-    // output wire        dbus_bready,
-
     output wire [`AddrBus] debug_wb_pc,
     output wire [`ByteWEn] debug_wb_wreg,
     output wire [`RegAddr] debug_wb_wraddr,
     output wire [`DataBus] debug_wb_wrdata
 );
+
+    reg             resetn;
+    always @(posedge aclk) resetn <= aresetn;
 
     wire            inst_en;
     wire [`AddrBus] inst_addr;
@@ -141,9 +70,11 @@ module MangoMIPS_Top
     wire [`DataBus] data_rdata;
     wire [`ByteWEn] data_wen;
     wire [`DataBus] data_wdata;
+    wire [`AXISize] data_size;
     wire            data_streq;
     wire            data_stall;
     wire            data_cached;
+    wire [`CacheOp] cacheop;
 
     wire [ 3:0] ibus_arid;
     wire [31:0] ibus_araddr;
@@ -219,9 +150,6 @@ module MangoMIPS_Top
     wire        dbus_bvalid;
     wire        dbus_bready;
 
-    reg             resetn;
-    always @(posedge aclk) resetn <= aresetn;
-    
     MangoMIPS_Core_Top mips_core (
         .clk            (aclk       ),
         .rst            (~resetn    ),
@@ -239,9 +167,11 @@ module MangoMIPS_Top
         .dbus_addr      (data_addr  ),
         .dbus_wdata     (data_wdata ),
         .dbus_rdata     (data_rdata ),
+        .dbus_size      (data_size  ),
         .dbus_streq     (data_streq ),
         .dbus_stall     (data_stall ),
         .dbus_cached    (data_cached),
+        .cacheop        (cacheop    ),
 
         .debug_wb_pc    (debug_wb_pc    ),
         .debug_wb_wreg  (debug_wb_wreg  ),
@@ -295,6 +225,7 @@ module MangoMIPS_Top
         .bus_addr   (inst_addr      ),
         .bus_rdata  (inst_rdata     ),
         .bus_wdata  (`ZeroWord      ),
+        .bus_size   (`ASize_Word    ),
         .bus_streq  (inst_streq     ),
         .bus_stall  (inst_stall     ),
         .bus_cached (inst_cached    )
@@ -346,6 +277,7 @@ module MangoMIPS_Top
         .bus_addr   (data_addr      ),
         .bus_rdata  (data_rdata     ),
         .bus_wdata  (data_wdata     ),
+        .bus_size   (data_size      ),
         .bus_streq  (data_streq     ),
         .bus_stall  (data_stall     ),
         .bus_cached (data_cached    )

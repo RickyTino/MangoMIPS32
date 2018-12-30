@@ -26,6 +26,7 @@ module Reg_EX_MEM
     input  wire [`ByteWEn] ex_m_wen,
     input  wire [`AddrBus] ex_m_vaddr,
     input  wire [`DataBus] ex_m_wdata,
+    input  wire [`AXISize] ex_m_size,
     input  wire [`ByteWEn] ex_wreg,
     input  wire [`RegAddr] ex_wraddr,
     input  wire            ex_llb_wen,
@@ -48,6 +49,7 @@ module Reg_EX_MEM
     output reg  [`ByteWEn] mem_m_wen,
     output reg  [`AddrBus] mem_m_vaddr,
     output reg  [`DataBus] mem_m_wdata,
+    output reg  [`AXISize] mem_m_size,
     output reg  [`ByteWEn] mem_wreg,
     output reg  [`RegAddr] mem_wraddr,
     output reg             mem_llb_wen,
@@ -73,6 +75,7 @@ module Reg_EX_MEM
             mem_m_wen   <= `WrDisable;
             mem_m_vaddr <= `ZeroWord;
             mem_m_wdata <= `ZeroWord;
+            mem_m_size  <= `ASize_Word;
             mem_wreg    <= `WrDisable;
             mem_wraddr  <= `ZeroReg;
             mem_llb_wen <= `false;
@@ -98,6 +101,7 @@ module Reg_EX_MEM
                     mem_m_wen   <= `WrDisable;
                     mem_m_vaddr <= `ZeroWord;
                     mem_m_wdata <= `ZeroWord;
+                    mem_m_size  <= `ASize_Word;
                     mem_wreg    <= `WrDisable;
                     mem_wraddr  <= `ZeroReg;
                     mem_llb_wen <= `false;
@@ -121,6 +125,7 @@ module Reg_EX_MEM
                     mem_m_wen   <= ex_m_wen;
                     mem_m_vaddr <= ex_m_vaddr;
                     mem_m_wdata <= ex_m_wdata;
+                    mem_m_size  <= ex_m_size;
                     mem_wreg    <= ex_wreg;
                     mem_wraddr  <= ex_wraddr;
                     mem_llb_wen <= ex_llb_wen;

@@ -21,7 +21,7 @@ Version:    v1.0.1
 
 // Define "Reset_Cacheable" to set the reset state of Config.K0/KU/K23 to a cacheable
 // state (value 3'd3).
-`define Reset_Cacheable
+`define _Reset_Cacheable
 
 // Define "IF_Force_Cached" to set the cacheability of all instruction fetch
 // to a cacheable state.

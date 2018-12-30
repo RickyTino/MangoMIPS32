@@ -51,6 +51,7 @@ module Inst_Cache (
     input  wire [`AddrBus] bus_addr,
     output wire [`DataBus] bus_rdata,
     input  wire [`DataBus] bus_wdata,
+    input  wire [`AXISize] bus_size,
     output wire            bus_streq,
     input  wire            bus_stall,
     input  wire            bus_cached,
@@ -163,9 +164,9 @@ module Inst_Cache (
             uc_valid <= `false;
         end
         else begin
-            arid     <= 0;
-            araddr   <= 0;
-            arlen    <= 0;
+            // arid     <= 0;
+            // araddr   <= 0;
+            // arlen    <= 0;
             arvalid  <= 0;
             
             ca_wen   <= `false;
