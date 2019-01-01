@@ -285,10 +285,11 @@ module CP0
             
             //Random
             Random__ <= (Random__ ^ Wired__) == 0 ? `Random_Rst : Random__ - 1;
-            
-            //Exceptions
+
+            //Interrupts
             Cause_IP[7:2] <= intr;
 
+            //Exceptions
             if(exc_flag) begin
                 case (exc_type)
                     `ExcT_Intr,
@@ -420,7 +421,8 @@ module CP0
                     end
 
                     `CP0_Wired: begin
-                        Wired__ <= wdata[`TLB_Idx];
+                        Wired__  <= wdata[`TLB_Idx];
+                        Random__ <= `Random_Rst;
                     end
 
                     `CP0_BadVAddr: begin
