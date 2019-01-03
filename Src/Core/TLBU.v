@@ -356,6 +356,9 @@ module TLBU
             cp0_tlbitm <= 0;
         end
         else begin
+            cp0_idxwen <= `false;
+            cp0_tlbwen <= `false;
+
             case (i_state)
                 `TLB_Idle: begin
                     if(immu_en && !immu_rdy && tlb_nop) begin
