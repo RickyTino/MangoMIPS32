@@ -71,7 +71,7 @@ module Decode
     assign offset = sign_ext;
     assign cp0sel = {rd, sel};
 
-    //Exceptions
+    // Exceptions
     reg  instvalid;
     reg  instwait;
     reg  exc_sc, exc_bp, exc_cpu, exc_eret;
@@ -85,7 +85,7 @@ module Decode
         excp_o[`Exc_ERET] <= exc_eret;
     end
 
-    //Decode
+    // Decode
     always @(*) begin
         instvalid <= `false;
         aluop     <= `ALU_NOP;
@@ -119,7 +119,7 @@ module Decode
                         ext_imme  <=  sa;
                     end
 
-                    `SP_MOVCI: begin //CP1 instruction
+                    `SP_MOVCI: begin // CP1 instruction
                         instvalid <= `true;
                         exc_cpu   <= !cp0_Status[`CU1];
                         ecpnum    <= `CP1;
@@ -210,7 +210,7 @@ module Decode
                         exc_bp    <= `true;
                     end
 
-                    //SYNC temporarily decode as nop
+                    // SYNC temporarily decode as nop
                     `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_NOP;
@@ -744,17 +744,17 @@ module Decode
                 end
             end
 
-            `OP_COP1: begin //CP1 encoding field
+            `OP_COP1: begin // CP1 encoding field
                 exc_cpu <= !cp0_Status[`CU1];
                 ecpnum  <= `CP1;
             end
 
-            `OP_COP2: begin //CP2 encoding field
+            `OP_COP2: begin // CP2 encoding field
                 exc_cpu <= !cp0_Status[`CU2];
                 ecpnum  <= `CP2;
             end
 
-            `OP_COP3: begin //CP3 encoding field
+            `OP_COP3: begin // CP3 encoding field
                 exc_cpu <= !cp0_Status[`CU3];
                 ecpnum  <= `CP3;
             end
@@ -1011,7 +1011,7 @@ module Decode
                 wraddr    <= rt;
             end
             
-            `OP_PREF: begin //Temporarily decode as nop
+            `OP_PREF: begin // PREF Temporarily decode as nop
                 instvalid <= `true;
             end
 
@@ -1027,7 +1027,7 @@ module Decode
             `OP_LWC1,
             `OP_LDC1,
             `OP_SWC1,
-            `OP_SDC1: begin //CP1 instructions
+            `OP_SDC1: begin // CP1 instructions
                 exc_cpu <= !cp0_Status[`CU1];
                 ecpnum  <= `CP1;
             end
@@ -1035,7 +1035,7 @@ module Decode
             `OP_LWC2,
             `OP_LDC2,
             `OP_SWC2,
-            `OP_SDC2: begin //CP2 instructions
+            `OP_SDC2: begin // CP2 instructions
                 exc_cpu <= !cp0_Status[`CU2];
                 ecpnum  <= `CP2;
             end
@@ -1046,7 +1046,7 @@ module Decode
     assign opr1 = r1read ? r1data : ext_imme;
     assign opr2 = r2read ? r2data : ext_imme;
 
-    //Delaying for hazards
+    // Delaying for hazards
     wire    ex_nrdy = hazard_ex  && ex_resnrdy;
     wire   mem_nrdy = hazard_mem && mem_resnrdy;
     assign stallreq = ex_nrdy || mem_nrdy;

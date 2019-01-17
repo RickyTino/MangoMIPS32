@@ -52,14 +52,14 @@ module AXI_Interface (
     input  wire            bus_cached
 );
 
-    //assign arsize   = 3'b010;
+    // assign arsize   = 3'b010;
     assign arburst  = 2'b01;
     assign arlock   = 2'b0;
     assign arcache  = 4'b0;
     assign arprot   = 3'b0;
     assign rready   = 1'b1;
     assign awid     = 4'b0;
-    //assign awsize   = 3'b010;
+    // assign awsize   = 3'b010;
     assign awburst  = 2'b01;
     assign awlock   = 2'b0;
     assign awcache  = 4'b0;

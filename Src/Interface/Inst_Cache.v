@@ -83,7 +83,7 @@ module Inst_Cache (
     assign wvalid   = 1'b0;
     assign bready   = 1'b1;
 
-    //Cached Channel
+    // Cached Channel
     wire            cached;
     
     `ifdef IF_Force_Cached
@@ -116,7 +116,7 @@ module Inst_Cache (
     wire           ln_valid = ca_valid[ad_idx];
     wire           ln_hit   = (ln_ptag ^ ad_ptag) == 0 && ln_valid;
 
-    //Uncached Channel
+    // Uncached Channel
     reg [`Word] uc_data;
     reg [`Word] uc_addr;
     reg         uc_valid;

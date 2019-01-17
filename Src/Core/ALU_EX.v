@@ -46,7 +46,7 @@ module ALU_EX
 
     assign stallreq = div_start;
 
-    //Signs
+    // Signs
     wire opr1_s = opr1[31];
     wire opr2_s = opr2[31];
     wire res_s  = alures[31]; 
@@ -57,7 +57,7 @@ module ALU_EX
     wire opr_ltu = opr1 < opr2;
     wire opr_eq  = (opr1 ^ opr2) == `ZeroWord;
 
-    //CLO/CLZ
+    // CLO/CLZ
     reg  [`Word] clzopr;
     reg  [`Word] clzres;
 
@@ -105,7 +105,7 @@ module ALU_EX
         endcase
     end
 
-    //Multiply first stage
+    // Multiply first stage
     reg [`Word] mopr1, mopr2;
 
     always @(*) begin
@@ -140,7 +140,7 @@ module ALU_EX
     assign mulhi[31: 0] = mopr1[15: 0] * mopr2[31:16];
     assign mulhi[63:32] = mopr1[31:16] * mopr2[31:16]; 
 
-    //Divider
+    // Divider
     always @(*) begin
         case (aluop)
             `ALU_DIV: begin
@@ -160,7 +160,7 @@ module ALU_EX
         endcase
     end
 
-    //Memory Data Prepare
+    // Memory Data Prepare
     wire [`AddrBus] sl_addr = opr1 + offset;
     reg  [`ByteWEn] sel_l, sel_r;
     reg             exc_adel, exc_ades;
@@ -334,7 +334,7 @@ module ALU_EX
         endcase
     end
 
-    //Exception
+    // Exception
     reg exc_ov, exc_tr;
 
     always @(*) begin
@@ -371,7 +371,7 @@ module ALU_EX
         excp_o[`Exc_D_AdES] <= exc_ades;
     end
 
-    //General
+    // General
     always @(*) begin
         case (aluop)
             `ALU_SLL:  alures <= opr2 << opr1[4:0];

@@ -28,7 +28,10 @@ module MangoMIPS_Core_Top
     input  wire            dbus_streq,
     output wire            dbus_stall,
     output wire            dbus_cached,
+
     output wire [`CacheOp] cacheop,
+    output wire [`DataBus] ITagLo,
+    output wire [`DataBus] DTagLo,
 
     output wire [`AddrBus] debug_wb_pc,
     output wire [`ByteWEn] debug_wb_wreg,
@@ -181,6 +184,8 @@ module MangoMIPS_Core_Top
     wire [`DataBus] cp0_Cause;
     wire [`DataBus] cp0_EPC;
     wire [`DataBus] cp0_Config;
+    wire [`DataBus] cp0_ITagLo;
+    wire [`DataBus] cp0_DTagLo;
 
     wire [`DataBus] mem_alures_o;
     wire [`DataBus] mem_mulres;
@@ -593,6 +598,8 @@ module MangoMIPS_Core_Top
         .Cause_o    (cp0_Cause      ),
         .EPC_o      (cp0_EPC        ),
         .Config_o   (cp0_Config     ),
+        .ITagLo_o   (ITagLo         ),
+        .DTagLo_o   (DTagLo         ),
 
         .usermode   (usermode       ),
         .timer_int  (timer_int      )

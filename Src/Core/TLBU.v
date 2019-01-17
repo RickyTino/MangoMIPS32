@@ -71,7 +71,7 @@ module TLBU
     reg  [ 7: 0] ilk_asid,  dlk_asid;
     reg          ilk_valid, dlk_valid;
 
-    //TLB translation : stage1
+    // TLB translation : stage1
     reg  [`AddrBus] i_vaddr, d_vaddr;
     wire [`TLB_Sel] i_hit,   d_hit,   p_hit;
     wire [`TLB_Sel] i_match, d_match, p_match;
@@ -212,9 +212,9 @@ module TLBU
         endcase
     end
 
-    //TLB translation : stage2
+    // TLB translation : stage2
     reg  [`TLB_Idx] i_idx,   d_idx;
-    reg  [`TLB_Idx] i_eob,   d_eob; //EvenOddBit
+    reg  [`TLB_Idx] i_eob,   d_eob; // EvenOddBit
     reg  [`PageNum] i_pfn,   d_pfn;
     reg  [`CacheAt] i_cat,   d_cat;
     reg             i_vld,   d_vld;
@@ -236,7 +236,7 @@ module TLBU
             16'b000011??????????: i_eob <= 24;
             16'b0011????????????: i_eob <= 26;
             16'b11??????????????: i_eob <= 28;
-            default:              i_eob <= 12; //UNDEFINED
+            default:              i_eob <= 12; // UNDEFINED
         endcase
 
         casez (d_itm[`TLB_Mask])
@@ -249,7 +249,7 @@ module TLBU
             16'b000011??????????: d_eob <= 24;
             16'b0011????????????: d_eob <= 26;
             16'b11??????????????: d_eob <= 28;
-            default:              d_eob <= 12; //UNDEFINED
+            default:              d_eob <= 12; // UNDEFINED
         endcase
 
         if(i_vaddr[i_eob]) begin
@@ -305,7 +305,7 @@ module TLBU
         endcase
     end
     
-    //TLB control & I/O
+    // TLB control & I/O
     reg  [ 1: 0] i_state,   d_state;
 
     // assign immu_rdy = immu_en   && (immu_vaddr     ^ i_vaddr ) == 0 && 
@@ -369,14 +369,14 @@ module TLBU
                 end
 
                 `TLB_Translate: begin
-                    if(i_miss)  //TLBRefill
+                    if(i_miss)  // TLBRefill
                         i_tlbr <= `true;
                     i_state <= `TLB_Ready;
                     i_idx   <= i_hitidx;
                 end
 
                 `TLB_Ready: begin
-                    if(!i_vld)  //TLBInvalid
+                    if(!i_vld)  // TLBInvalid
                         i_tlbi <= `true;
                     ilk_valid  <= `true;
                     immu_paddr <= i_paddr;
@@ -404,16 +404,16 @@ module TLBU
                 end
 
                 `TLB_Translate: begin
-                    if(d_miss)  //TLBRefill
+                    if(d_miss)  // TLBRefill
                         d_tlbr <= `true;
                     d_state <= `TLB_Ready;
                     d_idx   <= d_hitidx;
                 end
 
                 `TLB_Ready: begin
-                    if(!d_vld)  //TLBInvalid
+                    if(!d_vld)  // TLBInvalid
                         d_tlbi <= `true;
-                    if(!d_drt && dmmu_refs)  //TLBModified
+                    if(!d_drt && dmmu_refs)  // TLBModified
                         d_tlbm <= `true;
                     dlk_valid  <= `true;
                     dmmu_paddr <= d_paddr;

@@ -461,6 +461,53 @@
 [20190103]
 - 通过自设TLB测试
 - 将TLB测试加入文件夹Testbench
+- T: 西工大2队提出TLB异常导致操作系统加载死循环，参考这个思路
+- T: 实在不行，把PrId改回LS232，去找TLB Handle改写
+- T: 要学会编译和反汇编linux内核
+
+--------------------------------------------------
+[20190111]
+- 微调了Config的一些表述
+- T: 可以先试着运行uCore系统？
+- T: TagLo的值需要从核心向外传递，规范一下cache相关信号的前缀？
+
+--------------------------------------------------
+[20190112]
+- 计划的TagLo格式：[31:(11+N)--ptag][(10+N):2--0][1--Dirty][0--Valid]，分指令和数据
+- TagHi：读写寄存器，没有作用
+- 开始添加TagLo寄存器，未完成
+
+--------------------------------------------------
+[20190114]
+- 将所有的注释后面都加了空格
+- uCore启动失败，可能原因：启动参数不对
+- Linux启动错误每次不复现
+- 一边实现Cache指令，一边进行无Cache的相关测试
+- 无Cache测试发现lbu、lh引发RI例外
+
+--------------------------------------------------
+[20190115]
+- T: 二路组相连能降低Cache寻址复杂度
+- PrId改为LS232的
+- 问题定位：arch/mips/mm/tlbex.c
+
+--------------------------------------------------
+[20190116]
+- tlbex.c的问题已经修复
+- 故障回到原点，tlb错误依旧不复现
+- T: 先把Cache实现并验证了再调试
+- T: DCache/ICache：只要cacheop不为0，就不进行任何读操作
+- T: ICache的操作都可以单周期完成，只要不论取指令是否命中都暂停一周期即可
+
+--------------------------------------------------
+[20190117]
+- Q: cache信号要跟tlb翻译的地址一起出来？
+- A: cacheop作用的大前提是en有效
+- T: TLB地址翻译有延迟的问题可能造成一些错误，需要理顺时序
+- T: cache指令的index型和hit型都经过MMU翻译
+- T: cache操作与bus_cached属性无关
+- T: DCache中，r_state和w_state没有机会同时不为0？考虑合并状态机
+- 新的Data_Cache编写中，将状态机合并，并区分缓存/不缓存状态
 
 --------------------------------------------------
 [特别笔记区段]
@@ -482,33 +529,35 @@ SW      SWL     SWR     SC      TEQ     TNE     TGE     TGEU    TLT     TLTU
 TEQI    TNEI    TGEI    TGEIU   TLTI    TLTIU   TLBR    TLBWI   TLBWR   TLBP
 
 CACHE操作类型：
-- I-Index Invalidate
-- D-Index Writeback Invalidate
-- I/D-Index Store Tag
-- I/D-Hit Invalidate
-- D-Hit Writeback Invalidate
+- 0x0   I-Index Invalidate
+- 0x1   D-Index Writeback Invalidate
+- 0x8   I-Index Store Tag
+- 0x9   D-Index Store Tag
+- 0x10  I-Hit Invalidate
+- 0x11  D-Hit Invalidate
+- 0x15  D-Hit Writeback Invalidate
 
-计划实现的CP0寄存器有：【后面备注批次】
-- Index    (Register  0, Select 0)     
-- Random   (Register  1, Select 0)     
-- EntryLo0 (Register  2, Select 0)     
-- EntryLo1 (Register  3, Select 0)     
-- Context  (Register  4, Select 0)     
-- PageMask (Register  5, Select 0)     
-- Wired    (Register  6, Select 0)     
-- BadVAddr (Register  8, Select 0)     
-- Count    (Register  9, Select 0)     
-- EntryHi  (Register 10, Select 0)     
-- Compare  (Register 11, Select 0)     
-- Status   (Register 12, Select 0)     
-- Cause    (Register 13, Select 0)     
-- EPC      (Register 14, Select 0)     
-- PrId     (Register 15, Select 0)     
-- EBase    (Register 15, Select 1)     //4 //可能不实现
-- Config   (Register 16, Select 0)     
-- Config1  (Register 16, Select 1)     
-- TagLo    (Register 28, Select 0, 2)  //4
-- TagHi    (Register 29, Select 0, 2)  //4
+计划实现的CP0寄存器有：
+- Index    (Register  0, Select 0)
+- Random   (Register  1, Select 0)
+- EntryLo0 (Register  2, Select 0)
+- EntryLo1 (Register  3, Select 0)
+- Context  (Register  4, Select 0)
+- PageMask (Register  5, Select 0)
+- Wired    (Register  6, Select 0)
+- BadVAddr (Register  8, Select 0)
+- Count    (Register  9, Select 0)
+- EntryHi  (Register 10, Select 0)
+- Compare  (Register 11, Select 0)
+- Status   (Register 12, Select 0)
+- Cause    (Register 13, Select 0)
+- EPC      (Register 14, Select 0)
+- PrId     (Register 15, Select 0)
+- EBase    (Register 15, Select 1)     // 暂缓实现
+- Config   (Register 16, Select 0)
+- Config1  (Register 16, Select 1)
+- TagLo    (Register 28, Select 0, 2)
+- TagHi    (Register 29, Select 0, 2)
 
 所有要实现的异常和优先级：
 - Reset

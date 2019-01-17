@@ -40,6 +40,8 @@ module CP0
     output wire [`DataBus] Cause_o,
     output wire [`DataBus] EPC_o,
     output wire [`DataBus] Config_o,
+    output wire [`DataBus] ITagLo_o,
+    output wire [`DataBus] DTagLo_o,
 
     output wire            usermode,
     output reg             timer_int
@@ -52,7 +54,7 @@ module CP0
     reg  [`Word] ITagHi;
     reg  [`Word] DTagHi;
 
-    //Status
+    // Status
     reg          Status_CU0;
     reg          Status_BEV;
     reg  [ 7: 0] Status_IM;
@@ -62,119 +64,120 @@ module CP0
     reg          Status_IE;
     wire [`Word] Status = {
         3'b0,
-        Status_CU0, //28
+        Status_CU0, // 28
         5'b0,
-        Status_BEV, //22
+        Status_BEV, // 22
         6'b0,
-        Status_IM,  //15:8
+        Status_IM,  // 15:8
         3'b0,
-        Status_UM,  //4
+        Status_UM,  // 4
         1'b0,
-        Status_ERL, //2
-        Status_EXL, //1
-        Status_IE   //0
+        Status_ERL, // 2
+        Status_EXL, // 1
+        Status_IE   // 0
     };
 
-    //Cause
+    // Cause
     reg          Cause_BD;
     reg  [ 1: 0] Cause_CE;
     reg          Cause_IV;
     reg  [ 7: 0] Cause_IP;
     reg  [ 4: 0] Cause_ExcCode;
     wire [`Word] Cause = {
-        Cause_BD,       //31 R
+        Cause_BD,       // 31 R
         1'b0,
-        Cause_CE,       //29:28 R
+        Cause_CE,       // 29:28 R
         4'b0,
     `ifdef Disable_Cause_IV
         1'b0,
     `else
-        Cause_IV,       //23 RW
+        Cause_IV,       // 23 RW
     `endif
         7'b0,
-        Cause_IP,       //15:8 R[15:10] RW[9:8]
+        Cause_IP,       // 15:8 R[15:10] RW[9:8]
         1'b0,
-        Cause_ExcCode,  //6:2 R
+        Cause_ExcCode,  // 6:2 R
         2'b0
     };
 
-    //PrId
-    wire [`Word] PrId = {
-        8'h00,          //Company Options
-        8'h01,          //Company ID
-        8'h80,          //Processor ID
-        8'h00           //Revision
-    };
+    // PrId
+    wire [`Word] PrId = 32'h00004220; //LS232
+    // {
+    //     8'h00,          // Company Options
+    //     8'h01,          // Company ID
+    //     8'h80,          // Processor ID
+    //     8'h00           // Revision
+    // };
 
-    //Config
+    // Config
     reg  [ 2: 0] Config_K23;
     reg  [ 2: 0] Config_KU;
     reg  [ 2: 0] Config_K0;
     wire [`Word] Config = {
-        1'b1,       //31    Config1
+        1'b1,       // 31    Config1
     `ifdef Fixed_Mapping_MMU
-        Config_K23,        //30:28
-        Config_KU,         //27:25
+        Config_K23, // 30:28
+        Config_KU,  // 27:25
     `else
-        3'b0,       //30:28
-        3'b0,       //27:25
+        3'b0,       // 30:28
+        3'b0,       // 27:25
     `endif
         9'b0,
-        1'b0,       //15    BE:Little Endian
-        2'b0,       //14:13 AT:MIPS32
-        3'b0,       //12:10 AR:Release 1
+        1'b0,       // 15    BE:Little Endian
+        2'b0,       // 14:13 AT:MIPS32
+        3'b0,       // 12:10 AR:Release 1
     `ifdef Fixed_Mapping_MMU
-        3'b011,     // 9: 7 MT:Fixed Mapping
+        3'b011,     //  9: 7 MT:Fixed Mapping
     `else
-        3'b001,     // 9: 7 MT:Standart TLB
+        3'b001,     //  9: 7 MT:Standart TLB
     `endif
         3'b0,
-        1'b0,       // 3    VI:0
-        Config_K0          // 2: 0
+        1'b0,       //  3    VI:0
+        Config_K0   //  2: 0
     };
 
-    //Config1
+    // Config1
     `define  IS  3'd`ICache_N - 3'd1
     `define  DS  3'd`DCache_N - 3'd1
     wire [`Word] Config1 = {
-        1'b0,       //31    Config2
+        1'b0,       // 31    Config2
     `ifdef Fixed_Mapping_MMU
-        6'b0,       //30:25 MMU Size-1
+        6'b0,       // 30:25 MMU Size-1
     `else
-        6'd31,      //30:25 MMU Size-1
+        6'd31,      // 30:25 MMU Size-1
     `endif
-        `IS,        //24:22 IS
-        3'd5,       //21:19 IL = 5 64B
-        3'b0,       //18:16 IA
-        `DS,        //15:13 DS
-        3'd5,       //12:10 DL = 5 64B
-        3'b0,       // 9: 7 DA
-        1'b0,       // 6    C2
-        1'b0,       // 5    MD
-        1'b0,       // 4    PC
-        1'b0,       // 3    WR
-        1'b0,       // 2    CA
-        1'b0,       // 1    EP
-        1'b0        // 0    FP
+        `IS,        // 24:22 IS
+        3'd5,       // 21:19 IL = 5 64B
+        3'b0,       // 18:16 IA
+        `DS,        // 15:13 DS
+        3'd5,       // 12:10 DL = 5 64B
+        3'b0,       //  9: 7 DA
+        1'b0,       //  6    C2
+        1'b0,       //  5    MD
+        1'b0,       //  4    PC
+        1'b0,       //  3    WR
+        1'b0,       //  2    CA
+        1'b0,       //  1    EP
+        1'b0        //  0    FP
     };
 
-    //Index
+    // Index
     reg             Index_P;
     reg  [`TLB_Idx] Index__;
     wire [`Word   ] Index;
 
     assign Index [   31   ] = Index_P;
-    assign Index [`Index_Z] = 0;
+    assign Index [`Index_0] = 0;
     assign Index [`TLB_Idx] = Index__;
 
-    //Random
+    // Random
     reg  [`TLB_Idx] Random__;
     wire [`Word   ] Random;
     
-    assign Random [`Random_Z] = 0;
+    assign Random [`Random_0] = 0;
     assign Random [`TLB_Idx ] = Random__;
 
-    //EntryLo
+    // EntryLo
     reg  [19: 0] EntryLo0_PFN,  EntryLo1_PFN;
     reg  [ 2: 0] EntryLo0_C,    EntryLo1_C;
     reg          EntryLo0_D,    EntryLo1_D;
@@ -183,11 +186,11 @@ module CP0
 
     wire [`Word   ] EntryLo0 = {
         6'b0,
-        EntryLo0_PFN,   //25: 6
-        EntryLo0_C,     // 5: 3
-        EntryLo0_D,     // 2
-        EntryLo0_V,     // 1
-        EntryLo0_G      // 0
+        EntryLo0_PFN,   // 25: 6
+        EntryLo0_C,     //  5: 3
+        EntryLo0_D,     //  2
+        EntryLo0_V,     //  1
+        EntryLo0_G      //  0
     };
     wire [`Word   ] EntryLo1 = {
         6'b0,
@@ -198,12 +201,12 @@ module CP0
         EntryLo1_G
     };
 
-    //EntryHi
+    // EntryHi
     reg  [18: 0] EntryHi_VPN2;
     reg  [ 7: 0] EntryHi_ASID;
     wire [`Word] EntryHi = {EntryHi_VPN2, 5'b0, EntryHi_ASID};
 
-    //Context
+    // Context
     reg  [ 8: 0] Context_PTEBase;
     reg  [18: 0] Context_BadVPN2;
     wire [`Word] Context = {
@@ -212,19 +215,36 @@ module CP0
         4'b0
     };
 
-    //PageMask
+    // PageMask
     reg  [15: 0] PageMask__;
     wire [`Word] PageMask = {3'b0, PageMask__, 13'b0};
 
-    //Wired
+    // Wired
     reg  [`TLB_Idx] Wired__;
     wire [`Word   ] Wired;
-    assign Wired [`Wired_Z] = 0;
+    assign Wired [`Wired_0] = 0;
     assign Wired [`TLB_Idx] = Wired__;
 
-    //ITagLo
-    //DTagLo
+    // ITagLo/DTagLo
+    reg  [`I_ptag ] i_ptag;
+    reg             i_valid;
+    reg  [`D_ptag ] d_ptag;
+    reg             d_dirty;
+    reg             d_valid;
+    wire [`Word   ] ITagLo, DTagLo;
+    reg  [`Word   ] ITagHi, DTagHi;
 
+    assign ITagLo[`ITag_Tag] = i_ptag;
+    assign ITagLo[`ITag_0  ] = 0;
+    assign ITagLo[`ITag_Vld] = i_valid;
+
+    assign DTagLo[`DTag_Tag] = d_ptag;
+    assign DTagLo[`DTag_0  ] = 0;
+    assign DTagLo[`DTag_Drt] = d_dirty;
+    assign DTagLo[`DTag_Vld] = d_valid;
+
+
+    // CP0 Operations
     wire [`Word] pcm4     = pc - 32'h4;
     wire         timer_eq = (Count ^ Compare) == `ZeroWord;
 
@@ -278,18 +298,18 @@ module CP0
             `endif
         end
         else begin
-            //Count & Compare
+            // Count & Compare
             Count <= Count + 32'd1;
             if(Compare != `ZeroWord && timer_eq)
                 timer_int <= `true;
             
-            //Random
+            // Random
             Random__ <= (Random__ ^ Wired__) == 0 ? `Random_Rst : Random__ - 1;
 
-            //Interrupts
+            // Interrupts
             Cause_IP[7:2] <= intr;
 
-            //Exceptions
+            // Exceptions
             if(exc_flag) begin
                 case (exc_type)
                     `ExcT_Intr,
@@ -333,7 +353,7 @@ module CP0
                     `ExcT_CpU:  Cause_CE <= exc_cpnum;
                 endcase
 
-                //ExcCode
+                // ExcCode
                 case (exc_type)
                     `ExcT_Intr: Cause_ExcCode <= `ExcC_Intr;
                     `ExcT_CpU:  Cause_ExcCode <= `ExcC_CpU;
@@ -351,7 +371,7 @@ module CP0
                     // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
                 endcase
 
-                //Displaying
+                // Displaying
                 `ifdef Output_Exception_Info
                     case (exc_type)
                         `ExcT_Intr: $display("Interrupt Exception");
@@ -467,6 +487,25 @@ module CP0
                         Config_KU  <= wdata[`KU ];
                         Config_K0  <= wdata[`K0 ];
                     end
+
+                    `CP0_ITagLo: begin
+                        i_ptag  <= wdata[`ITag_Tag];
+                        i_valid <= wdata[`ITag_Vld];
+                    end
+
+                    `CP0_DTagLo: begin
+                        d_ptag  <= wdata[`DTag_Tag];
+                        d_dirty <= wdata[`DTag_Drt];
+                        d_valid <= wdata[`DTag_Vld];
+                    end
+
+                    `CP0_ITagHi: begin
+                        ITagHi <= wdata;
+                    end
+
+                    `CP0_DTagHi: begin
+                        DTagHi <= wdata;
+                    end
                 endcase
             end
         end
@@ -490,6 +529,10 @@ module CP0
             `CP0_PrId:     rdata <= PrId;
             `CP0_Config:   rdata <= Config;
             `CP0_Config1:  rdata <= Config1;
+            `CP0_ITagLo:   rdata <= ITagLo;
+            `CP0_DTagLo:   rdata <= DTagLo;
+            `CP0_ITagHi:   rdata <= ITagHi;
+            `CP0_DTagHi:   rdata <= DTagHi;
             default:       rdata <= `ZeroWord;
         endcase
     end
@@ -505,5 +548,7 @@ module CP0
     assign Cause_o    = Cause;
     assign EPC_o      = EPC;
     assign Config_o   = Config;
+    assign ITagLo_o   = ITagLo;
+    assign DTagLo_o   = DTagLo;
 
 endmodule

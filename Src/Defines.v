@@ -6,7 +6,7 @@ Version:    v1.0.1
 // `include "../Config.v"
 
 /*--------------------Constant--------------------*/
-//Width constant
+// Width constant
 `define         ALUOp_W              6
 `define         Exc_W               20
 `define         ExcT_W               4
@@ -15,7 +15,7 @@ Version:    v1.0.1
 `define         TLB_N               32
 `define         TLB_N1              31
 
-//Global constant
+// Global constant
 `define         true                 1'b1
 `define         false                1'b0
 `define         One                  1'b1
@@ -28,25 +28,25 @@ Version:    v1.0.1
 `define         WrAllEn              4'hF
 `define         GPR_ra               5'd31
 
-//Pipeline stage identifier
+// Pipeline stage identifier
 `define         IF                   0
 `define         ID                   1
 `define         EX                   2
 `define         MEM                  3
 `define         WB                   4
 
-//Coprocessor identifier
+// Coprocessor identifier
 `define         CP0                  2'd0
 `define         CP1                  2'd1
 `define         CP2                  2'd2
 `define         CP3                  2'd3
 
-//Save/Load Width
+// Save/Load Width
 `define         ASize_Byte              2'b00
 `define         ASize_Half              2'b01
 `define         ASize_Word              2'b10
 
-//Entrance address
+// Entrance address
 `define         Reset_Entrance          32'hBFC00000
 
 `define         Base_Bts                32'hBFC00200
@@ -57,7 +57,7 @@ Version:    v1.0.1
 `define         Nml_SpIntr              32'h80000200
 
 /*--------------------Vector--------------------*/
-//Bus Width
+// Bus Width
 `define         DWord               63: 0
 `define         Word                31: 0
 `define         AddrBus             31: 0
@@ -80,7 +80,7 @@ Version:    v1.0.1
 `define         CacheAt              2: 0
 `define         TLBOp                2: 0
 
-//Partial Select
+// Partial Select
 `define         Hi                  63:32
 `define         Lo                  31: 0
 `define         Byte0                7: 0
@@ -90,7 +90,7 @@ Version:    v1.0.1
 `define         Seg                 31:29
 
 /*--------------------Encoding--------------------*/
-//Opcode
+// Opcode
 `define         OP_SPECIAL          6'b000000
 `define         OP_REGIMM           6'b000001
 `define         OP_J                6'b000010
@@ -141,7 +141,7 @@ Version:    v1.0.1
 `define         OP_SDC1             6'b111101
 `define         OP_SDC2             6'b111110
 
-//Function : Opcode = Special
+// Function : Opcode = Special
 `define         SP_SLL              6'b000000
 `define         SP_MOVCI            6'b000001
 `define         SP_SRL              6'b000010
@@ -181,7 +181,7 @@ Version:    v1.0.1
 `define         SP_TEQ              6'b110100
 `define         SP_TNE              6'b110110
 
-//Rt : Opcode = RegImm
+// Rt : Opcode = RegImm
 `define         RI_BLTZ             5'b00000
 `define         RI_BGEZ             5'b00001
 `define         RI_BLTZL            5'b00010
@@ -197,7 +197,7 @@ Version:    v1.0.1
 `define         RI_BLTZALL          5'b10010
 `define         RI_BGEZALL          5'b10011
 
-//Function : Opcode = Special2
+// Function : Opcode = Special2
 `define         SP2_MADD            6'b000000
 `define         SP2_MADDU           6'b000001
 `define         SP2_MUL             6'b000010
@@ -206,12 +206,12 @@ Version:    v1.0.1
 `define         SP2_CLZ             6'b100000
 `define         SP2_CLO             6'b100001
 
-//Rs : Opcode = COP0
+// Rs : Opcode = COP0
 `define         C0_MFC0             5'b00000
 `define         C0_MTC0             5'b00100
 `define         C0_CO               5'b10000
 
-//Function : Opcode = COP0 and Rs = CO
+// Function : Opcode = COP0 and Rs = CO
 `define         C0F_TLBR            6'b000001
 `define         C0F_TLBWI           6'b000010
 `define         C0F_TLBWR           6'b000110
@@ -219,7 +219,7 @@ Version:    v1.0.1
 `define         C0F_ERET            6'b011000
 `define         C0F_WAIT            6'b100000
 
-//Rt: Opcode = CACHE
+// Rt: Opcode = CACHE
 `define         CA_III              5'b00000
 `define         CA_DIWI             5'b00001
 `define         CA_IIST             5'b01000
@@ -293,9 +293,44 @@ Version:    v1.0.1
 `define         ALU_ERET            `ALUOp_W'h3C
 `define         ALU_WAIT            `ALUOp_W'h3D
 
+/*--------------------Cache--------------------*/
+// Inst Cache
+`define         I_N                 `ICache_N
+`define         I_lineN             2 ** (5 + `I_N)
+`define         I_lnNum             `I_lineN - 1 : 0
+`define         I_addr_ptag         31 : (11 + `I_N)
+`define         I_addr_idx          (10 + `I_N) : 6
+`define         I_addr_ramad        (10 + `I_N) : 2
+`define         I_ptag              (20 - `I_N) : 0
+`define         I_idx               ( 4 + `I_N) : 0
+`define         I_ramad             ( 8 + `I_N) : 0
+
+
+// Data Cache
+`define         D_N                 `DCache_N
+`define         D_lineN             2 ** (5 + `D_N)
+`define         D_lnNum             `D_lineN - 1 : 0
+`define         D_addr_ptag         31 : (11 + `D_N)
+`define         D_addr_idx          (10 + `D_N) : 6
+`define         D_addr_ramad        (10 + `D_N) : 2
+`define         D_ptag              (20 - `D_N) : 0
+`define         D_idx               ( 4 + `D_N) : 0
+`define         D_ramad             ( 8 + `D_N) : 0
+
+
+// Cache Op
+`define         COP_NOP             `CacheOp_W'b000
+`define         COP_III             `CacheOp_W'b001
+`define         COP_DIWI            `CacheOp_W'b010
+`define         COP_IIST            `CacheOp_W'b011
+`define         COP_DIST            `CacheOp_W'b100
+`define         COP_IHI             `CacheOp_W'b101
+`define         COP_DHI             `CacheOp_W'b110
+`define         COP_DHWI            `CacheOp_W'b111
+
 /*--------------------Coprocessor 0--------------------*/
-//CP0 Registers
-`define         CP0_ZeroReg          8'd00
+// CP0 Registers
+`define         CP0_0eroReg          8'd00
 `define         CP0_Index           {5'd00, 3'd0}
 `define         CP0_Random          {5'd01, 3'd0}
 `define         CP0_EntryLo0        {5'd02, 3'd0}
@@ -320,7 +355,7 @@ Version:    v1.0.1
 `define         CP0_DTagHi          {5'd29, 3'd2}
 `define         CP0_ErrorEPC        {5'd30, 3'd0}
 
-//Fields of Status Register
+// Fields of Status Register
 `define         CU3                 31
 `define         CU2                 30
 `define         CU1                 29
@@ -332,7 +367,7 @@ Version:    v1.0.1
 `define         EXL                  1
 `define         IE                   0
 
-//Fields of Cause Register
+// Fields of Cause Register
 `define         BD                  31
 `define         CE                  29:28
 `define         IV                  23
@@ -341,47 +376,57 @@ Version:    v1.0.1
 `define         IP                  15: 8
 `define         ExcCode              6: 2
 
-//Fields of Config Registers
+// Fields of Config Registers
 `define         K23                 30:28
 `define         KU                  27:25
 `define         K0                   2: 0
 
-//Fields of CP0-TLB Registers
-//EntryLo
+// Fields of CP0 TLB Registers
+// EntryLo
 `define         PFN                 25: 6
 `define         CAt                  5: 3
 `define         Drt                  2
 `define         Vld                  1
 `define         Glb                  0
 
-//EntryHi
+// EntryHi
 `define         VPN2                31:13
 `define         ASID                 7: 0
 
-//Context
+// Context
 `define         PTEBase             31:23
 `define         BadVPN2             22: 4
 
-//PageMask
+// PageMask
 `define         Mask                28:13
 `define         VMask               31:13
 `define         PMask               31:12
 
-//Zero Fields
-`define         Index_Z              30:`TLB_Idx_W
-`define         Random_Z             31:`TLB_Idx_W
-`define         Wired_Z              31:`TLB_Idx_W
+// Zero Fields
+`define         Index_0             30:`TLB_Idx_W
+`define         Random_0            31:`TLB_Idx_W
+`define         Wired_0             31:`TLB_Idx_W
 `define         Random_Rst          `TLB_Idx_W'd`TLB_N1
 
+// Fields of CP0 cache tag registers
+`define         ITag_Tag            `I_addr_ptag
+`define         ITag_0              (10 + `I_N) : 1
+`define         ITag_Vld            0
+
+`define         DTag_Tag            `D_addr_ptag
+`define         DTag_0              (10 + `D_N) : 2
+`define         DTag_Drt            1
+`define         DTag_Vld            0
+
 /*--------------------MMU--------------------*/
-//Virtual Address Segments
+// Virtual Address Segments
 `define         kuseg               3'b0??
 `define         kseg0               3'b100
 `define         kseg1               3'b101
 `define         kseg2               3'b110
 `define         kseg3               3'b111
 
-//TLB Item Fields
+// TLB Item Fields
 `define         TLB_VPN2            97:79
 `define         TLB_ASID            78:71
 `define         TLB_PMask           70:51
@@ -397,7 +442,7 @@ Version:    v1.0.1
 `define         TLB_D1               3
 `define         TLB_C1               2: 0
 
-//TLB operation
+// TLB operation
 `define         TOP_NOP              3'd0
 `define         TOP_TLBR             3'd1
 `define         TOP_TLBWI            3'd2
@@ -405,11 +450,11 @@ Version:    v1.0.1
 `define         TOP_TLBP             3'd4
 
 /*--------------------Exceptions--------------------*/
-//No exception
+// No exception
 `define         Exc_NoExc           `Exc_W'b0
 `define         ExcT_NoExc          `ExcT_W'b0
 
-//Index of exception vector
+// Index of exception vector
 `define         Exc_NMI             0
 `define         Exc_Intr            1
 `define         Exc_I_AdEL          2
@@ -430,7 +475,7 @@ Version:    v1.0.1
 `define         Exc_D_BusE          17
 `define         Exc_ERET            18
 
-//Exception Types
+// Exception Types
 `define         ExcT_Intr           `ExcT_W'h01
 `define         ExcT_CpU            `ExcT_W'h02
 `define         ExcT_RI             `ExcT_W'h03
@@ -447,7 +492,7 @@ Version:    v1.0.1
 `define         ExcT_DBE            `ExcT_W'h0E
 `define         ExcT_ERET           `ExcT_W'h0F
 
-//Cause.ExcCode
+// Cause.ExcCode
 `define         ExcC_Intr           5'h00
 `define         ExcC_Mod            5'h01
 `define         ExcC_TLBL           5'h02
@@ -462,38 +507,5 @@ Version:    v1.0.1
 `define         ExcC_CpU            5'h0B
 `define         ExcC_Ov             5'h0C
 `define         ExcC_Tr             5'h0D
-
-/*--------------------Cache--------------------*/
-//Inst Cache
-`define         I_N                 `ICache_N
-`define         I_lineN             2 ** (5 + `I_N)
-`define         I_lnNum             `I_lineN - 1 : 0
-`define         I_addr_ptag         31 : (11 + `I_N)
-`define         I_addr_idx          (10 + `I_N) : 6
-`define         I_addr_ramad        (10 + `I_N) : 2
-`define         I_ptag              (20 - `I_N) : 0
-`define         I_idx               ( 4 + `I_N) : 0
-`define         I_ramad             ( 8 + `I_N) : 0
-
-//Data Cache
-`define         D_N                 `DCache_N
-`define         D_lineN             2 ** (5 + `D_N)
-`define         D_lnNum             `D_lineN - 1 : 0
-`define         D_addr_ptag         31 : (11 + `D_N)
-`define         D_addr_idx          (10 + `D_N) : 6
-`define         D_addr_ramad        (10 + `D_N) : 2
-`define         D_ptag              (20 - `D_N) : 0
-`define         D_idx               ( 4 + `D_N) : 0
-`define         D_ramad             ( 8 + `D_N) : 0
-
-//Cache Op
-`define         COP_NOP             `CacheOp_W'b000
-`define         COP_III             `CacheOp_W'b001
-`define         COP_DIWI            `CacheOp_W'b010
-`define         COP_IIST            `CacheOp_W'b011
-`define         COP_DIST            `CacheOp_W'b100
-`define         COP_IHI             `CacheOp_W'b101
-`define         COP_DHI             `CacheOp_W'b110
-`define         COP_DHWI            `CacheOp_W'b111
 
 /*--------------------End of Defines--------------------*/

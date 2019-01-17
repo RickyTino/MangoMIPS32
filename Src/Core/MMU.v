@@ -59,29 +59,29 @@ module MMU
 
         bus_en     <= en && !exc_flag;
         case (vaddr[`Seg])
-            `kseg0: begin  //kseg0: unmapped
+            `kseg0: begin  // kseg0: unmapped
                 bus_paddr  <= {3'b000, vaddr[28:0]};
                 bus_cached <= cp0_Config[`K0] == 3'd3;
             end
             
-            `kseg1: begin //kseg1: unmapped, uncached
+            `kseg1: begin // kseg1: unmapped, uncached
                 bus_paddr  <= {3'b000, vaddr[28:0]};
                 bus_cached <= `false;
             end
             
-            `kseg2, `kseg3: begin //kseg2 & kseg3: mapped
+            `kseg2, `kseg3: begin // kseg2 & kseg3: mapped
                 bus_paddr  <= vaddr;
                 bus_cached <= cp0_Config[`K23] == 3'd3;
             end
 
-            default: begin //kuseg: mapped
+            default: begin // kuseg: mapped
                 bus_paddr  <= cp0_Status[`ERL] ? vaddr : {vaddr[31:28] + 4'd4, vaddr[27:0]};
                 bus_cached <= cp0_Config[`KU] == 3'd3;
             end
         endcase
     end
 
-`else //TLB-based MMU
+`else // TLB-based MMU
 
     reg  tlb_streq;
 
@@ -105,19 +105,19 @@ module MMU
 
         // if(en && !exc_flag) begin
         case (vaddr[`Seg])
-            `kseg0: begin //kseg0: unmapped
+            `kseg0: begin // kseg0: unmapped
                 bus_paddr  <= {3'b000, vaddr[28:0]};
                 bus_en     <= en && !exc_flag;
                 bus_cached <= cp0_Config[`K0] == 3'd3;
             end
             
-            `kseg1: begin //kseg1: unmapped, uncached
+            `kseg1: begin // kseg1: unmapped, uncached
                 bus_paddr  <= {3'b000, vaddr[28:0]};
                 bus_en     <= en && !exc_flag;
                 bus_cached <= `false;
             end
             
-            default: begin //kseg2, kseg3, kuseg: mapped
+            default: begin // kseg2, kseg3, kuseg: mapped
                 if(cp0_Status[`ERL]) begin
                     bus_paddr  <= {3'b000, vaddr[28:0]};
                     bus_en     <= en && !exc_flag;
@@ -131,9 +131,9 @@ module MMU
                     bus_paddr  <= tlb_paddr;
                     bus_en     <= tlb_rdy & !exc_flag;
                     bus_cached <= tlb_cat;
-                    exc_tlbr   <= tlb_tlbr;// & tlb_rdy;
-                    exc_tlbi   <= tlb_tlbi;// & tlb_rdy;
-                    exc_tlbm   <= tlb_tlbm;// & tlb_rdy;
+                    exc_tlbr   <= tlb_tlbr;
+                    exc_tlbi   <= tlb_tlbi;
+                    exc_tlbm   <= tlb_tlbm;
                 end
             end
         endcase

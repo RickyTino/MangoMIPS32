@@ -56,7 +56,8 @@ module Data_Cache (
     input  wire            bus_stall,
     input  wire            bus_cached,
 
-    input  wire [`CacheOp] cacheop
+    input  wire [`CacheOp] cacheop,
+    input  wire [`DataBus] cop_taglo
 );
     assign arburst  = 2'b01;
     assign arlock   = 2'b0;
@@ -75,7 +76,7 @@ module Data_Cache (
     wire rreq = bus_en & !refs;
     wire wreq = bus_en &  refs;
 
-    //Cached Channel
+    // Cached Channel
     reg             ca_rbusy, ca_wbusy;
     reg  [`ByteWEn] ca_wea,   ca_web;
     reg  [`D_ramad] ca_ada,   ca_adb;
@@ -108,7 +109,7 @@ module Data_Cache (
     wire           ln_hit   = (ln_ptag ^ ad_ptag) == 0 && ln_valid;
     wire           ln_wb    = !ln_hit && ln_valid && ln_dirty;
 
-    //Uncached Channel
+    // Uncached Channel
     reg [`Word] uc_data;
     reg [`Word] uc_addr;
     reg         uc_valid;
@@ -128,14 +129,22 @@ module Data_Cache (
         ca_wea  <= `WrDisable;
         
         if(bus_en) begin
-            if(bus_cached) begin
-                ca_wea  <= ln_hit ? bus_wen : `WrDisable;
-                w_streq <= ln_wb;
-                r_streq <= !ln_hit;
+            if(cacheop != `COP_NOP) begin
+                case (cacheop)
+                    `COP_DIWI: w_streq <= ln_dirty && ln_valid;
+                    `COP_DHWI: w_streq <= ln_dirty && ln_hit;
+                endcase
             end
             else begin
-                if(refs) w_streq <= !uc_wrdy;
-                else     r_streq <= !uc_hit;
+                if(bus_cached) begin
+                    ca_wea  <= ln_hit ? bus_wen : `WrDisable;
+                    w_streq <= ln_wb;
+                    r_streq <= !ln_hit;
+                end
+                else begin
+                    if(refs) w_streq <= !uc_wrdy;
+                    else     r_streq <= !uc_hit;
+                end
             end
         end
     end
@@ -201,17 +210,8 @@ module Data_Cache (
             uc_wrdy    <= `false;
         end
         else begin
-            // arid     <= 0;
-            // araddr   <= 0;
-            // arlen    <= 0;
-            // arsize   <= 0;
             arvalid  <= 0;
-            // awaddr   <= 0;
-            // awlen    <= 0;
-            // awsize   <= 0;
             awvalid  <= 0;
-            // wstrb    <= 0;
-            // wlast    <= 0;
             wvalid   <= 0;
 
             ca_web   <= `WrDisable;
@@ -223,23 +223,25 @@ module Data_Cache (
 
             case (r_state)
                 0: 
-                if(bus_cached) begin
-                    if(bus_en && !ln_hit && !ln_wb) begin
-                        rlk_addr   <= {bus_addr[31:6], 6'b0};
-                        rlk_cached <= `true;
-                        r_cnt      <= 0;
-                        r_state    <= 1;
-                        ca_ptag [ad_idx] <= bus_addr[`I_addr_ptag];
-                        ca_valid[ad_idx] <= `false;
-                        ca_rbusy         <= `true;
+                if(cacheop == `COP_NOP) begin
+                    if(bus_cached) begin
+                        if(bus_en && !ln_hit && !ln_wb) begin
+                            rlk_addr   <= {bus_addr[31:6], 6'b0};
+                            rlk_cached <= `true;
+                            r_cnt      <= 0;
+                            r_state    <= 1;
+                            ca_ptag [ad_idx] <= bus_addr[`I_addr_ptag];
+                            ca_valid[ad_idx] <= `false;
+                            ca_rbusy         <= `true;
+                        end
                     end
-                end
-                else begin
-                    if(rreq && !uc_hit) begin
-                        rlk_addr   <= bus_addr;
-                        rlk_cached <= `false;
-                        rlk_size   <= bus_size;
-                        r_state    <= 1;
+                    else begin
+                        if(rreq && !uc_hit) begin
+                            rlk_addr   <= bus_addr;
+                            rlk_cached <= `false;
+                            rlk_size   <= bus_size;
+                            r_state    <= 1;
+                        end
                     end
                 end
                 
@@ -291,25 +293,64 @@ module Data_Cache (
 
             case (w_state)
                 0:
-                if(bus_cached) begin
-                    if(wreq && ln_hit) 
-                        ca_dirty[ad_idx] <= `true;
-                    if(bus_en && ln_wb) begin
-                        wlk_addr   <= {ln_ptag, ad_idx, 6'b0};
-                        wlk_cached <= `true;
-                        w_cnt      <= 0;
-                        w_state    <= 1;
-                        ca_wbusy   <= `true;
-                    end
+                if(bus_en && cacheop != `COP_NOP) begin
+                    case (cacheop)
+                        `COP_DIWI: begin
+                            if(ln_valid && ln_dirty) begin
+                                wlk_addr   <= {ln_ptag, ad_idx, 6'b0};
+                                wlk_cached <= `true;
+                                w_cnt      <= 0;
+                                w_state    <= 1;
+                                ca_wbusy   <= `true;
+                            end
+                            else if(ln_valid)
+                                ca_valid[ad_idx] <= `false;
+                        end
+
+                        `COP_DIST: begin
+                            ca_ptag [ad_idx] <= cop_taglo[`DTag_Tag];
+                            ca_valid[ad_idx] <= cop_taglo[`DTag_Vld];
+                            ca_dirty[ad_idx] <= cop_taglo[`DTag_Drt];
+                        end
+
+                        `COP_DHI: begin
+                            if(ln_hit) ca_valid[ad_idx] <= `false;
+                        end
+
+                        `COP_DHWI: begin
+                            if(ln_hit && ln_dirty) begin
+                                wlk_addr   <= {ln_ptag, ad_idx, 6'b0};
+                                wlk_cached <= `true;
+                                w_cnt      <= 0;
+                                w_state    <= 1;
+                                ca_wbusy   <= `true;
+                            end
+                            else if(ln_valid)
+                                ca_valid[ad_idx] <= `false;
+                        end
+                    endcase
                 end
                 else begin
-                    if(wreq && !uc_wrdy) begin
-                        wlk_addr   <= bus_addr;
-                        wlk_data   <= bus_wdata;
-                        wlk_strb   <= bus_wen;
-                        wlk_cached <= `false;
-                        wlk_size   <= bus_size;
-                        w_state    <= 1;
+                    if(bus_cached) begin
+                        if(wreq && ln_hit) 
+                            ca_dirty[ad_idx] <= `true;
+                        if(bus_en && ln_wb) begin
+                            wlk_addr   <= {ln_ptag, ad_idx, 6'b0};
+                            wlk_cached <= `true;
+                            w_cnt      <= 0;
+                            w_state    <= 1;
+                            ca_wbusy   <= `true;
+                        end
+                    end
+                    else begin
+                        if(wreq && !uc_wrdy) begin
+                            wlk_addr   <= bus_addr;
+                            wlk_data   <= bus_wdata;
+                            wlk_strb   <= bus_wen;
+                            wlk_cached <= `false;
+                            wlk_size   <= bus_size;
+                            w_state    <= 1;
+                        end
                     end
                 end
 
@@ -349,6 +390,7 @@ module Data_Cache (
                     w_state <= 0;
                     if(wlk_cached) begin
                         ca_dirty[wlk_idx] <= `false;
+                        ca_valid[wlk_idx] <= `false;  // used in cache invalidate operation
                         ca_wbusy          <= `false;
                     end
                     else uc_wrdy  <= `true;
@@ -359,6 +401,5 @@ module Data_Cache (
 
     assign bus_rdata = bus_cached ? ca_dout : uc_data;
     assign wdata     = wlk_cached ? ca_dout : wlk_data;
-
 
 endmodule
