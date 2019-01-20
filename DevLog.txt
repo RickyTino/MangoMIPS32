@@ -1,5 +1,5 @@
 开发日志
---------------------------------------------------
+==================================================
 [20181015]
 - 创建了工作目录MangoMIPS32
 - 创建了README.md和.gitignore
@@ -490,6 +490,7 @@
 - T: 二路组相连能降低Cache寻址复杂度
 - PrId改为LS232的
 - 问题定位：arch/mips/mm/tlbex.c
+- CP0 Tag寄存器完成
 
 --------------------------------------------------
 [20190116]
@@ -508,8 +509,26 @@
 - T: cache操作与bus_cached属性无关
 - T: DCache中，r_state和w_state没有机会同时不为0？考虑合并状态机
 - 新的Data_Cache编写中，将状态机合并，并区分缓存/不缓存状态
+- T: 原版可能存在的bug：DCache在暂停时反复写；有待证实
 
 --------------------------------------------------
+[20190119]
+- 用LS232的soc_up试验了交叉编译，HelloWorld成功
+- 编译使用-static参数可以使用静态库，目标平台上没有动态库文件
+- 今天帮蠢喵剪头发了=w=
+
+--------------------------------------------------
+[20190120]
+- 重写DCache模块为DCache_Controller，并通过func_test
+- 重写ICache模块为ICache_Controller，未测试
+- 把Data/Inst_Cache名字统一改为DCache/ICache
+- 修改AXI_Crossbar_CPU模块名字为Bus_Interface
+- 正式移除临时用uncached访存通用接口AXI_Interface.v
+- TLB、Cache_Tag等的Ram现在综合为DRAM，分出单独的always语句解决复位的问题
+- T: 需重新进行TLB模块测试
+- T: 明天进行ICache_Controller测试
+
+==================================================
 [特别笔记区段]
 需要的几场特别调试：
 - CacheOp
@@ -578,9 +597,10 @@ CACHE操作类型：
 - ERET
 
 对MIPS32R1的全面适配，以下工作放到最后：
-- 完整的PREF
+- 完整的SYNC与PREF
 - ErrorEPC与NMI
-- L2Cache
+- L2Cache, ITLB/DTLB
+- L1Cache二路组相连
 
 总结经验
 - 实际上把ALUOP某种程度上作为了指令的标志，不再只是ALU模块的控制信号；未来优化可以更多考虑空间换时间的问题

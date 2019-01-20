@@ -74,7 +74,10 @@ module MangoMIPS_Top
     wire            data_streq;
     wire            data_stall;
     wire            data_cached;
+    
     wire [`CacheOp] cacheop;
+    wire [`DataBus] cop_itag;
+    wire [`DataBus] cop_dtag;
 
     wire [ 3:0] ibus_arid;
     wire [31:0] ibus_araddr;
@@ -171,7 +174,10 @@ module MangoMIPS_Top
         .dbus_streq     (data_streq ),
         .dbus_stall     (data_stall ),
         .dbus_cached    (data_cached),
+        
         .cacheop        (cacheop    ),
+        .cop_itag       (cop_itag   ),
+        .cop_dtag       (cop_dtag   ),
 
         .debug_wb_pc    (debug_wb_pc    ),
         .debug_wb_wreg  (debug_wb_wreg  ),
@@ -232,7 +238,8 @@ module MangoMIPS_Top
     );
 
 //    AXI_Interface data_axi (
-    Data_Cache data_cache (
+//    Data_Cache data_cache (
+    DCache_Controller dcache_ctrl (
         .aclk       (aclk           ),
         .aresetn    (resetn         ),
         .arid       (dbus_arid      ),
@@ -280,10 +287,13 @@ module MangoMIPS_Top
         .bus_size   (data_size      ),
         .bus_streq  (data_streq     ),
         .bus_stall  (data_stall     ),
-        .bus_cached (data_cached    )
+        .bus_cached (data_cached    ),
+        
+        .cacheop    (cacheop        )
+        //.cop_dtag   (cop_dtag       )
     );
 
-    AXI_Crossbar_CPU cpu_axi (
+    Bus_Interface biu (
         .aclk             ( aclk        ),                 
         .aresetn          ( aresetn     ),
         

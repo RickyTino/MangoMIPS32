@@ -1,12 +1,12 @@
 /********************MangoMIPS32*******************
-Filename:   Data_Cache.v
+Filename:   DCache_Controller.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
 
-module Data_Cache (
+module DCache_Controller (
     input  wire            aclk,
     input  wire            aresetn,
     output reg  [  3 : 0 ] arid,
@@ -57,7 +57,7 @@ module Data_Cache (
     input  wire            bus_cached,
 
     input  wire [`CacheOp] cacheop,
-    input  wire [`DataBus] cop_taglo
+    input  wire [`DataBus] cop_dtag
 );
 
     assign arburst  = 2'b01;
@@ -73,10 +73,10 @@ module Data_Cache (
     assign wid      = 4'b0;
     assign bready   = 1'b1;
 
-    wire refs   = bus_wen != `WrDisable;
-    wire cop_en = cacheop != `COP_NOP;
-    wire rreq   = bus_en & !refs;
-    wire wreq   = bus_en &  refs;
+    wire refs    = bus_wen != `WrDisable;
+    wire cop_nop = cacheop == `COP_NOP;
+    wire rreq    = bus_en & !refs;
+    wire wreq    = bus_en &  refs;
 
     // Cached Channel
     reg             ca_enb;
@@ -85,7 +85,7 @@ module Data_Cache (
     reg  [`DataBus] ca_dina,  ca_dinb;
     wire [`DataBus] ca_dout;
 
-    Data_Cache_Ram dcache_ram (
+    DCache_Ram dcache_ram (
         .clk    (aclk       ),
         .enb    (ca_enb     ),
         .wea    (ca_wea     ),
@@ -122,17 +122,16 @@ module Data_Cache (
     
 
     always @(*) begin
-        r_streq <= `false;
-        w_streq <= `false;
-        ca_ada  <= bus_addr[`D_addr_ramad];
-        ca_dina <= bus_wdata;
-        ca_wea  <= `WrDisable;
+        rw_streq <= `false;
+        ca_ada   <= bus_addr[`D_addr_ramad];
+        ca_dina  <= bus_wdata;
+        ca_wea   <= `WrDisable;
         
         if(bus_en) begin
-            if(cop_en) begin
+            if(!cop_nop) begin
                 case (cacheop)
-                    `COP_DIWI: w_streq <= ln_dirty && ln_valid;
-                    `COP_DHWI: w_streq <= ln_dirty && ln_hit;
+                    `COP_DIWI: rw_streq <= ln_dirty && ln_valid;
+                    `COP_DHWI: rw_streq <= ln_dirty && ln_hit;
                 endcase
             end
             else begin
@@ -152,40 +151,31 @@ module Data_Cache (
     reg [`Word] lk_data;
     reg [ 3: 0] lk_strb;
     reg [ 1: 0] lk_size;
+    reg         lk_cached;
     reg [ 3: 0] cnt;
-    reg [ 2: 0] state;
+    reg [ 3: 0] state;
 
     wire [`D_idx] lk_idx = lk_addr[`D_addr_idx];
     
-    integer i;
-    initial begin
-        for(i = 0; i < `I_lineN; i = i + 1) begin
-            ca_ptag [i] <= 0;
-            ca_valid[i] <= `false;
-            ca_dirty[i] <= `false;
-        end
-    end
-    
     parameter S_IDLE                = 4'h0;
-    parameter S_CACHED_R_PREPARE    = 4'h1;
-    parameter S_CACHED_R_TRANSFER   = 4'h2;
-    parameter S_CACHED_R_END        = 4'h3;
-    parameter S_UNCACHED_R_PREPARE  = 4'h4;
-    parameter S_UNCACHED_R_TRANSFER = 4'h5;
-    parameter S_UNCACHED_R_WAITEND  = 4'h6;
-    parameter S_CACHED_W_PREPARE    = 4'h7;
-    parameter S_CACHED_W_TRANSFER   = 4'h8;
-    parameter S_CACHED_W_END        = 4'h9;
-    parameter S_UNCACHED_W_PREPARE  = 4'hA;
-    parameter S_UNCACHED_W_TRANSFER = 4'hB;
-    parameter S_UNCACHED_W_RESPONSE = 4'hC;
-    parameter S_UNCACHED_W_WAITEND  = 4'hC;
+    parameter S_FILLCACHE_PREPARE   = 4'h1;
+    parameter S_FILLCACHE_TRANSFER  = 4'h2;
+    parameter S_FILLCACHE_END       = 4'h3;
+    parameter S_WRITEBACK_PREPARE   = 4'h4;
+    parameter S_WRITEBACK_TRANSFER  = 4'h5;
+    parameter S_WRITEBACK_END       = 4'h6;
+    parameter S_UC_READ_PREPARE     = 4'h7;
+    parameter S_UC_READ_TRANSFER    = 4'h8;
+    parameter S_UC_READ_WAITEND     = 4'h9;
+    parameter S_UC_WRITE_PREPARE    = 4'hA;
+    parameter S_UC_WRITE_TRANSFER   = 4'hB;
+    parameter S_UC_WRITE_RESPONSE   = 4'hC;
+    parameter S_UC_WRITE_WAITEND    = 4'hD;
     
     always @(posedge aclk, negedge aresetn) begin
         if(!aresetn) begin
             state     <= 0;
             cnt       <= 0;
-            ca_enb   <= `false;
 
             lk_addr   <= `ZeroWord;
             lk_cached <= `false;
@@ -209,6 +199,7 @@ module Data_Cache (
             ca_web   <= `WrDisable;
             ca_adb   <= `ZeroWord;
             ca_dinb  <= `ZeroWord;
+            ca_enb   <= `false;
 
             uc_data  <= `ZeroWord;
             uc_addr  <= `ZeroWord;
@@ -230,85 +221,83 @@ module Data_Cache (
             case (state)
                 S_IDLE: 
                 if(bus_en) begin
-                    if(cop_en) begin
+                    if(!cop_nop) begin
                         case (cacheop)
                             `COP_DIWI: begin
+                                // ca_valid[ad_idx] <= `false;
                                 if(ln_valid && ln_dirty) begin
                                     lk_addr   <= {ln_ptag, ad_idx, 6'b0};
                                     lk_cached <= `true;
                                     cnt       <= 0;
-                                    state     <= S_CACHED_W_PREPARE;
+                                    state     <= S_WRITEBACK_PREPARE;
                                     ca_enb   <= `true;
                                 end
-                                else if(ln_valid)
-                                    ca_valid[ad_idx] <= `false;
                             end
 
-                            `COP_DIST: begin
-                                ca_ptag [ad_idx] <= cop_taglo[`DTag_Tag];
-                                ca_valid[ad_idx] <= cop_taglo[`DTag_Vld];
-                                ca_dirty[ad_idx] <= cop_taglo[`DTag_Drt];
-                            end
+                            // `COP_DIST: begin
+                                // ca_ptag [ad_idx] <= cop_dtag[`DTag_Tag];
+                                // ca_valid[ad_idx] <= cop_dtag[`DTag_Vld];
+                                // ca_dirty[ad_idx] <= cop_dtag[`DTag_Drt];
+                            // end
 
-                            `COP_DHI: begin
-                                if(ln_hit) ca_valid[ad_idx] <= `false;
-                            end
+                            // `COP_DHI: begin
+                                // if(ln_hit) ca_valid[ad_idx] <= `false;
+                            // end
 
                             `COP_DHWI: begin
+                                // if(ln_hit) ca_valid[ad_idx] <= `false;
                                 if(ln_hit && ln_dirty) begin
                                     lk_addr   <= {ln_ptag, ad_idx, 6'b0};
                                     lk_cached <= `true;
                                     cnt       <= 0;
-                                    state     <= S_CACHED_W_PREPARE;
+                                    state     <= S_WRITEBACK_PREPARE;
                                     ca_enb   <= `true;
                                 end
-                                else if(ln_valid)
-                                    ca_valid[ad_idx] <= `false;
                             end
                         endcase
                     end
                     else begin
                         if(bus_cached) begin
-                            if(wreq && ln_hit) ca_dirty[ad_idx] <= `true;
-                            
+                            // if(wreq && ln_hit) ca_dirty[ad_idx] <= `true;
                             if(ln_wb) begin
                                 lk_addr   <= {ln_ptag, ad_idx, 6'b0};
                                 lk_cached <= `true;
                                 cnt       <= 0;
-                                state     <= S_CACHED_W_PREPARE;
+                                state     <= S_WRITEBACK_PREPARE;
                                 ca_enb   <= `true;
                             end
                             else if(!ln_hit) begin
                                 lk_addr   <= {ad_ptag, ad_idx, 6'b0};
                                 lk_cached <= `true;
                                 cnt       <= 0;
-                                state     <= S_CACHED_R_PREPARE;
-                                ca_ptag [ad_idx] <= bus_addr[`I_addr_ptag];
-                                ca_valid[ad_idx] <= `false;
+                                state     <= S_FILLCACHE_PREPARE;
+                                // ca_ptag [ad_idx] <= bus_addr[`D_addr_ptag];
+                                // ca_valid[ad_idx] <= `false;
                                 ca_enb           <= `true;
                             end
                         end
                         else begin //if uncached
                             if(!refs && !uc_hit) begin
                                 lk_addr   <= bus_addr;
-                                lk_cached <= `false;
                                 lk_size   <= bus_size;
-                                state     <= S_UNCACHED_R_PREPARE;
+                                lk_cached <= `false;
+                                state     <= S_UC_READ_PREPARE;
                             end
                             else if(refs && !uc_wrdy) begin
                                 lk_addr   <= bus_addr;
                                 lk_data   <= bus_wdata;
                                 lk_strb   <= bus_wen;
-                                lk_cached <= `false;
                                 lk_size   <= bus_size;
-                                state     <= S_UNCACHED_W_PREPARE;
+                                lk_cached <= `false;
+                                state     <= S_UC_WRITE_PREPARE;
                             end
                         end
                     end
                 end
                 
-                S_CACHED_R_PREPARE: 
-                if(arvalid && arready) state <= S_CACHED_R_TRANSFER;
+                //Cache Fill States
+                S_FILLCACHE_PREPARE: 
+                if(arvalid && arready) state <= S_FILLCACHE_TRANSFER;
                 else begin
                     arid   <= 4'b0101;
                     araddr <= lk_addr;
@@ -316,71 +305,35 @@ module Data_Cache (
                     arsize <= 3'b010;
                     arvalid <= `true;
                 end
-                
-                S_UNCACHED_R_PREPARE: 
-                if(arvalid && arready) state <= S_UNCACHED_R_TRANSFER;
-                else begin
-                    arid   <= 4'b0100;
-                    araddr <= lk_addr;
-                    arlen  <= 4'h0;
-                    arsize <= {1'b0, lk_size};
-                    arvalid <= `true;
-                end
 
-                S_CACHED_R_TRANSFER:
+                S_FILLCACHE_TRANSFER:
                 if(rvalid) begin
                     ca_web  <= 4'hF;
                     ca_adb  <= {lk_idx, cnt};
                     ca_dinb <= rdata;
                     cnt     <= cnt + 1;
-                    if(rlast) state <= S_CACHED_R_END;
-                end
-                
-                S_UNCACHED_R_TRANSFER:
-                if(rvalid) begin
-                    uc_data <= rdata;
-                    uc_addr <= lk_addr;
-                    if(rlast) begin
-                        uc_valid <= `true;
-                        state <= S_UNCACHED_R_WAITEND;
-                    end
+                    if(rlast) state <= S_FILLCACHE_END;
                 end
 
-                S_CACHED_R_END: begin
-                    ca_valid[lk_idx] <= `true;
+                S_FILLCACHE_END: begin
+                    // ca_valid[lk_idx] <= `true;
                     ca_enb           <= `false;
                     state            <= S_IDLE;
                 end
                 
-                S_UNCACHED_R_WAITEND: 
-                if((bus_stall ^ streq) == 0) begin
-                        state    <= S_IDLE;
-                        uc_valid <= `false;
-                    end
-                end
-
-                
-                S_CACHED_W_PREPARE:
-                if(awvalid && awready) state <= S_CACHED_W_TRANSFER;
+                //Cache Writeback States
+                S_WRITEBACK_PREPARE:
+                if(awvalid && awready) state <= S_WRITEBACK_TRANSFER;
                 else begin
                     awaddr  <= lk_addr;
                     awlen   <= 4'hF;
                     awsize  <= 3'b010;
                     awvalid <= `true;
                 end
-                
-                S_UNCACHED_W_PREPARE:
-                if(awvalid && awready) state <= S_UNCACHED_W_TRANSFER;
-                else begin
-                    awaddr  <= lk_addr;
-                    awlen   <= 4'h0;
-                    awsize  <= {1'b0, lk_size};
-                    awvalid <= `true;
-                end
 
-                S_CACHED_W_TRANSER:
+                S_WRITEBACK_TRANSFER:
                 if(wvalid && wready) begin
-                    if(cnt == 4'hF) state <= S_CACHED_W_END;
+                    if(cnt == 4'hF) state <= S_WRITEBACK_END;
                     else cnt <= cnt + 1;
                 end
                 else begin
@@ -389,40 +342,119 @@ module Data_Cache (
                     wvalid <= `true;
                     wlast  <= cnt == 4'hF;
                 end
+
+                S_WRITEBACK_END:
+                if(bvalid) begin
+                    state <= S_IDLE;
+                    // ca_dirty[lk_idx] <= `false;
+                    ca_enb           <= `false;
+                end
                 
-                S_UNCACHED_W_TRANSER:
-                if(wvalid && wready) state <= S_UNCACHED_W_RESPONSE;
+                //Uncached Read States
+                S_UC_READ_PREPARE: 
+                if(arvalid && arready) state <= S_UC_READ_TRANSFER;
+                else begin
+                    arid   <= 4'b0100;
+                    araddr <= lk_addr;
+                    arlen  <= 4'h0;
+                    arsize <= {1'b0, lk_size};
+                    arvalid <= `true;
+                end
+
+                S_UC_READ_TRANSFER:
+                if(rvalid) begin
+                    uc_data <= rdata;
+                    uc_addr <= lk_addr;
+                    if(rlast) begin
+                        uc_valid <= `true;
+                        state <= S_UC_READ_WAITEND;
+                    end
+                end
+
+                S_UC_READ_WAITEND: 
+                if((bus_stall ^ rw_streq) == 0) begin
+                    state    <= S_IDLE;
+                    uc_valid <= `false;
+                end
+
+                //Uncached Write States
+                S_UC_WRITE_PREPARE:
+                if(awvalid && awready) state <= S_UC_WRITE_TRANSFER;
+                else begin
+                    awaddr  <= lk_addr;
+                    awlen   <= 4'h0;
+                    awsize  <= {1'b0, lk_size};
+                    awvalid <= `true;
+                end
+
+                S_UC_WRITE_TRANSFER:
+                if(wvalid && wready) state <= S_UC_WRITE_RESPONSE;
                 else begin
                     wstrb  <= lk_strb;
                     wvalid <= `true;
                     wlast  <= `true;
                 end
 
-                S_CACHED_W_END:
+                S_UC_WRITE_RESPONSE:
                 if(bvalid) begin
-                    state <= S_IDLE;
-                    ca_dirty[lk_idx] <= `false;
-                    ca_valid[lk_idx] <= `false;  // used in cache invalidate operation
-                    ca_enb           <= `false;
-                end
-                
-                S_UNCACHED_W_RESPONSE:
-                if(bvalid) begin
-                    state <= S_UNCACHED_W_WAITEND;
+                    state <= S_UC_WRITE_WAITEND;
                     uc_wrdy  <= `true;
                 end
-                
-                S_UNCACHED_W_WAITEND:
-                if((bus_stall ^ streq) == 0) begin
+
+                S_UC_WRITE_WAITEND:
+                if((bus_stall ^ rw_streq) == 0) begin
                     state    <= S_IDLE;
                     uc_wrdy  <= `false;
                 end
-
             endcase
         end
     end
+    
+    
+    integer i;
+    initial begin
+        for(i = 0; i < `D_lineN; i = i + 1) begin
+            ca_ptag [i] <= 0;
+            ca_valid[i] <= `false;
+            ca_dirty[i] <= `false;
+        end
+    end
+    
+    always @(posedge aclk) begin
+        case (state)
+            S_IDLE: 
+            if(bus_en) begin
+                if(!cop_nop) begin
+                    case (cacheop)
+                        `COP_DIWI: ca_valid[ad_idx] <= `false;
 
+                        `COP_DIST: begin
+                            ca_ptag [ad_idx] <= cop_dtag[`DTag_Tag];
+                            ca_valid[ad_idx] <= cop_dtag[`DTag_Vld];
+                            ca_dirty[ad_idx] <= cop_dtag[`DTag_Drt];
+                        end
+
+                        `COP_DHI,
+                        `COP_DHWI: if(ln_hit) ca_valid[ad_idx] <= `false;
+                    endcase
+                end
+                else if(bus_cached) begin
+                    if(wreq && ln_hit) ca_dirty[ad_idx] <= `true;
+                    if(!ln_wb && !ln_hit) begin
+                        ca_ptag [ad_idx] <= bus_addr[`D_addr_ptag];
+                        ca_valid[ad_idx] <= `false;
+                    end
+                end
+            end
+            
+            S_FILLCACHE_END: ca_valid[lk_idx] <= `true;
+            
+            S_WRITEBACK_END:
+            if(bvalid) ca_dirty[lk_idx] <= `false;
+        endcase
+    end
+        
     assign bus_rdata = bus_cached ? ca_dout : uc_data;
-    assign wdata     = wlk_cached ? ca_dout : wlk_data;
+    assign wdata     = lk_cached  ? ca_dout : lk_data;
 
 endmodule

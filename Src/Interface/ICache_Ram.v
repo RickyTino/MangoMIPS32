@@ -1,12 +1,12 @@
 /********************MangoMIPS32*******************
-Filename:   Inst_Cache_Ram.v
+Filename:   ICache_Ram.v
 Author:     RickyTino
 Version:    v1.0.1
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
 
-module Inst_Cache_Ram (
+module ICache_Ram (
     input  wire             clk,
     input  wire             wen,
     input  wire [`I_ramad]  adw,

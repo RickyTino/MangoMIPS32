@@ -330,7 +330,7 @@ Version:    v1.0.1
 
 /*--------------------Coprocessor 0--------------------*/
 // CP0 Registers
-`define         CP0_0eroReg          8'd00
+`define         CP0_ZeroReg          8'd00
 `define         CP0_Index           {5'd00, 3'd0}
 `define         CP0_Random          {5'd01, 3'd0}
 `define         CP0_EntryLo0        {5'd02, 3'd0}

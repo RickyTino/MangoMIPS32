@@ -30,8 +30,8 @@ module MangoMIPS_Core_Top
     output wire            dbus_cached,
 
     output wire [`CacheOp] cacheop,
-    output wire [`DataBus] ITagLo,
-    output wire [`DataBus] DTagLo,
+    output wire [`DataBus] cop_itag,
+    output wire [`DataBus] cop_dtag,
 
     output wire [`AddrBus] debug_wb_pc,
     output wire [`ByteWEn] debug_wb_wreg,
@@ -122,7 +122,6 @@ module MangoMIPS_Core_Top
     
     wire [`AddrBus] mem_pc;
     wire [`ALUOp  ] mem_aluop;
-    wire [`CacheOp] mem_cacheop;
     wire [`DataBus] mem_alures_i;
     wire [`DWord  ] mem_mulhi;
     wire [`DWord  ] mem_mullo;
@@ -184,8 +183,6 @@ module MangoMIPS_Core_Top
     wire [`DataBus] cp0_Cause;
     wire [`DataBus] cp0_EPC;
     wire [`DataBus] cp0_Config;
-    wire [`DataBus] cp0_ITagLo;
-    wire [`DataBus] cp0_DTagLo;
 
     wire [`DataBus] mem_alures_o;
     wire [`DataBus] mem_mulres;
@@ -469,7 +466,7 @@ module MangoMIPS_Core_Top
         
         .mem_pc         (mem_pc         ),
         .mem_aluop      (mem_aluop      ),
-        .mem_cacheop    (mem_cacheop    ),
+        .mem_cacheop    (cacheop        ),
         .mem_alures     (mem_alures_i   ),
         .mem_mulhi      (mem_mulhi      ),
         .mem_mullo      (mem_mullo      ),
@@ -598,8 +595,8 @@ module MangoMIPS_Core_Top
         .Cause_o    (cp0_Cause      ),
         .EPC_o      (cp0_EPC        ),
         .Config_o   (cp0_Config     ),
-        .ITagLo_o   (ITagLo         ),
-        .DTagLo_o   (DTagLo         ),
+        .ITagLo_o   (cop_itag       ),
+        .DTagLo_o   (cop_dtag       ),
 
         .usermode   (usermode       ),
         .timer_int  (timer_int      )
@@ -718,6 +715,3 @@ module MangoMIPS_Core_Top
     assign debug_wb_wrdata = wb_wrdata;
     
 endmodule
-
-
-

@@ -226,22 +226,21 @@ module CP0
     assign Wired [`TLB_Idx] = Wired__;
 
     // ITagLo/DTagLo
-    reg  [`I_ptag ] i_ptag;
-    reg             i_valid;
-    reg  [`D_ptag ] d_ptag;
-    reg             d_dirty;
-    reg             d_valid;
+    reg  [`I_ptag ] ITagLo_ptag;
+    reg             ITagLo_valid;
+    reg  [`D_ptag ] DTagLo_ptag;
+    reg             DTagLo_dirty;
+    reg             DTagLo_valid;
     wire [`Word   ] ITagLo, DTagLo;
-    reg  [`Word   ] ITagHi, DTagHi;
 
-    assign ITagLo[`ITag_Tag] = i_ptag;
+    assign ITagLo[`ITag_Tag] = ITagLo_ptag;
     assign ITagLo[`ITag_0  ] = 0;
-    assign ITagLo[`ITag_Vld] = i_valid;
+    assign ITagLo[`ITag_Vld] = ITagLo_valid;
 
-    assign DTagLo[`DTag_Tag] = d_ptag;
+    assign DTagLo[`DTag_Tag] = DTagLo_ptag;
     assign DTagLo[`DTag_0  ] = 0;
-    assign DTagLo[`DTag_Drt] = d_dirty;
-    assign DTagLo[`DTag_Vld] = d_valid;
+    assign DTagLo[`DTag_Drt] = DTagLo_dirty;
+    assign DTagLo[`DTag_Vld] = DTagLo_valid;
 
 
     // CP0 Operations
@@ -296,6 +295,13 @@ module CP0
             Config_KU       <= 3'd2;
             Config_K0       <= 3'd2;
             `endif
+            ITagLo_ptag     <= 0;
+            ITagLo_valid    <= 0;
+            ITagHi          <= 0;
+            DTagLo_ptag     <= 0;
+            DTagLo_dirty    <= 0;
+            DTagLo_valid    <= 0;
+            DTagHi          <= 0;
         end
         else begin
             // Count & Compare
@@ -489,14 +495,14 @@ module CP0
                     end
 
                     `CP0_ITagLo: begin
-                        i_ptag  <= wdata[`ITag_Tag];
-                        i_valid <= wdata[`ITag_Vld];
+                        ITagLo_ptag  <= wdata[`ITag_Tag];
+                        ITagLo_valid <= wdata[`ITag_Vld];
                     end
 
                     `CP0_DTagLo: begin
-                        d_ptag  <= wdata[`DTag_Tag];
-                        d_dirty <= wdata[`DTag_Drt];
-                        d_valid <= wdata[`DTag_Vld];
+                        DTagLo_ptag  <= wdata[`DTag_Tag];
+                        DTagLo_dirty <= wdata[`DTag_Drt];
+                        DTagLo_valid <= wdata[`DTag_Vld];
                     end
 
                     `CP0_ITagHi: begin

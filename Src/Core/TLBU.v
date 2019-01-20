@@ -136,7 +136,7 @@ module TLBU
             32'b001?????????????????????????????: i_hitidx <= 29;
             32'b01??????????????????????????????: i_hitidx <= 30;
             32'b1???????????????????????????????: i_hitidx <= 31;
-            default:							  i_hitidx <= 0;
+            default:                              i_hitidx <= 0;
         endcase
 
         casez (d_hit)
@@ -172,7 +172,7 @@ module TLBU
             32'b001?????????????????????????????: d_hitidx <= 29;
             32'b01??????????????????????????????: d_hitidx <= 30;
             32'b1???????????????????????????????: d_hitidx <= 31;
-            default:							  d_hitidx <= 0;
+            default:                              d_hitidx <= 0;
         endcase
 
         casez (p_hit)
@@ -208,7 +208,7 @@ module TLBU
             32'b001?????????????????????????????: p_hitidx <= 29;
             32'b01??????????????????????????????: p_hitidx <= 30;
             32'b1???????????????????????????????: p_hitidx <= 31;
-            default:							  p_hitidx <= 0;
+            default:                              p_hitidx <= 0;
         endcase
     end
 
@@ -321,12 +321,6 @@ module TLBU
     wire [`TLB_Idx] idx_index = Index [`TLB_Idx];
     wire [`TLB_Idx] idx_rand  = Random[`TLB_Idx];
 
-    integer j;
-    initial begin
-        for(j = 0; j < `TLB_N; j = j + 1)
-            TLB[j] <= 0;
-    end
-
     always @(posedge clk, posedge rst) begin
         if(rst) begin
             i_state    <= `TLB_Idle;
@@ -432,53 +426,91 @@ module TLBU
                 end
             endcase
 
-            if(!tlb_nop) begin
-                case (tlb_op)
-                    `TOP_TLBR: begin
-                        cp0_tlbwen <= `true;
-                        cp0_tlbitm <= TLB[idx_index];
-                    end
+            case (tlb_op)
+                `TOP_TLBR: begin
+                    cp0_tlbwen <= `true;
+                    cp0_tlbitm <= TLB[idx_index];
+                end
 
-                    `TOP_TLBWI: begin
-                        TLB[idx_index][`TLB_Mask] <= PageMask[`Mask];
-                        TLB[idx_index][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
-                        TLB[idx_index][`TLB_ASID] <= EntryHi [`ASID];
-                        TLB[idx_index][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
-                        TLB[idx_index][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
-                        TLB[idx_index][`TLB_V0  ] <= EntryLo0[`Vld ];
-                        TLB[idx_index][`TLB_D0  ] <= EntryLo0[`Drt ];
-                        TLB[idx_index][`TLB_C0  ] <= EntryLo0[`CAt ];
-                        TLB[idx_index][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
-                        TLB[idx_index][`TLB_V1  ] <= EntryLo1[`Vld ];
-                        TLB[idx_index][`TLB_D1  ] <= EntryLo1[`Drt ];
-                        TLB[idx_index][`TLB_C1  ] <= EntryLo1[`CAt ];
-                    end
+                // `TOP_TLBWI: begin
+                    // TLB[idx_index][`TLB_Mask] <= PageMask[`Mask];
+                    // TLB[idx_index][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
+                    // TLB[idx_index][`TLB_ASID] <= EntryHi [`ASID];
+                    // TLB[idx_index][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
+                    // TLB[idx_index][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
+                    // TLB[idx_index][`TLB_V0  ] <= EntryLo0[`Vld ];
+                    // TLB[idx_index][`TLB_D0  ] <= EntryLo0[`Drt ];
+                    // TLB[idx_index][`TLB_C0  ] <= EntryLo0[`CAt ];
+                    // TLB[idx_index][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
+                    // TLB[idx_index][`TLB_V1  ] <= EntryLo1[`Vld ];
+                    // TLB[idx_index][`TLB_D1  ] <= EntryLo1[`Drt ];
+                    // TLB[idx_index][`TLB_C1  ] <= EntryLo1[`CAt ];
+                // end
 
-                    `TOP_TLBWR: begin
-                        TLB[idx_rand][`TLB_Mask] <= PageMask[`Mask];
-                        TLB[idx_rand][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
-                        TLB[idx_rand][`TLB_ASID] <= EntryHi [`ASID];
-                        TLB[idx_rand][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
-                        TLB[idx_rand][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
-                        TLB[idx_rand][`TLB_V0  ] <= EntryLo0[`Vld ];
-                        TLB[idx_rand][`TLB_D0  ] <= EntryLo0[`Drt ];
-                        TLB[idx_rand][`TLB_C0  ] <= EntryLo0[`CAt ];
-                        TLB[idx_rand][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
-                        TLB[idx_rand][`TLB_V1  ] <= EntryLo1[`Vld ];
-                        TLB[idx_rand][`TLB_D1  ] <= EntryLo1[`Drt ];
-                        TLB[idx_rand][`TLB_C1  ] <= EntryLo1[`CAt ];
-                    end
+                // `TOP_TLBWR: begin
+                    // TLB[idx_rand][`TLB_Mask] <= PageMask[`Mask];
+                    // TLB[idx_rand][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
+                    // TLB[idx_rand][`TLB_ASID] <= EntryHi [`ASID];
+                    // TLB[idx_rand][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
+                    // TLB[idx_rand][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
+                    // TLB[idx_rand][`TLB_V0  ] <= EntryLo0[`Vld ];
+                    // TLB[idx_rand][`TLB_D0  ] <= EntryLo0[`Drt ];
+                    // TLB[idx_rand][`TLB_C0  ] <= EntryLo0[`CAt ];
+                    // TLB[idx_rand][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
+                    // TLB[idx_rand][`TLB_V1  ] <= EntryLo1[`Vld ];
+                    // TLB[idx_rand][`TLB_D1  ] <= EntryLo1[`Drt ];
+                    // TLB[idx_rand][`TLB_C1  ] <= EntryLo1[`CAt ];
+                // end
 
-                    `TOP_TLBP: begin
-                        cp0_idxwen <= `true;
-                        if(p_miss) cp0_wIndex <= 32'h80000000;
-                        else       cp0_wIndex <= {32'b0, p_hitidx};
-                    end
-                endcase
-            end
+                `TOP_TLBP: begin
+                    cp0_idxwen <= `true;
+                    if(p_miss) cp0_wIndex <= 32'h80000000;
+                    else       cp0_wIndex <= {32'b0, p_hitidx};
+                end
+            endcase
         end
     end
+    
+    integer j;
+    initial begin
+        for(j = 0; j < `TLB_N; j = j + 1)
+            TLB[j] <= 0;
+    end
+    
+    always @(posedge clk) begin
+        case (tlb_op)
+            `TOP_TLBWI: begin
+                TLB[idx_index][`TLB_Mask] <= PageMask[`Mask];
+                TLB[idx_index][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
+                TLB[idx_index][`TLB_ASID] <= EntryHi [`ASID];
+                TLB[idx_index][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
+                TLB[idx_index][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
+                TLB[idx_index][`TLB_V0  ] <= EntryLo0[`Vld ];
+                TLB[idx_index][`TLB_D0  ] <= EntryLo0[`Drt ];
+                TLB[idx_index][`TLB_C0  ] <= EntryLo0[`CAt ];
+                TLB[idx_index][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
+                TLB[idx_index][`TLB_V1  ] <= EntryLo1[`Vld ];
+                TLB[idx_index][`TLB_D1  ] <= EntryLo1[`Drt ];
+                TLB[idx_index][`TLB_C1  ] <= EntryLo1[`CAt ];
+            end
 
+            `TOP_TLBWR: begin
+                TLB[idx_rand][`TLB_Mask] <= PageMask[`Mask];
+                TLB[idx_rand][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
+                TLB[idx_rand][`TLB_ASID] <= EntryHi [`ASID];
+                TLB[idx_rand][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
+                TLB[idx_rand][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
+                TLB[idx_rand][`TLB_V0  ] <= EntryLo0[`Vld ];
+                TLB[idx_rand][`TLB_D0  ] <= EntryLo0[`Drt ];
+                TLB[idx_rand][`TLB_C0  ] <= EntryLo0[`CAt ];
+                TLB[idx_rand][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
+                TLB[idx_rand][`TLB_V1  ] <= EntryLo1[`Vld ];
+                TLB[idx_rand][`TLB_D1  ] <= EntryLo1[`Drt ];
+                TLB[idx_rand][`TLB_C1  ] <= EntryLo1[`CAt ];
+            end
+        endcase
+    end
+    
 `endif
 
 endmodule
