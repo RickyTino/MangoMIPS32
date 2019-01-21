@@ -186,7 +186,8 @@ module MangoMIPS_Top
     );
 
 //    AXI_Interface inst_axi (
-    Inst_Cache inst_cache (
+//    Inst_Cache inst_cache (
+    ICache_Controller icache_ctrl (
         .aclk       (aclk           ),
         .aresetn    (resetn         ),
         .arid       (ibus_arid      ),
@@ -234,7 +235,12 @@ module MangoMIPS_Top
         .bus_size   (`ASize_Word    ),
         .bus_streq  (inst_streq     ),
         .bus_stall  (inst_stall     ),
-        .bus_cached (inst_cached    )
+        .bus_cached (inst_cached    ),
+
+        .cacheop    (cacheop        ),
+        .cop_en     (data_en        ),
+        .cop_addr   (data_addr      ),
+        .cop_itag   (cop_itag       )
     );
 
 //    AXI_Interface data_axi (
@@ -289,8 +295,8 @@ module MangoMIPS_Top
         .bus_stall  (data_stall     ),
         .bus_cached (data_cached    ),
         
-        .cacheop    (cacheop        )
-        //.cop_dtag   (cop_dtag       )
+        .cacheop    (cacheop        ),
+        .cop_dtag   (cop_dtag       )
     );
 
     Bus_Interface biu (

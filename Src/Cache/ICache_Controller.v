@@ -260,7 +260,7 @@ module ICache_Controller (
 
                 // Uncached Read
                 S_UC_READ_PREPARE:  
-                if(arvalid && arready) state <= 2;
+                if(arvalid && arready) state <= S_UC_READ_TRANSFER;
                 else begin
                     arid    <= 4'b0010;
                     araddr  <= lk_addr;

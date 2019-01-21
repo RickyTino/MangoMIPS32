@@ -23,6 +23,8 @@ _start:
     mtc0    $t0, $12            # Status = 0x0040FF01
     nop
     tne     $t3, $t4            # Trap if unequal
+    li      $t1, 0x00000003
+    mtc0    $t1, $16            # Config.K0 = 3 (Cacheable)
     jal     TLB_test            # branch and link to test
     nop
     wait
