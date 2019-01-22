@@ -10,7 +10,7 @@ Version:    v1.0.1
 `define         ALUOp_W              6
 `define         Exc_W               20
 `define         ExcT_W               4
-`define         CacheOp_W            3
+`define         CacheOp_W            4
 `define         TLB_Idx_W            5
 `define         TLB_N               32
 `define         TLB_N1              31
@@ -305,7 +305,6 @@ Version:    v1.0.1
 `define         I_idx               ( 4 + `I_N) : 0
 `define         I_ramad             ( 8 + `I_N) : 0
 
-
 // Data Cache
 `define         D_N                 `DCache_N
 `define         D_lineN             2 ** (5 + `D_N)
@@ -317,16 +316,19 @@ Version:    v1.0.1
 `define         D_idx               ( 4 + `D_N) : 0
 `define         D_ramad             ( 8 + `D_N) : 0
 
-
 // Cache Op
-`define         COP_NOP             `CacheOp_W'b000
-`define         COP_III             `CacheOp_W'b001
-`define         COP_DIWI            `CacheOp_W'b010
-`define         COP_IIST            `CacheOp_W'b011
-`define         COP_DIST            `CacheOp_W'b100
-`define         COP_IHI             `CacheOp_W'b101
-`define         COP_DHI             `CacheOp_W'b110
-`define         COP_DHWI            `CacheOp_W'b111
+`define         COP_NOP             `CacheOp_W'b0000
+
+//CacheOp[0] = 1 : ICache
+`define         COP_III             `CacheOp_W'b0011
+`define         COP_IIST            `CacheOp_W'b0101
+`define         COP_IHI             `CacheOp_W'b0111
+
+//CacheOp[0] = 0 : DCache
+`define         COP_DIWI            `CacheOp_W'b0010
+`define         COP_DIST            `CacheOp_W'b0100
+`define         COP_DHI             `CacheOp_W'b0110
+`define         COP_DHWI            `CacheOp_W'b1000
 
 /*--------------------Coprocessor 0--------------------*/
 // CP0 Registers

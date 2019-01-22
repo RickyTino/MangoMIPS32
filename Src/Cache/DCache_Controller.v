@@ -74,7 +74,7 @@ module DCache_Controller (
     assign bready   = 1'b1;
 
     wire refs    = bus_wen != `WrDisable;
-    wire cop_nop = cacheop == `COP_NOP;
+    wire cop_nop = cacheop[0] || cacheop == `COP_NOP; // See Cache Op definition
     wire rreq    = bus_en & !refs;
     wire wreq    = bus_en &  refs;
 

@@ -84,7 +84,7 @@ module ICache_Controller (
     assign wvalid   = 1'b0;
     assign bready   = 1'b1;
 
-    wire   cop_nop = cacheop == `COP_NOP;
+    wire   cop_nop = !cacheop[0]; // See Cache Op definition
     wire   cached;
 
     `ifdef IF_Force_Cached
