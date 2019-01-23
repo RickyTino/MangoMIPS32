@@ -351,10 +351,12 @@ Version:    v1.0.1
 `define         CP0_EBase           {5'd15, 3'd1}
 `define         CP0_Config          {5'd16, 3'd0}
 `define         CP0_Config1         {5'd16, 3'd1}
-`define         CP0_ITagLo          {5'd28, 3'd0}
-`define         CP0_DTagLo          {5'd28, 3'd2}
-`define         CP0_ITagHi          {5'd29, 3'd0}
-`define         CP0_DTagHi          {5'd29, 3'd2}
+// `define         CP0_ITagLo          {5'd28, 3'd0}
+// `define         CP0_DTagLo          {5'd28, 3'd2}
+// `define         CP0_ITagHi          {5'd29, 3'd0}
+// `define         CP0_DTagHi          {5'd29, 3'd2}
+`define         CP0_TagLo           {5'd28, 3'd0}
+`define         CP0_TagHi           {5'd29, 3'd0}
 `define         CP0_ErrorEPC        {5'd30, 3'd0}
 
 // Fields of Status Register

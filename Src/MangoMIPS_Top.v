@@ -76,8 +76,9 @@ module MangoMIPS_Top
     wire            data_cached;
     
     wire [`CacheOp] cacheop;
-    wire [`DataBus] cop_itag;
-    wire [`DataBus] cop_dtag;
+    // wire [`DataBus] cop_itag;
+    // wire [`DataBus] cop_dtag;
+    wire [`DataBus] cop_tag;
 
     wire [ 3:0] ibus_arid;
     wire [31:0] ibus_araddr;
@@ -176,8 +177,9 @@ module MangoMIPS_Top
         .dbus_cached    (data_cached),
         
         .cacheop        (cacheop    ),
-        .cop_itag       (cop_itag   ),
-        .cop_dtag       (cop_dtag   ),
+        // .cop_itag       (cop_itag   ),
+        // .cop_dtag       (cop_dtag   ),
+        .cop_tag        (cop_tag    ),
 
         .debug_wb_pc    (debug_wb_pc    ),
         .debug_wb_wreg  (debug_wb_wreg  ),
@@ -185,8 +187,6 @@ module MangoMIPS_Top
         .debug_wb_wrdata(debug_wb_wrdata)
     );
 
-//    AXI_Interface inst_axi (
-//    Inst_Cache inst_cache (
     ICache_Controller icache_ctrl (
         .aclk       (aclk           ),
         .aresetn    (resetn         ),
@@ -240,11 +240,10 @@ module MangoMIPS_Top
         .cacheop    (cacheop        ),
         .cop_en     (data_en        ),
         .cop_addr   (data_addr      ),
-        .cop_itag   (cop_itag       )
+        // .cop_itag   (cop_itag       )
+        .cop_itag   (cop_tag       )
     );
 
-//    AXI_Interface data_axi (
-//    Data_Cache data_cache (
     DCache_Controller dcache_ctrl (
         .aclk       (aclk           ),
         .aresetn    (resetn         ),
@@ -296,7 +295,8 @@ module MangoMIPS_Top
         .bus_cached (data_cached    ),
         
         .cacheop    (cacheop        ),
-        .cop_dtag   (cop_dtag       )
+        // .cop_dtag   (cop_dtag       )
+        .cop_dtag   (cop_tag       )
     );
 
     Bus_Interface biu (

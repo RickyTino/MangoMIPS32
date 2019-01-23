@@ -30,8 +30,9 @@ module MangoMIPS_Core_Top
     output wire            dbus_cached,
 
     output wire [`CacheOp] cacheop,
-    output wire [`DataBus] cop_itag,
-    output wire [`DataBus] cop_dtag,
+    // output wire [`DataBus] cop_itag,
+    // output wire [`DataBus] cop_dtag,
+    output wire [`DataBus] cop_tag,
 
     output wire [`AddrBus] debug_wb_pc,
     output wire [`ByteWEn] debug_wb_wreg,
@@ -595,8 +596,9 @@ module MangoMIPS_Core_Top
         .Cause_o    (cp0_Cause      ),
         .EPC_o      (cp0_EPC        ),
         .Config_o   (cp0_Config     ),
-        .ITagLo_o   (cop_itag       ),
-        .DTagLo_o   (cop_dtag       ),
+        // .ITagLo_o   (cop_itag       ),
+        // .DTagLo_o   (cop_dtag       ),
+        .TagLo_o    (cop_tag        ),
 
         .usermode   (usermode       ),
         .timer_int  (timer_int      )
