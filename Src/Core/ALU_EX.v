@@ -163,7 +163,7 @@ module ALU_EX
     // Memory Data Prepare
     wire [`AddrBus] sl_addr = opr1 + offset;
     reg  [`ByteWEn] sel_l, sel_r;
-    reg             exc_adel, exc_ades;
+    reg             exc_ade;
     wire            exc_user = usermode & sl_addr[31];
 
     always @(*) begin
@@ -175,58 +175,57 @@ module ALU_EX
         wregsel  <= {4{wreg}};
         llb_wen  <= `false;
         llbit_o  <= llbit_i;
-        exc_adel <= `false;
-        exc_ades <= `false;
+        exc_ade  <= `false;
 
         case (aluop)
             `ALU_CACHE:begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                exc_adel <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                exc_ade <= exc_user;
             end
 
             `ALU_LB,
             `ALU_LBU:begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                m_size   <= `ASize_Byte;
-                exc_adel <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                m_size  <= `ASize_Byte;
+                exc_ade <= exc_user;
             end
 
             `ALU_LH,
             `ALU_LHU: begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                m_size   <= `ASize_Half;
-                exc_adel <= exc_user || sl_addr[0];
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                m_size  <= `ASize_Half;
+                exc_ade <= exc_user || sl_addr[0];
             end
 
             `ALU_LW:  begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                exc_adel <= exc_user || (sl_addr[1:0] != 2'b00);
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                exc_ade <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_LWL: begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                wregsel  <= sel_l;
-                exc_adel <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                wregsel <= sel_l;
+                exc_ade <= exc_user;
             end
 
             `ALU_LWR: begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                wregsel  <= sel_r;
-                exc_adel <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                wregsel <= sel_r;
+                exc_ade <= exc_user;
             end
 
             `ALU_SB: begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                m_wdata  <= {4{opr2[7:0]}};
-                m_size   <= `ASize_Byte;
-                exc_ades <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                m_wdata <= {4{opr2[7:0]}};
+                m_size  <= `ASize_Byte;
+                exc_ade <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: m_wen <= 4'b0001;
                     2'b01: m_wen <= 4'b0010;
@@ -236,11 +235,11 @@ module ALU_EX
             end
 
             `ALU_SH: begin
-                m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                m_wdata  <= {2{opr2[15:0]}};
-                m_size   <= `ASize_Half;
-                exc_ades <= exc_user || sl_addr[0];
+                m_en    <= `true;
+                m_vaddr <= sl_addr;
+                m_wdata <= {2{opr2[15:0]}};
+                m_size  <= `ASize_Half;
+                exc_ade <= exc_user || sl_addr[0];
                 case (sl_addr[1:0])
                     2'b00:   m_wen <= 4'b0011;
                     2'b10:   m_wen <= 4'b1100;
@@ -250,16 +249,16 @@ module ALU_EX
 
             `ALU_SW:  begin
                 m_en     <= `true;
-                m_vaddr  <= sl_addr;
-                m_wdata  <= opr2;
-                m_wen    <= 4'b1111;
-                exc_ades <= exc_user || (sl_addr[1:0] != 2'b00);
+                m_vaddr <= sl_addr;
+                m_wdata <= opr2;
+                m_wen   <= 4'b1111;
+                exc_ade <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_SWL: begin
-                m_en     <= `true;
-                m_vaddr  <= {sl_addr[31:2], 2'b00};
-                exc_ades <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= {sl_addr[31:2], 2'b00};
+                exc_ade <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: begin
                         m_wen   <= 4'b0001;
@@ -281,9 +280,9 @@ module ALU_EX
             end
 
             `ALU_SWR: begin
-                m_en     <= `true;
-                m_vaddr  <= {sl_addr[31:2], 2'b00};
-                exc_ades <= exc_user;
+                m_en    <= `true;
+                m_vaddr <= {sl_addr[31:2], 2'b00};
+                exc_ade <= exc_user;
                 case (sl_addr[1:0])
                     2'b00: begin
                         m_wen   <= 4'b1111;
@@ -309,7 +308,7 @@ module ALU_EX
                 m_vaddr <= sl_addr;
                 llb_wen <= `true;
                 llbit_o <= `One;
-                exc_adel <= exc_user || (sl_addr[1:0] != 2'b00);
+                exc_ade <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
             `ALU_SC: if(llbit_i) begin
@@ -317,13 +316,13 @@ module ALU_EX
                 m_vaddr <= sl_addr;
                 m_wdata <= opr2;
                 m_wen   <= 4'b1111;
-                exc_ades <= exc_user || (sl_addr[1:0] != 2'b00);
+                exc_ade <= exc_user || (sl_addr[1:0] != 2'b00);
             end
 
-            `ALU_ERET: begin
-                llb_wen <= `true;
-                llbit_o <= `Zero;
-            end
+            // `ALU_ERET: begin
+            //     llb_wen <= `true;
+            //     llbit_o <= `Zero;
+            // end
         endcase
 
         case (sl_addr[1:0])
@@ -364,11 +363,10 @@ module ALU_EX
     end
 
     always @(*) begin
-        excp_o              <= excp_i;
-        excp_o[`Exc_Ov    ] <= exc_ov;
-        excp_o[`Exc_Trap  ] <= exc_tr;
-        excp_o[`Exc_D_AdEL] <= exc_adel;
-        excp_o[`Exc_D_AdES] <= exc_ades;
+        excp_o             <= excp_i;
+        excp_o[`Exc_Ov   ] <= exc_ov;
+        excp_o[`Exc_Trap ] <= exc_tr;
+        excp_o[`Exc_D_AdE] <= exc_ade;
     end
 
     // General

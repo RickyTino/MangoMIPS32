@@ -178,7 +178,7 @@ module Decode
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
                         wreg      <= `true;
-                        wraddr    <= (rd == `ZeroReg) ? `GPR_ra : rd;
+                        wraddr    <= rd;
                         isbranch  <= `true;
                         br_flag   <= `true;
                         br_addr   <= opr1;

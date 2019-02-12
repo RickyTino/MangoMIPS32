@@ -654,6 +654,7 @@ module MangoMIPS_Core_Top
         .hilo_wdata     (wb_hilo    ),
         .hilo_rdata     (hilo       ),
 
+        .exc_type       (exc_type   ),
         .llb_wen        (wb_llb_wen ),
         .llb_wdata      (wb_llbit   ),
         .mem_llb_wen    (mem_llb_wen),

@@ -56,6 +56,7 @@ module CP0
     // reg  [`Word] DTagHi;
     reg  [`Word] TagLo;
     reg  [`Word] TagHi;
+    reg  [`Word] ErrorEPC;
 
     // Status
     reg          Status_CU0;
@@ -246,9 +247,19 @@ module CP0
     // assign DTagLo[`DTag_Vld] = DTagLo_valid;
 
 
-    // CP0 Operations
+// CP0 Operations
     wire [`Word] pcm4     = pc - 32'h4;
     wire         timer_eq = (Count ^ Compare) == `ZeroWord;
+
+    //PageMask write
+    wire [15: 0] w_mask;
+    genvar i;
+    generate
+        for(i = 0; i < 16; i = i + 2) begin
+            assign w_mask[i    ] = wdata[i + 13];
+            assign w_mask[i + 1] = wdata[i + 13];
+        end
+    endgenerate
 
     always @(posedge clk, posedge rst) begin
         if(rst) begin
@@ -330,8 +341,7 @@ module CP0
                     `ExcT_Trap,
                     `ExcT_SysC,
                     `ExcT_Bp,
-                    `ExcT_AdEL,
-                    `ExcT_AdES,
+                    `ExcT_AdE,
                     `ExcT_TLBR,
                     `ExcT_TLBI,
                     `ExcT_TLBM: begin
@@ -350,9 +360,8 @@ module CP0
                 endcase
 
                 case (exc_type)
-                    `ExcT_AdEL,
-                    `ExcT_AdES: BadVAddr <= exc_baddr;
-                    
+                    `ExcT_AdE: BadVAddr <= exc_baddr;
+
                     `ExcT_TLBR,
                     `ExcT_TLBI,
                     `ExcT_TLBM: begin
@@ -361,7 +370,7 @@ module CP0
                         EntryHi_VPN2    <= exc_baddr[`VPN2];
                     end
 
-                    `ExcT_CpU:  Cause_CE <= exc_cpnum;
+                    `ExcT_CpU: Cause_CE <= exc_cpnum;
                 endcase
 
                 // ExcCode
@@ -373,11 +382,10 @@ module CP0
                     `ExcT_Trap: Cause_ExcCode <= `ExcC_Tr;
                     `ExcT_SysC: Cause_ExcCode <= `ExcC_SysC;
                     `ExcT_Bp:   Cause_ExcCode <= `ExcC_Bp;
-                    `ExcT_AdEL: Cause_ExcCode <= `ExcC_AdEL;
-                    `ExcT_AdES: Cause_ExcCode <= `ExcC_AdES;
+                    `ExcT_AdE:  Cause_ExcCode <= exc_save ? `ExcC_AdEL : `ExcC_AdES;
                     `ExcT_TLBR: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
                     `ExcT_TLBI: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
-                    `ExcT_TLBM: Cause_ExcCode <= `ExcC_TLBS;
+                    `ExcT_TLBM: Cause_ExcCode <= `ExcC_Mod;
                     // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
                     // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
                 endcase
@@ -392,8 +400,7 @@ module CP0
                         `ExcT_Trap: $display("Trap Exception");
                         `ExcT_SysC: $display("System Call Exception");
                         `ExcT_Bp:   $display("Breakpoint Exception");
-                        `ExcT_AdEL: $display("Address Error Exception - Load");
-                        `ExcT_AdES: $display("Address Error Exception - Save");
+                        `ExcT_AdE:  $display("Address Error Exception");
                         `ExcT_TLBR: $display("TLB Refill Exception");
                         `ExcT_TLBI: $display("TLB Invalid Exception");
                         `ExcT_TLBM: $display("TLB Modified Exception");
@@ -448,7 +455,7 @@ module CP0
                     end
 
                     `CP0_PageMask: begin
-                        PageMask__ <= wdata[`Mask];
+                        PageMask__ <= w_mask;
                     end
 
                     `CP0_Wired: begin
@@ -525,6 +532,10 @@ module CP0
                     `CP0_TagHi: begin
                         TagHi <= wdata;
                     end
+
+                    `CP0_ErrorEPC: begin
+                        ErrorEPC <= wdata;
+                    end
                 endcase
             end
         end
@@ -533,6 +544,7 @@ module CP0
     always @(*) begin
         case (addr) 
             `CP0_Index:    rdata <= Index;
+            `CP0_Random:   rdata <= Random;
             `CP0_EntryLo0: rdata <= EntryLo0;
             `CP0_EntryLo1: rdata <= EntryLo1;
             `CP0_Context:  rdata <= Context;
@@ -552,8 +564,9 @@ module CP0
             // `CP0_DTagLo:   rdata <= DTagLo;
             // `CP0_ITagHi:   rdata <= ITagHi;
             // `CP0_DTagHi:   rdata <= DTagHi;
-            `CP0_TagLo:   rdata <= TagLo;
-            `CP0_TagHi:   rdata <= TagHi;
+            `CP0_TagLo:    rdata <= TagLo;
+            `CP0_TagHi:    rdata <= TagHi;
+            `CP0_ErrorEPC: rdata <= ErrorEPC;
             default:       rdata <= `ZeroWord;
         endcase
     end

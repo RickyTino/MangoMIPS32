@@ -8,17 +8,18 @@ Version:    v1.0.1
 
 module HiLo_LLbit
 (
-    input  wire          clk,
-    input  wire          rst,
-    input  wire          hilo_wen,
-    input  wire [`DWord] hilo_wdata,
-    output wire [`DWord] hilo_rdata,
+    input  wire            clk,
+    input  wire            rst,
+    input  wire            hilo_wen,
+    input  wire [`DWord]   hilo_wdata,
+    output wire [`DWord]   hilo_rdata,
 
-    input  wire          llb_wen,
-    input  wire          llb_wdata,
-    input  wire          mem_llb_wen,
-    input  wire          mem_llbit,
-    output wire          llb_rdata
+    input  wire [`ExcType] exc_type,
+    input  wire            llb_wen,
+    input  wire            llb_wdata,
+    input  wire            mem_llb_wen,
+    input  wire            mem_llbit,
+    output wire            llb_rdata
 );
     reg [`DWord] hilo;
     reg          llbit;
@@ -30,7 +31,9 @@ module HiLo_LLbit
         end
         else begin
             if(hilo_wen) hilo <= hilo_wdata;
-            if(llb_wen) llbit <= llb_wdata;
+            
+            if(exc_type == `ExcT_ERET) llbit <= `Zero;
+            else if(llb_wen) llbit <= llb_wdata;
         end
     end
 

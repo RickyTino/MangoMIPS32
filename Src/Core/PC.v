@@ -44,7 +44,7 @@ module PC
 
     always @(*) begin
         excp <= 0;
-        excp[`Exc_I_AdEL] <= (pc[1:0] != 2'b0) || (usermode && pc[31]);
+        excp[`Exc_I_AdE ] <= (pc[1:0] != 2'b0) || (usermode && pc[31]);
         excp[`Exc_I_TLBR] <= i_tlbr;
         excp[`Exc_I_TLBI] <= i_tlbi;
     end
