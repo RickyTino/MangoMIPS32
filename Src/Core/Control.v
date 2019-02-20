@@ -16,6 +16,7 @@ module Control
     input  wire [`DataBus] cp0_Status,
     input  wire [`DataBus] cp0_Cause,
     input  wire [`DataBus] cp0_EPC,
+    input  wire [`DataBus] cp0_ErrorEPC,
     
     output reg  [`Stages ] flush,
     output reg  [`AddrBus] flush_pc
@@ -23,6 +24,7 @@ module Control
 
     wire bev = cp0_Status[`BEV];
     wire exl = cp0_Status[`EXL];
+    wire erl = cp0_Status[`ERL];
     wire iv  = cp0_Cause [`IV ];
 
     always @(*) begin
@@ -59,16 +61,11 @@ module Control
                 `ExcT_TLBM,
                 // `ExcT_IBE,
                 // `ExcT_DBE,
-                `ExcT_CpU: begin
-                    flush_pc <= bev ? `Bts_GenExc : `Nml_GenExc;
-                end
+                `ExcT_CpU:  flush_pc <= bev ? `Bts_GenExc  : `Nml_GenExc;
 
-                `ExcT_ERET: begin
-                    flush_pc <= cp0_EPC;
-                    // flush_pc <= cp0_Status[`ERL] ? cp0_ErrorEPC : cp0_EPC
-                end
-                
-                default: flush_pc <= `ZeroWord;
+                `ExcT_ERET: flush_pc <= erl ? cp0_ErrorEPC : cp0_EPC;
+
+                default:    flush_pc <= `ZeroWord;
             endcase
         end
         else begin

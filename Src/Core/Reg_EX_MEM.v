@@ -35,6 +35,7 @@ module Reg_EX_MEM
     input  wire [`CPNum  ] ex_ecpnum,
     input  wire [`TLBOp  ] ex_tlbop,
     input  wire            ex_inslot,
+    input  wire            ex_null,
     
     output reg  [`AddrBus] mem_pc,
     output reg  [`ALUOp  ] mem_aluop, 
@@ -57,7 +58,8 @@ module Reg_EX_MEM
     output reg  [`ExcBus ] mem_excp,
     output reg  [`CPNum  ] mem_ecpnum,
     output reg  [`TLBOp  ] mem_tlbop,
-    output reg             mem_inslot
+    output reg             mem_inslot,
+    output reg             mem_null
 );
 
     always @(posedge clk, posedge rst) begin
@@ -84,11 +86,12 @@ module Reg_EX_MEM
             mem_ecpnum  <= `CP0;
             mem_tlbop   <= `TOP_NOP;
             mem_inslot  <= `false;
+            mem_null    <= `true;
         end
         else begin
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    mem_pc      <= ex_pc;
+                    mem_pc      <= `ZeroWord;
                     mem_aluop   <= `ALU_NOP;
                     mem_cacheop <= `COP_NOP;
                     mem_alures  <= `ZeroWord;
@@ -110,6 +113,7 @@ module Reg_EX_MEM
                     mem_ecpnum  <= `CP0;
                     mem_tlbop   <= `TOP_NOP;
                     mem_inslot  <= `false;
+                    mem_null    <= `true;
                 end
                 2'b00: begin
                     mem_pc      <= ex_pc;
@@ -134,6 +138,7 @@ module Reg_EX_MEM
                     mem_ecpnum  <= ex_ecpnum;
                     mem_tlbop   <= ex_tlbop;
                     mem_inslot  <= ex_inslot;
+                    mem_null    <= ex_null;
                 end
             endcase
         end

@@ -2,37 +2,33 @@
 轻量级CPU软核，兼容MIPS32 release 1架构
 
 ## 当前版本
-MangoMIPS32 v1.0.1
+MangoMIPS32 v1.1.0
 
 ## CPU核心参数
-- MIPS32 release 1指令集
-- 单发射，顺序执行，五级流水
-- 可配置是否启用延迟槽（配置项位于Config.v中）
-- 暂时只提供NSCSCC-2018 SRAM接口版本
+- 指令集：100条MIPS32 release 1指令
+- 微架构：单发射，顺序执行，经典五级流水线架构
+- FPGA上主频可达100MHz
+- 不含浮点部件
 
-## 指令集
-实现了96种MIPS32 release 1指令，包含：
-- 算术、逻辑、移动、空指令
-- 乘、除、乘加指令
-- 跳转、Likely跳转、分支指令
-- 对齐/非对齐加载存储指令、链接加载/条件存储指令
-- 自陷指令
-- 其他特殊指令
+## 接口与缓存资源
+- 对外使用AMBA AXI总线接口
+- 分布式RAM作为缓存，使用Xilinx IP核
+- 指令/数据缓存均直接映射，大小可配置（2KB-128KB）
 
 ## 特权资源
-- 实现了7个CP0寄存器，11种例外处理
-- 实现了用户模式和相关异常
-- 除数据相关外，不处理CP0相关
-- 异常处理入口地址参见MIPS32手册
+- 实现了20个CP0寄存器，12种例外处理
+- 可在用户态与核心态之间切换
+- 不产生CP0 Execution Hazard
 
-## 地址空间
-- 暂无TLB，使用固定映射方式
-- 暂无缓存
+## 虚实地址映射
+- 可配置使用固定映射MMU或TLB-MMU
+- 32项全相连JTLB
+- 支持除1KB以外所有页大小
 
 ## 详细信息
-目前实现的指令列表：
+目前实现的指令及操作：
 - SLL/SRL/SRA/SLLV/SRLV/SRAV
-- SYNC/PREF/CACHE (作为空指令)
+- SYNC/PREF (作为空指令)
 - AND/OR/XOR/NOR
 - MOVZ/MOVN/MFHI/MFLO/MTHI/MTLO
 - ANDI/ORI/XORI/LUI
@@ -48,24 +44,53 @@ MangoMIPS32 v1.0.1
 - SYSCALL/BREAK/ERET/WAIT
 - TEQ/TNE/TGE/TGEU/TLT/TLTU
 - TEQI/TNEI/TGEI/TGEIU/TLTI/TLTIU
+- TLBP/TLBWI/TLBWR/TLBR
+- CACHE:  
+    I-Index Invalidate  
+    D-Index Writeback Invalidate  
+    I-Index Store Tag  
+    D-Index Store Tag  
+    I-Hit Invalidate  
+    D-Hit Invalidate  
+    D-Hit Writeback Invalidate  
 
 实现的CP0寄存器：
-- BadVAddr (Register  8, Select 0)
-- Count    (Register  9, Select 0)
-- Compare  (Register 11, Select 0)
-- Status   (Register 12, Select 0)
-- Cause    (Register 13, Select 0)
-- EPC      (Register 14, Select 0)
-- PrId     (Register 15, Select 0)
+|   Name   |Reg#|Sel#|
+|:---------|:--:|:--:|
+| Index    | 0  | 0  |
+| Random   | 1  | 0  |
+| EntryLo0 | 2  | 0  |
+| EntryLo1 | 3  | 0  |
+| Context  | 4  | 0  |
+| PageMask | 5  | 0  |
+| Wired    | 6  | 0  |
+| BadVAddr | 8  | 0  |
+| Count    | 9  | 0  |
+| EntryHi  | 10 | 0  |
+| Compare  | 11 | 0  |
+| Status   | 12 | 0  |
+| Cause    | 13 | 0  |
+| EPC      | 14 | 0  |
+| PrId     | 15 | 0  |
+| Config   | 16 | 0  |
+| Config1  | 16 | 1  |
+| TagLo    | 28 | 0  |
+| TagHi    | 29 | 0  |
+| ErrorEPC | 30 | 0  |
 
-实现的异常处理及优先级：
+实现的例外处理及优先级：
 - Reset
-- Int
-- I-AdEL
-- CpU
-- RI
-- Ov, Trap, Syscall, Bp,
-- D-AdEL/AdES
+- Interrupt
+- I-Address Error
+- I-TLB Refill
+- I-TLB Invalid
+- Coprocessor Unusable
+- Reserved Instruction
+- Overflow / Trap / Syscall / Breakpoint
+- D-Address Error
+- D-TLB Refill
+- D-TLB Invalid
+- D-TLB Modified
 - ERET
 
 ## 作者注

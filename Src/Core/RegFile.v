@@ -37,20 +37,6 @@ module RegFile
     reg [`Word] GPR [0:31];
     integer j;
     
-    // always @(posedge clk, posedge rst) begin
-    //     if(rst) begin
-    //         for(j = 0; j < 32; j = j + 1)
-    //             GPR[j] <= `ZeroWord;
-    //     end
-    //     else begin
-    //         if(waddr != `ZeroReg) begin
-    //             if(we[0]) GPR[waddr][`Byte0] <= wdata[`Byte0];
-    //             if(we[1]) GPR[waddr][`Byte1] <= wdata[`Byte1];
-    //             if(we[2]) GPR[waddr][`Byte2] <= wdata[`Byte2];
-    //             if(we[3]) GPR[waddr][`Byte3] <= wdata[`Byte3];
-    //         end
-    //     end
-    // end
     initial begin
         for(j = 0; j < 32; j = j + 1)
             GPR[j] <= `ZeroWord;

@@ -13,7 +13,6 @@ module WriteBack
     input  wire [`DataBus] mulres,
     input  wire [`AddrBus] m_vaddr,
     input  wire [`DataBus] m_rdata,
-    // output wire [`DataBus] wrdata,
     output reg  [`DataBus] wrdata,
     output wire            stallreq
 );

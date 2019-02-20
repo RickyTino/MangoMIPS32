@@ -40,9 +40,8 @@ module CP0
     output wire [`DataBus] Cause_o,
     output wire [`DataBus] EPC_o,
     output wire [`DataBus] Config_o,
-    // output wire [`DataBus] ITagLo_o,
-    // output wire [`DataBus] DTagLo_o,
     output wire [`DataBus] TagLo_o,
+    output wire [`DataBus] ErrorEPC_o,
 
     output wire            usermode,
     output reg             timer_int
@@ -229,24 +228,6 @@ module CP0
     assign Wired [`Wired_0] = 0;
     assign Wired [`TLB_Idx] = Wired__;
 
-    // ITagLo/DTagLo
-    // reg  [`I_ptag ] ITagLo_ptag;
-    // reg             ITagLo_valid;
-    // reg  [`D_ptag ] DTagLo_ptag;
-    // reg             DTagLo_dirty;
-    // reg             DTagLo_valid;
-    // wire [`Word   ] ITagLo, DTagLo;
-
-    // assign ITagLo[`ITag_Tag] = ITagLo_ptag;
-    // assign ITagLo[`ITag_0  ] = 0;
-    // assign ITagLo[`ITag_Vld] = ITagLo_valid;
-
-    // assign DTagLo[`DTag_Tag] = DTagLo_ptag;
-    // assign DTagLo[`DTag_0  ] = 0;
-    // assign DTagLo[`DTag_Drt] = DTagLo_dirty;
-    // assign DTagLo[`DTag_Vld] = DTagLo_valid;
-
-
 // CP0 Operations
     wire [`Word] pcm4     = pc - 32'h4;
     wire         timer_eq = (Count ^ Compare) == `ZeroWord;
@@ -309,15 +290,9 @@ module CP0
             Config_KU       <= 3'd2;
             Config_K0       <= 3'd2;
             `endif
-            // ITagLo_ptag     <= 0;
-            // ITagLo_valid    <= 0;
-            // ITagHi          <= 0;
-            // DTagLo_ptag     <= 0;
-            // DTagLo_dirty    <= 0;
-            // DTagLo_valid    <= 0;
-            // DTagHi          <= 0;
             TagLo           <= 0;
             TagHi           <= 0;
+            ErrorEPC        <= 32'hBFC00000;
         end
         else begin
             // Count & Compare
@@ -342,6 +317,8 @@ module CP0
                     `ExcT_SysC,
                     `ExcT_Bp,
                     `ExcT_AdE,
+                    // `ExcT_IBE,
+                    // `ExcT_DBE,
                     `ExcT_TLBR,
                     `ExcT_TLBI,
                     `ExcT_TLBM: begin
@@ -351,8 +328,6 @@ module CP0
                         end
                         Status_EXL <= `One;
                     end
-                    // `ExcT_IBE,
-                    // `ExcT_DBE,
                     
                     `ExcT_ERET: begin
                         Status_EXL <= `Zero;
@@ -404,8 +379,8 @@ module CP0
                         `ExcT_TLBR: $display("TLB Refill Exception");
                         `ExcT_TLBI: $display("TLB Invalid Exception");
                         `ExcT_TLBM: $display("TLB Modified Exception");
-                        // `ExcT_IBE:  Cause_ExcCode <= `ExcC_IBE
-                        // `ExcT_DBE:  Cause_ExcCode <= `ExcC_DBE
+                        // `ExcT_IBE: $display("Bus Error Exception - Inst");
+                        // `ExcT_DBE: $display("Bus Error Exception - Data");
                     endcase
                 `endif
             end
@@ -506,25 +481,6 @@ module CP0
                         Config_K0  <= wdata[`K0 ];
                     end
 
-                    // `CP0_ITagLo: begin
-                    //     ITagLo_ptag  <= wdata[`ITag_Tag];
-                    //     ITagLo_valid <= wdata[`ITag_Vld];
-                    // end
-
-                    // `CP0_DTagLo: begin
-                    //     DTagLo_ptag  <= wdata[`DTag_Tag];
-                    //     DTagLo_dirty <= wdata[`DTag_Drt];
-                    //     DTagLo_valid <= wdata[`DTag_Vld];
-                    // end
-
-                    // `CP0_ITagHi: begin
-                    //     ITagHi <= wdata;
-                    // end
-
-                    // `CP0_DTagHi: begin
-                    //     DTagHi <= wdata;
-                    // end'
-
                     `CP0_TagLo: begin
                         TagLo <= wdata;
                     end
@@ -560,10 +516,6 @@ module CP0
             `CP0_PrId:     rdata <= PrId;
             `CP0_Config:   rdata <= Config;
             `CP0_Config1:  rdata <= Config1;
-            // `CP0_ITagLo:   rdata <= ITagLo;
-            // `CP0_DTagLo:   rdata <= DTagLo;
-            // `CP0_ITagHi:   rdata <= ITagHi;
-            // `CP0_DTagHi:   rdata <= DTagHi;
             `CP0_TagLo:    rdata <= TagLo;
             `CP0_TagHi:    rdata <= TagHi;
             `CP0_ErrorEPC: rdata <= ErrorEPC;
@@ -582,8 +534,7 @@ module CP0
     assign Cause_o    = Cause;
     assign EPC_o      = EPC;
     assign Config_o   = Config;
-    // assign ITagLo_o   = ITagLo;
-    // assign DTagLo_o   = DTagLo;
     assign TagLo_o    = TagLo;
+    assign ErrorEPC_o = ErrorEPC;
 
 endmodule

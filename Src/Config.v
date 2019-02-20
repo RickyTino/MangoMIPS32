@@ -7,13 +7,6 @@ Version:    v1.0.1
 // Note: The result is UNPREDICTABLE if values are set out of the range indicated.
 // To disable a macro definition, add a "_" to the name or simply comment it out. 
 
-//------------------------Core Options------------------------
-// Define "No_Branch_Delay_Slot" to disable the execution of delay slot instruction 
-// when a branch or jump is taken.
-// P.S.: Under this circumstance, there's no difference between branch instructions 
-// and branch likely instructions.
-`define _No_Branch_Delay_Slot
-
 //------------------------NSCSCC Options------------------------
 // Define "Disable_Cause_IV" to disable the IV field of CP0 Cause register.
 // This setting is necessary to pass NSCSCC-2018 tests.

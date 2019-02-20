@@ -25,6 +25,7 @@ module Reg_ID_EX
     input  wire [`ExcBus ] id_excp,
     input  wire [`CPNum  ] id_ecpnum,
     input  wire            id_inslot,
+    input  wire            id_null,
 
     output reg  [`AddrBus] ex_pc,
     output reg  [`ALUOp  ] ex_aluop,
@@ -37,7 +38,8 @@ module Reg_ID_EX
     output reg             ex_wreg,
     output reg  [`ExcBus ] ex_excp,
     output reg  [`CPNum  ] ex_ecpnum,
-    output reg             ex_inslot
+    output reg             ex_inslot,
+    output reg             ex_null
 );
 
     always @(posedge clk, posedge rst) begin
@@ -54,11 +56,12 @@ module Reg_ID_EX
             ex_excp    <= `Exc_NoExc;
             ex_ecpnum  <= `CP0;
             ex_inslot  <= `false;
+            ex_null    <= `true;
         end
         else begin
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    ex_pc      <= id_pc;
+                    ex_pc      <= `ZeroWord;
                     ex_aluop   <= `ALU_NOP;
                     ex_cacheop <= `COP_NOP;
                     ex_opr1    <= `ZeroWord;
@@ -70,6 +73,7 @@ module Reg_ID_EX
                     ex_excp    <= `Exc_NoExc;
                     ex_ecpnum  <= `CP0;
                     ex_inslot  <= `false;
+                    ex_null    <= `true;
                 end
                 2'b00: begin
                     ex_pc      <= id_pc;
@@ -84,6 +88,7 @@ module Reg_ID_EX
                     ex_excp    <= id_excp;
                     ex_ecpnum  <= id_ecpnum;
                     ex_inslot  <= id_inslot;
+                    ex_null    <= id_null;
                 end
             endcase
         end

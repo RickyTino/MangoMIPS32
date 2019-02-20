@@ -47,12 +47,12 @@ module MangoMIPS_Top
     input  wire [ 3:0] m_bid,
     input  wire [ 1:0] m_bresp,
     input  wire        m_bvalid,
-    output wire        m_bready,
+    output wire        m_bready
 
-    output wire [`AddrBus] debug_wb_pc,
-    output wire [`ByteWEn] debug_wb_wreg,
-    output wire [`RegAddr] debug_wb_wraddr,
-    output wire [`DataBus] debug_wb_wrdata
+    // output wire [`AddrBus] debug_wb_pc,
+    // output wire [`ByteWEn] debug_wb_wreg,
+    // output wire [`RegAddr] debug_wb_wraddr,
+    // output wire [`DataBus] debug_wb_wrdata
 );
 
     reg             resetn;
@@ -76,8 +76,6 @@ module MangoMIPS_Top
     wire            data_cached;
     
     wire [`CacheOp] cacheop;
-    // wire [`DataBus] cop_itag;
-    // wire [`DataBus] cop_dtag;
     wire [`DataBus] cop_tag;
 
     wire [ 3:0] ibus_arid;
@@ -177,14 +175,12 @@ module MangoMIPS_Top
         .dbus_cached    (data_cached),
         
         .cacheop        (cacheop    ),
-        // .cop_itag       (cop_itag   ),
-        // .cop_dtag       (cop_dtag   ),
-        .cop_tag        (cop_tag    ),
+        .cop_tag        (cop_tag    )
 
-        .debug_wb_pc    (debug_wb_pc    ),
-        .debug_wb_wreg  (debug_wb_wreg  ),
-        .debug_wb_wraddr(debug_wb_wraddr),
-        .debug_wb_wrdata(debug_wb_wrdata)
+        // .debug_wb_pc    (debug_wb_pc    ),
+        // .debug_wb_wreg  (debug_wb_wreg  ),
+        // .debug_wb_wraddr(debug_wb_wraddr),
+        // .debug_wb_wrdata(debug_wb_wrdata)
     );
 
     ICache_Controller icache_ctrl (
@@ -240,7 +236,6 @@ module MangoMIPS_Top
         .cacheop    (cacheop        ),
         .cop_en     (data_en        ),
         .cop_addr   (data_addr      ),
-        // .cop_itag   (cop_itag       )
         .cop_itag   (cop_tag       )
     );
 
@@ -295,13 +290,12 @@ module MangoMIPS_Top
         .bus_cached (data_cached    ),
         
         .cacheop    (cacheop        ),
-        // .cop_dtag   (cop_dtag       )
         .cop_dtag   (cop_tag       )
     );
 
     Bus_Interface biu (
         .aclk             ( aclk        ),                 
-        .aresetn          ( aresetn     ),
+        .aresetn          ( resetn      ),
         
         .s_axi_arid       ( {ibus_arid   ,dbus_arid   } ),
         .s_axi_araddr     ( {ibus_araddr ,dbus_araddr } ),

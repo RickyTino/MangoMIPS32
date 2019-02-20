@@ -19,6 +19,7 @@ module Exception
 
     input  wire [`AddrBus] pc,
     input  wire [`AddrBus] m_vaddr,
+    input  wire            nullinst,
 
     output wire            exc_flag,
     output reg             exc_save,
@@ -34,11 +35,14 @@ module Exception
                     && ~cp0_Status[`EXL];
 
     always @(*) begin
-        excp              <= excp_i;
-        excp[`Exc_Intr  ] <= exc_intr; 
-        excp[`Exc_D_TLBR] <= d_tlbr;
-        excp[`Exc_D_TLBI] <= d_tlbi;
-        excp[`Exc_D_TLBM] <= d_tlbm;
+        if(nullinst)    excp <= 0;
+        else begin
+            excp              <= excp_i;
+            excp[`Exc_Intr  ] <= exc_intr; 
+            excp[`Exc_D_TLBR] <= d_tlbr;
+            excp[`Exc_D_TLBI] <= d_tlbi;
+            excp[`Exc_D_TLBM] <= d_tlbm;
+        end
     end
 
     assign exc_flag = (excp != `Exc_NoExc); 

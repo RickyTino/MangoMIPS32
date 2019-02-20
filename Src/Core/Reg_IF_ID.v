@@ -25,7 +25,8 @@ module Reg_IF_ID
     output reg  [`AddrBus] id_pcp4,
     output reg  [`DataBus] id_inst,
     output reg  [`ExcBus ] id_excp,
-    output reg             id_inslot
+    output reg             id_inslot,
+    output reg             id_null
 );
 
     always @(posedge clk, posedge rst) begin
@@ -35,6 +36,7 @@ module Reg_IF_ID
             id_inst   <= `ZeroWord;
             id_excp   <= `Exc_NoExc;
             id_inslot <= `false;
+            id_null   <= `true;
         end
         else begin
             casez ({flush, stall, clrslot})
@@ -44,6 +46,7 @@ module Reg_IF_ID
                     id_inst   <= `ZeroWord;
                     id_excp   <= `Exc_NoExc;
                     id_inslot <= `false;
+                    id_null   <= `true;
                 end
                 3'b000: begin
                     id_pc     <= if_pc;
@@ -51,6 +54,7 @@ module Reg_IF_ID
                     id_inst   <= if_inst;
                     id_excp   <= if_excp;
                     id_inslot <= id_isbranch;
+                    id_null   <= `false;
                 end
             endcase
         end

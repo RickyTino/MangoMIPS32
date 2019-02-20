@@ -137,7 +137,6 @@ module MMU
                 end
             end
         endcase
-        // end
     end
 `endif
 

@@ -30,14 +30,12 @@ module MangoMIPS_Core_Top
     output wire            dbus_cached,
 
     output wire [`CacheOp] cacheop,
-    // output wire [`DataBus] cop_itag,
-    // output wire [`DataBus] cop_dtag,
-    output wire [`DataBus] cop_tag,
+    output wire [`DataBus] cop_tag
 
-    output wire [`AddrBus] debug_wb_pc,
-    output wire [`ByteWEn] debug_wb_wreg,
-    output wire [`RegAddr] debug_wb_wraddr,
-    output wire [`DataBus] debug_wb_wrdata
+    // output wire [`AddrBus] debug_wb_pc,
+    // output wire [`ByteWEn] debug_wb_wreg,
+    // output wire [`RegAddr] debug_wb_wraddr,
+    // output wire [`DataBus] debug_wb_wrdata
 );
 
     wire [`AddrBus] if_pcp4;
@@ -85,6 +83,7 @@ module MangoMIPS_Core_Top
     wire [`CPNum  ] id_ecpnum;
     wire            id_isbranch;
     wire            id_clrslot;
+    wire            id_null;
 
     wire [`AddrBus] ex_pc;
     wire [`ALUOp  ] ex_aluop;
@@ -114,6 +113,7 @@ module MangoMIPS_Core_Top
     wire            ex_llbit;
     wire [`ExcBus ] ex_excp_o;
     wire [`TLBOp  ] ex_tlbop; 
+    wire            ex_null;
 
     wire            ex_m_en;
     wire [`ByteWEn] ex_m_wen;
@@ -137,6 +137,7 @@ module MangoMIPS_Core_Top
     wire [`CPNum  ] mem_ecpnum;
     wire [`TLBOp  ] mem_tlbop;
     wire            mem_inslot;
+    wire            mem_null;
 
     wire            mem_m_en;
     wire [`ByteWEn] mem_m_wen;
@@ -184,6 +185,7 @@ module MangoMIPS_Core_Top
     wire [`DataBus] cp0_Cause;
     wire [`DataBus] cp0_EPC;
     wire [`DataBus] cp0_Config;
+    wire [`DataBus] cp0_ErrorEPC;
 
     wire [`DataBus] mem_alures_o;
     wire [`DataBus] mem_mulres;
@@ -214,7 +216,7 @@ module MangoMIPS_Core_Top
     wire            timer_int;
     wire [`HardInt] core_intr;
     
-    assign core_intr  = {intr[5] || timer_int, intr[4:0]};
+    assign core_intr  = {intr[5] | timer_int, intr[4:0]};
     assign ibus_stall = stall[`IF ];
     assign dbus_stall = stall[`MEM];
   
@@ -284,7 +286,8 @@ module MangoMIPS_Core_Top
         .id_pcp4        (id_pcp4    ),
         .id_inst        (id_inst    ),
         .id_excp        (id_excp_i  ),
-        .id_inslot      (id_inslot  )
+        .id_inslot      (id_inslot  ),
+        .id_null        (id_null    )
     );
 
     Decode decode (
@@ -373,6 +376,7 @@ module MangoMIPS_Core_Top
         .id_excp    (id_excp_o  ),
         .id_ecpnum  (id_ecpnum  ),
         .id_inslot  (id_inslot  ),
+        .id_null    (id_null    ),
 
         .ex_pc      (ex_pc      ),
         .ex_aluop   (ex_aluop   ),
@@ -385,7 +389,8 @@ module MangoMIPS_Core_Top
         .ex_wraddr  (ex_wraddr  ),
         .ex_excp    (ex_excp_i  ),
         .ex_ecpnum  (ex_ecpnum  ),
-        .ex_inslot  (ex_inslot  )
+        .ex_inslot  (ex_inslot  ),
+        .ex_null    (ex_null    )
     );
 
     ALU_EX alu_ex (
@@ -464,6 +469,7 @@ module MangoMIPS_Core_Top
         .ex_ecpnum      (ex_ecpnum      ),
         .ex_tlbop       (ex_tlbop       ),
         .ex_inslot      (ex_inslot      ),
+        .ex_null        (ex_null        ),
         
         .mem_pc         (mem_pc         ),
         .mem_aluop      (mem_aluop      ),
@@ -486,7 +492,8 @@ module MangoMIPS_Core_Top
         .mem_excp       (mem_excp       ),
         .mem_ecpnum     (mem_ecpnum     ),
         .mem_tlbop      (mem_tlbop      ),
-        .mem_inslot     (mem_inslot     )   
+        .mem_inslot     (mem_inslot     ),
+        .mem_null       (mem_null       )
     );
     
     MMU mmu_data (
@@ -557,6 +564,7 @@ module MangoMIPS_Core_Top
         .cp0_Cause  (cp0_Cause  ),
         .pc         (mem_pc     ),
         .m_vaddr    (mem_m_vaddr),
+        .nullinst   (mem_null   ),
 
         .exc_flag   (exc_flag   ),
         .exc_save   (exc_save   ),
@@ -599,6 +607,7 @@ module MangoMIPS_Core_Top
         // .ITagLo_o   (cop_itag       ),
         // .DTagLo_o   (cop_dtag       ),
         .TagLo_o    (cop_tag        ),
+        .ErrorEPC_o (cp0_ErrorEPC   ),
 
         .usermode   (usermode       ),
         .timer_int  (timer_int      )
@@ -663,15 +672,16 @@ module MangoMIPS_Core_Top
     );
     
     Control control (
-        .stallreq   (streq      ),
-        .stall      (stall      ),
-        .exc_flag   (exc_flag   ),
-        .exc_type   (exc_type   ),
-        .cp0_Status (cp0_Status ),
-        .cp0_Cause  (cp0_Cause  ),
-        .cp0_EPC    (cp0_EPC    ),
-        .flush      (flush      ),
-        .flush_pc   (exc_newpc  )
+        .stallreq       (streq          ),
+        .stall          (stall          ),
+        .exc_flag       (exc_flag       ),
+        .exc_type       (exc_type       ),
+        .cp0_Status     (cp0_Status     ),
+        .cp0_Cause      (cp0_Cause      ),
+        .cp0_EPC        (cp0_EPC        ),
+        .cp0_ErrorEPC   (cp0_ErrorEPC   ),
+        .flush          (flush          ),
+        .flush_pc       (exc_newpc      )
     );
 
 `ifndef Fixed_Mapping_MMU
@@ -712,9 +722,9 @@ module MangoMIPS_Core_Top
 
 `endif
 
-    assign debug_wb_pc     = wb_pc;
-    assign debug_wb_wreg   = wb_wreg;
-    assign debug_wb_wraddr = wb_wraddr;
-    assign debug_wb_wrdata = wb_wrdata;
+    // assign debug_wb_pc     = wb_pc;
+    // assign debug_wb_wreg   = wb_wreg;
+    // assign debug_wb_wraddr = wb_wraddr;
+    // assign debug_wb_wrdata = wb_wrdata;
     
 endmodule

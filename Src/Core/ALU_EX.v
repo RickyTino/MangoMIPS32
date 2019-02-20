@@ -318,11 +318,6 @@ module ALU_EX
                 m_wen   <= 4'b1111;
                 exc_ade <= exc_user || (sl_addr[1:0] != 2'b00);
             end
-
-            // `ALU_ERET: begin
-            //     llb_wen <= `true;
-            //     llbit_o <= `Zero;
-            // end
         endcase
 
         case (sl_addr[1:0])

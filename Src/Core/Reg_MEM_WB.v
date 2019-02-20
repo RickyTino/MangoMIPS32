@@ -58,7 +58,7 @@ module Reg_MEM_WB
         else begin
             case ({flush, stall})
                 2'b10, 2'b11: begin
-                    wb_pc       <= mem_pc;
+                    wb_pc       <= `ZeroWord;
                     wb_aluop    <= `ALU_NOP;
                     wb_alures   <= `ZeroWord;
                     wb_mulres   <= `ZeroWord;

@@ -123,7 +123,6 @@ module ALU_MEM
             `ALU_LL: resnrdy <= `true;
             default: resnrdy <= `false;
         endcase
-
     end
 
 endmodule
