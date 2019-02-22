@@ -86,12 +86,18 @@ module mycpu_top
         .m_bid      ( bid       ),
         .m_bresp    ( bresp     ),
         .m_bvalid   ( bvalid    ),
-        .m_bready   ( bready    ),
+        .m_bready   ( bready    )
 
-        .debug_wb_pc     ( debug_wb_pc       ),
-        .debug_wb_wreg   ( debug_wb_rf_wen   ),
-        .debug_wb_wraddr ( debug_wb_rf_wnum  ),
-        .debug_wb_wrdata ( debug_wb_rf_wdata )
+        // .debug_wb_pc     ( debug_wb_pc       ),
+        // .debug_wb_wreg   ( debug_wb_rf_wen   ),
+        // .debug_wb_wraddr ( debug_wb_rf_wnum  ),
+        // .debug_wb_wrdata ( debug_wb_rf_wdata )
+
     );
+
+    assign debug_wb_pc       = mangomips32.mips_core.wb_pc;
+    assign debug_wb_rf_wen   = mangomips32.mips_core.wb_wreg;
+    assign debug_wb_rf_wnum  = mangomips32.mips_core.wb_wraddr;
+    assign debug_wb_rf_wdata = mangomips32.mips_core.wb_wrdata;
 
 endmodule

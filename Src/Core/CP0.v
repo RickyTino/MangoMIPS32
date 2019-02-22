@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   CP0.v
 Author:     RickyTino
-Version:    v1.0.1
+Version:    v1.1.0
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
@@ -523,7 +523,12 @@ module CP0
         endcase
     end
 
-    assign usermode   = Status_UM & ~(Status_ERL | Status_EXL);
+    `ifdef Disable_User_Mode
+        assign usermode   = `false;
+    `else
+        assign usermode   = Status_UM & ~(Status_ERL | Status_EXL);
+    `endif
+    
     assign Index_o    = Index;
     assign Random_o   = Random;
     assign EntryLo0_o = EntryLo0;

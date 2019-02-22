@@ -1,17 +1,22 @@
 /********************MangoMIPS32*******************
 Filename:   Config.v
 Author:     RickyTino
-Version:    v1.0.1
+Version:    v1.1.0
 **************************************************/
 
 // Note: The result is UNPREDICTABLE if values are set out of the range indicated.
 // To disable a macro definition, add a "_" to the name or simply comment it out. 
 
-//------------------------NSCSCC Options------------------------
+//------------------------CP0 Options------------------------
+// Define "Disable_User_Mode" to keep processor working under kernel mode regardless
+// of Status.UM bit.
+`define Disable_User_Mode
+
 // Define "Disable_Cause_IV" to disable the IV field of CP0 Cause register.
 // This setting is necessary to pass NSCSCC-2018 tests.
 `define Disable_Cause_IV
 
+//------------------------NSCSCC Options------------------------
 // Define "Reset_Cacheable" to set the reset state of Config.K0/KU/K23 to a cacheable
 // state (value 3'd3).
 `define _Reset_Cacheable

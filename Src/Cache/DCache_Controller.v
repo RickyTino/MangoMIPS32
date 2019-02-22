@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   DCache_Controller.v
 Author:     RickyTino
-Version:    v1.0.1
+Version:    v1.1.0
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"

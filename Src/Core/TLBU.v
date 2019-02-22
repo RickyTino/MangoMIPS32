@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   TLBU.v
 Author:     RickyTino
-Version:    v1.0.1
+Version:    v1.1.0
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
