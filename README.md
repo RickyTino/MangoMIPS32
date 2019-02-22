@@ -2,7 +2,7 @@
 轻量级CPU软核，兼容MIPS32 release 1架构
 
 ## 当前版本
-MangoMIPS32 v1.1.0
+MangoMIPS32 v1.1.0  
 该版本可成功启动Linux 2.6.32
 
 ## CPU核心参数
@@ -55,9 +55,10 @@ MangoMIPS32 v1.1.0
     D-Hit Invalidate  
     D-Hit Writeback Invalidate  
 
-实现的CP0寄存器：
-|   Name   |Reg#|Sel#|
-|:---------|:--:|:--:|
+实现的CP0寄存器：  
+
+|   Name   |Reg#|Sel#|  
+|:---------|:--:|:--:|  
 | Index    | 0  | 0  |
 | Random   | 1  | 0  |
 | EntryLo0 | 2  | 0  |
