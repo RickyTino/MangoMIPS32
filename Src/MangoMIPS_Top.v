@@ -48,11 +48,6 @@ module MangoMIPS_Top
     input  wire [ 1:0] m_bresp,
     input  wire        m_bvalid,
     output wire        m_bready
-
-    // output wire [`AddrBus] debug_wb_pc,
-    // output wire [`ByteWEn] debug_wb_wreg,
-    // output wire [`RegAddr] debug_wb_wraddr,
-    // output wire [`DataBus] debug_wb_wrdata
 );
 
     reg             resetn;
@@ -176,11 +171,6 @@ module MangoMIPS_Top
         
         .cacheop        (cacheop    ),
         .cop_tag        (cop_tag    )
-
-        // .debug_wb_pc    (debug_wb_pc    ),
-        // .debug_wb_wreg  (debug_wb_wreg  ),
-        // .debug_wb_wraddr(debug_wb_wraddr),
-        // .debug_wb_wrdata(debug_wb_wrdata)
     );
 
     ICache_Controller icache_ctrl (

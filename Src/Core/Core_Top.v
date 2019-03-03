@@ -158,6 +158,7 @@ module MangoMIPS_Core_Top
 
     wire            exc_flag;
     wire            exc_save;
+    wire            exc_intr;
     wire            exc_d_tlbr;
     wire            exc_d_tlbi;
     wire            exc_d_tlbm;
@@ -213,10 +214,7 @@ module MangoMIPS_Core_Top
     wire [`Stages ] streq;
     wire [`Stages ] stall;
     wire [`Stages ] flush; 
-    wire            timer_int;
-    wire [`HardInt] core_intr;
-    
-    assign core_intr  = {intr[5] | timer_int, intr[4:0]};
+
     assign ibus_stall = stall[`IF ];
     assign dbus_stall = stall[`MEM];
   
@@ -422,6 +420,7 @@ module MangoMIPS_Core_Top
         .llbit_o    (ex_llbit   ),
 
         .usermode   (usermode   ),
+        .exc_intr   (exc_intr   ),
         .excp_i     (ex_excp_i  ),
         .excp_o     (ex_excp_o  ),
         .tlbop      (ex_tlbop   ),
@@ -560,8 +559,6 @@ module MangoMIPS_Core_Top
         .d_tlbi     (exc_d_tlbi ),
         .d_tlbm     (exc_d_tlbm ),
         .d_refs     (dtlb_refs  ),
-        .cp0_Status (cp0_Status ),
-        .cp0_Cause  (cp0_Cause  ),
         .pc         (mem_pc     ),
         .m_vaddr    (mem_m_vaddr),
         .nullinst   (mem_null   ),
@@ -575,7 +572,7 @@ module MangoMIPS_Core_Top
     CP0 coprocessor0 (
         .clk        (clk            ),
         .rst        (rst            ),
-        .intr       (core_intr      ),
+        .intr       (intr           ),
         .addr       (cp0_addr       ),
         .wen        (cp0_wen        ),
         .rdata      (cp0_rdata      ),
@@ -610,7 +607,7 @@ module MangoMIPS_Core_Top
         .ErrorEPC_o (cp0_ErrorEPC   ),
 
         .usermode   (usermode       ),
-        .timer_int  (timer_int      )
+        .exc_intr   (exc_intr       )
     );
 
     Reg_MEM_WB reg_mem_wb (

@@ -37,6 +37,7 @@ module ALU_EX
     output reg             llbit_o,
 
     input  wire            usermode,
+    input  wire            exc_intr,
     input  wire [`ExcBus ] excp_i,
     output reg  [`ExcBus ] excp_o,
     output reg  [`TLBOp  ] tlbop,
@@ -359,6 +360,7 @@ module ALU_EX
 
     always @(*) begin
         excp_o             <= excp_i;
+        excp_o[`Exc_Intr ] <= exc_intr;
         excp_o[`Exc_Ov   ] <= exc_ov;
         excp_o[`Exc_Trap ] <= exc_tr;
         excp_o[`Exc_D_AdE] <= exc_ade;

@@ -14,8 +14,6 @@ module Exception
     input  wire            d_tlbi,
     input  wire            d_tlbm,
     input  wire            d_refs,
-    input  wire [`DataBus] cp0_Status,
-    input  wire [`DataBus] cp0_Cause,
 
     input  wire [`AddrBus] pc,
     input  wire [`AddrBus] m_vaddr,
@@ -28,17 +26,11 @@ module Exception
 );
 
     reg [`ExcBus] excp;
- 
-    wire exc_intr = (cp0_Cause[`IP] & cp0_Status[`IM]) != 8'h00 
-                    &&  cp0_Status[`IE ]
-                    && ~cp0_Status[`ERL]
-                    && ~cp0_Status[`EXL];
 
     always @(*) begin
-        if(nullinst)    excp <= 0;
-        else begin
+        excp <= `Exc_NoExc;
+        if(!nullinst) begin
             excp              <= excp_i;
-            excp[`Exc_Intr  ] <= exc_intr; 
             excp[`Exc_D_TLBR] <= d_tlbr;
             excp[`Exc_D_TLBI] <= d_tlbi;
             excp[`Exc_D_TLBM] <= d_tlbm;

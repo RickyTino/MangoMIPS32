@@ -44,18 +44,26 @@ module CP0
     output wire [`DataBus] ErrorEPC_o,
 
     output wire            usermode,
-    output reg             timer_int
+    output wire            exc_intr
 );
 
     reg  [`Word] BadVAddr;
-    reg  [`Word] Count;
-    reg  [`Word] Compare;
+
     reg  [`Word] EPC;
     // reg  [`Word] ITagHi;
     // reg  [`Word] DTagHi;
     reg  [`Word] TagLo;
     reg  [`Word] TagHi;
     reg  [`Word] ErrorEPC;
+
+    // Count & Compare
+    reg  [33: 0] Count__;
+    reg  [`Word] Compare;
+    wire [`Word] Count    = Count__[32:1];
+
+    reg  timer_intr;
+    wire timer_eq = (Count ^ Compare) == `ZeroWord;
+    wire timer_on = Compare != `ZeroWord && timer_eq;
 
     // Status
     reg          Status_CU0;
@@ -73,7 +81,11 @@ module CP0
         6'b0,
         Status_IM,  // 15:8
         3'b0,
+    `ifdef Disable_User_Mode
+        1'b0,
+    `else
         Status_UM,  // 4
+    `endif
         1'b0,
         Status_ERL, // 2
         Status_EXL, // 1
@@ -231,7 +243,7 @@ module CP0
 
 // CP0 Operations
     wire [`Word] pcm4     = pc - 32'h4;
-    wire         timer_eq = (Count ^ Compare) == `ZeroWord;
+    
 
     //PageMask write
     wire [15: 0] w_mask;
@@ -243,12 +255,8 @@ module CP0
         end
     endgenerate
 
-    //Count increases every other cycle
-    reg Count_temp;
-
     always @(posedge clk, posedge rst) begin
         if(rst) begin
-            timer_int <= `false;
 
             Index_P         <= 0;
             Index__         <= 0;
@@ -268,8 +276,8 @@ module CP0
             PageMask__      <= 0;
             Wired__         <= 0;
             BadVAddr        <= 0;
-            Count           <= 0;
-            Count_temp      <= 0;
+            Count__         <= 0;
+            timer_intr      <= 0;
             EntryHi_VPN2    <= 0;
             EntryHi_ASID    <= 0;
             Compare         <= 0;
@@ -301,15 +309,14 @@ module CP0
         end
         else begin
             // Count & Compare
-            {Count, Count_temp} <= {Count, Count_temp} + 33'd1;
-            if(Compare != `ZeroWord && timer_eq)
-                timer_int <= `true;
+            Count__ <= Count__ + 33'd1;
+            if(timer_on) timer_intr <= `true;
             
             // Random
             Random__ <= (Random__ ^ Wired__) == 0 ? `Random_Rst : Random__ - 1;
 
             // Interrupts
-            Cause_IP[7:2] <= intr;
+            Cause_IP[7:2] <= {intr[5] | timer_intr, intr[4:0]};
 
             // Exceptions
             if(exc_flag) begin
@@ -448,7 +455,7 @@ module CP0
                     end
 
                     `CP0_Count: begin
-                        Count <= wdata;
+                        Count__ <= {wdata, 1'b0};
                     end
 
                     `CP0_EntryHi: begin
@@ -457,8 +464,8 @@ module CP0
                     end
 
                     `CP0_Compare: begin
-                        Compare   <= wdata;
-                        timer_int <= `false;
+                        Compare    <= wdata;
+                        timer_intr <= `false;
                     end
 
                     `CP0_Status: begin
@@ -528,12 +535,16 @@ module CP0
         endcase
     end
 
+    wire   no_ex_er = ~Status[`ERL] & ~Status[`EXL];
+    assign exc_intr = (Cause[`IP] & Status[`IM]) != 0 && Status[`IE] && no_ex_er;
+    
     `ifdef Disable_User_Mode
-        assign usermode   = `false;
+        assign usermode = `false;
     `else
-        assign usermode   = Status_UM & ~(Status_ERL | Status_EXL);
+        assign usermode = Status[`UM] & no_ex_er;
     `endif
     
+    // Output
     assign Index_o    = Index;
     assign Random_o   = Random;
     assign EntryLo0_o = EntryLo0;
