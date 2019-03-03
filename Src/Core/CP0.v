@@ -104,13 +104,14 @@ module CP0
     };
 
     // PrId
-    wire [`Word] PrId = 32'h00004220; //LS232
-    // {
-    //     8'h00,          // Company Options
-    //     8'h01,          // Company ID
-    //     8'h80,          // Processor ID
-    //     8'h00           // Revision
-    // };
+    wire [`Word] PrId = 
+    {
+        8'h00,          // Company Options
+        8'h01,          // Company ID
+        8'h80,          // Processor ID
+        8'h00           // Revision
+    };
+    // 32'h00004220; //LS232
 
     // Config
     reg  [ 2: 0] Config_K23;
@@ -242,6 +243,9 @@ module CP0
         end
     endgenerate
 
+    //Count increases every other cycle
+    reg Count_temp;
+
     always @(posedge clk, posedge rst) begin
         if(rst) begin
             timer_int <= `false;
@@ -265,6 +269,7 @@ module CP0
             Wired__         <= 0;
             BadVAddr        <= 0;
             Count           <= 0;
+            Count_temp      <= 0;
             EntryHi_VPN2    <= 0;
             EntryHi_ASID    <= 0;
             Compare         <= 0;
@@ -296,7 +301,7 @@ module CP0
         end
         else begin
             // Count & Compare
-            Count <= Count + 32'd1;
+            {Count, Count_temp} <= {Count, Count_temp} + 33'd1;
             if(Compare != `ZeroWord && timer_eq)
                 timer_int <= `true;
             
