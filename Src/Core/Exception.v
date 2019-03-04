@@ -14,8 +14,10 @@ module Exception
     input  wire            d_tlbi,
     input  wire            d_tlbm,
     input  wire            d_refs,
+    input  wire            exc_intr,
 
     input  wire [`AddrBus] pc,
+    input  wire            m_en,
     input  wire [`AddrBus] m_vaddr,
     input  wire            nullinst,
 
@@ -31,6 +33,7 @@ module Exception
         excp <= `Exc_NoExc;
         if(!nullinst) begin
             excp              <= excp_i;
+            excp[`Exc_Intr  ] <= exc_intr & ~m_en;
             excp[`Exc_D_TLBR] <= d_tlbr;
             excp[`Exc_D_TLBI] <= d_tlbi;
             excp[`Exc_D_TLBM] <= d_tlbm;

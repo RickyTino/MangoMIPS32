@@ -420,7 +420,6 @@ module MangoMIPS_Core_Top
         .llbit_o    (ex_llbit   ),
 
         .usermode   (usermode   ),
-        .exc_intr   (exc_intr   ),
         .excp_i     (ex_excp_i  ),
         .excp_o     (ex_excp_o  ),
         .tlbop      (ex_tlbop   ),
@@ -559,7 +558,9 @@ module MangoMIPS_Core_Top
         .d_tlbi     (exc_d_tlbi ),
         .d_tlbm     (exc_d_tlbm ),
         .d_refs     (dtlb_refs  ),
+        .exc_intr   (exc_intr   ),
         .pc         (mem_pc     ),
+        .m_en       (mem_m_en   ),
         .m_vaddr    (mem_m_vaddr),
         .nullinst   (mem_null   ),
 

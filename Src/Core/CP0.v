@@ -81,11 +81,7 @@ module CP0
         6'b0,
         Status_IM,  // 15:8
         3'b0,
-    `ifdef Disable_User_Mode
-        1'b0,
-    `else
         Status_UM,  // 4
-    `endif
         1'b0,
         Status_ERL, // 2
         Status_EXL, // 1
