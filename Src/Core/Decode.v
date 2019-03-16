@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Decode.v
 Author:     RickyTino
-Version:    v1.1.0
+Version:    v1.1.1
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
@@ -966,16 +966,18 @@ module Decode
             `OP_LDC1,
             `OP_SWC1,
             `OP_SDC1: begin // CP1 instructions
-                exc_cpu <= !cp0_Status[`CU1];
-                ecpnum  <= `CP1;
+                instvalid <= `true;
+                exc_cpu   <= !cp0_Status[`CU1];
+                ecpnum    <= `CP1;
             end
 
             `OP_LWC2,
             `OP_LDC2,
             `OP_SWC2,
             `OP_SDC2: begin // CP2 instructions
-                exc_cpu <= !cp0_Status[`CU2];
-                ecpnum  <= `CP2;
+                instvalid <= `true;
+                exc_cpu   <= !cp0_Status[`CU2];
+                ecpnum    <= `CP2;
             end
 
         endcase

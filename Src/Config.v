@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Config.v
 Author:     RickyTino
-Version:    v1.1.0
+Version:    v1.1.1
 **************************************************/
 
 // Note: The result is UNPREDICTABLE if values are set out of the range indicated.

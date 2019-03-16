@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Core_Top.v
 Author:     RickyTino
-Version:    v1.1.0
+Version:    v1.1.1
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
@@ -31,11 +31,6 @@ module MangoMIPS_Core_Top
 
     output wire [`CacheOp] cacheop,
     output wire [`DataBus] cop_tag
-
-    // output wire [`AddrBus] debug_wb_pc,
-    // output wire [`ByteWEn] debug_wb_wreg,
-    // output wire [`RegAddr] debug_wb_wraddr,
-    // output wire [`DataBus] debug_wb_wrdata
 );
 
     wire [`AddrBus] if_pcp4;
@@ -602,8 +597,6 @@ module MangoMIPS_Core_Top
         .Cause_o    (cp0_Cause      ),
         .EPC_o      (cp0_EPC        ),
         .Config_o   (cp0_Config     ),
-        // .ITagLo_o   (cop_itag       ),
-        // .DTagLo_o   (cop_dtag       ),
         .TagLo_o    (cop_tag        ),
         .ErrorEPC_o (cp0_ErrorEPC   ),
 
@@ -720,9 +713,4 @@ module MangoMIPS_Core_Top
 
 `endif
 
-    // assign debug_wb_pc     = wb_pc;
-    // assign debug_wb_wreg   = wb_wreg;
-    // assign debug_wb_wraddr = wb_wraddr;
-    // assign debug_wb_wrdata = wb_wrdata;
-    
 endmodule

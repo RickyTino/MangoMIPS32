@@ -2,7 +2,7 @@
 轻量级CPU软核，兼容MIPS32 release 1架构
 
 ## 当前版本
-MangoMIPS32 v1.1.0  
+MangoMIPS32 v1.1.1  
 该版本可成功启动Linux 2.6.32
 
 ## CPU核心参数

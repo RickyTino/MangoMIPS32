@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   TLBU.v
 Author:     RickyTino
-Version:    v1.1.0
+Version:    v1.1.1
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
@@ -308,10 +308,6 @@ module TLBU
     // TLB control & I/O
     reg  [ 1: 0] i_state,   d_state;
 
-    // assign immu_rdy = immu_en   && (immu_vaddr     ^ i_vaddr ) == 0 && 
-    //                   ilk_valid && (EntryHi[`ASID] ^ ilk_asid) == 0;
-    // assign dmmu_rdy = dmmu_en   && (dmmu_vaddr     ^ d_vaddr ) == 0 && 
-    //                   dlk_valid && (EntryHi[`ASID] ^ dlk_asid) == 0;
     assign immu_rdy = immu_en && ilk_valid;
     assign dmmu_rdy = dmmu_en && dlk_valid;
 
@@ -431,36 +427,6 @@ module TLBU
                     cp0_tlbwen <= `true;
                     cp0_tlbitm <= TLB[idx_index];
                 end
-
-                // `TOP_TLBWI: begin
-                    // TLB[idx_index][`TLB_Mask] <= PageMask[`Mask];
-                    // TLB[idx_index][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
-                    // TLB[idx_index][`TLB_ASID] <= EntryHi [`ASID];
-                    // TLB[idx_index][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
-                    // TLB[idx_index][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
-                    // TLB[idx_index][`TLB_V0  ] <= EntryLo0[`Vld ];
-                    // TLB[idx_index][`TLB_D0  ] <= EntryLo0[`Drt ];
-                    // TLB[idx_index][`TLB_C0  ] <= EntryLo0[`CAt ];
-                    // TLB[idx_index][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
-                    // TLB[idx_index][`TLB_V1  ] <= EntryLo1[`Vld ];
-                    // TLB[idx_index][`TLB_D1  ] <= EntryLo1[`Drt ];
-                    // TLB[idx_index][`TLB_C1  ] <= EntryLo1[`CAt ];
-                // end
-
-                // `TOP_TLBWR: begin
-                    // TLB[idx_rand][`TLB_Mask] <= PageMask[`Mask];
-                    // TLB[idx_rand][`TLB_VPN2] <= EntryHi [`VPN2] & ~PageMask[`VMask];
-                    // TLB[idx_rand][`TLB_ASID] <= EntryHi [`ASID];
-                    // TLB[idx_rand][`TLB_G   ] <= EntryLo0[`Glb ] & EntryLo1[`Glb];
-                    // TLB[idx_rand][`TLB_PFN0] <= EntryLo0[`PFN ] & ~PageMask[`PMask];
-                    // TLB[idx_rand][`TLB_V0  ] <= EntryLo0[`Vld ];
-                    // TLB[idx_rand][`TLB_D0  ] <= EntryLo0[`Drt ];
-                    // TLB[idx_rand][`TLB_C0  ] <= EntryLo0[`CAt ];
-                    // TLB[idx_rand][`TLB_PFN1] <= EntryLo1[`PFN ] & ~PageMask[`PMask];
-                    // TLB[idx_rand][`TLB_V1  ] <= EntryLo1[`Vld ];
-                    // TLB[idx_rand][`TLB_D1  ] <= EntryLo1[`Drt ];
-                    // TLB[idx_rand][`TLB_C1  ] <= EntryLo1[`CAt ];
-                // end
 
                 `TOP_TLBP: begin
                     cp0_idxwen <= `true;
