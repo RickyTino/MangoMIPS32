@@ -20,8 +20,8 @@ module Reg_ID_EX
     input  wire [`DataBus] id_opr2,
     input  wire [`DataBus] id_offset,
     input  wire [`CP0Addr] id_cp0sel,
-    input  wire [`RegAddr] id_wraddr,
     input  wire            id_wreg,
+    input  wire [`RegAddr] id_wraddr,
     input  wire [`ExcBus ] id_excp,
     input  wire [`CPNum  ] id_ecpnum,
     input  wire            id_inslot,
@@ -34,8 +34,8 @@ module Reg_ID_EX
     output reg  [`DataBus] ex_opr2,
     output reg  [`DataBus] ex_offset,
     output reg  [`CP0Addr] ex_cp0sel,
-    output reg  [`RegAddr] ex_wraddr,
     output reg             ex_wreg,
+    output reg  [`RegAddr] ex_wraddr,
     output reg  [`ExcBus ] ex_excp,
     output reg  [`CPNum  ] ex_ecpnum,
     output reg             ex_inslot,
@@ -51,8 +51,8 @@ module Reg_ID_EX
             ex_opr2    <= `ZeroWord;
             ex_offset  <= `ZeroWord;
             ex_cp0sel  <= `CP0_ZeroReg;
-            ex_wraddr  <= `ZeroReg;
             ex_wreg    <= `false;
+            ex_wraddr  <= `ZeroReg;
             ex_excp    <= `Exc_NoExc;
             ex_ecpnum  <= `CP0;
             ex_inslot  <= `false;
@@ -68,8 +68,8 @@ module Reg_ID_EX
                     ex_opr2    <= `ZeroWord;
                     ex_offset  <= `ZeroWord;
                     ex_cp0sel  <= `CP0_ZeroReg;
-                    ex_wraddr  <= `ZeroReg;
                     ex_wreg    <= `false;
+                    ex_wraddr  <= `ZeroReg;
                     ex_excp    <= `Exc_NoExc;
                     ex_ecpnum  <= `CP0;
                     ex_inslot  <= `false;
@@ -83,8 +83,8 @@ module Reg_ID_EX
                     ex_opr2    <= id_opr2;
                     ex_offset  <= id_offset;
                     ex_cp0sel  <= id_cp0sel;
-                    ex_wraddr  <= id_wraddr;
                     ex_wreg    <= id_wreg;
+                    ex_wraddr  <= id_wraddr;
                     ex_excp    <= id_excp;
                     ex_ecpnum  <= id_ecpnum;
                     ex_inslot  <= id_inslot;

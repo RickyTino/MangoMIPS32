@@ -48,15 +48,15 @@ module Decode
     output wire            stallreq
 );
 
-    wire [ 5:0] opcode    = inst[31:26];
-    wire [ 4:0] rs        = inst[25:21];
-    wire [ 4:0] rt        = inst[20:16];
-    wire [ 4:0] rd        = inst[15:11];
-    wire [ 4:0] sa        = inst[10: 6];
-    wire [ 5:0] funct     = inst[ 5: 0];
-    wire [15:0] immediate = inst[15: 0];
-    wire [25:0] j_offset  = inst[25: 0];
-    wire [ 2:0] sel       = inst[ 3: 0];
+    wire [ 5: 0] opcode    = inst[31:26];
+    wire [ 4: 0] rs        = inst[25:21];
+    wire [ 4: 0] rt        = inst[20:16];
+    wire [ 4: 0] rd        = inst[15:11];
+    wire [ 4: 0] sa        = inst[10: 6];
+    wire [ 5: 0] funct     = inst[ 5: 0];
+    wire [15: 0] immediate = inst[15: 0];
+    wire [25: 0] j_offset  = inst[25: 0];
+    wire [ 2: 0] sel       = inst[ 2: 0];
 
     wire [`Word] zero_ext = {16'b0, immediate};
     wire [`Word] sign_ext = {{16{immediate[15]}}, immediate};
@@ -66,7 +66,7 @@ module Decode
     wire opr_eq   = (opr1 ^ opr2) == `ZeroWord;
     wire [`Word] br_target = pcp4 + (sign_ext << 2); 
 
-    reg [`Word] ext_imme;
+    reg  [`Word] ext_imme;
 
     assign offset = sign_ext;
     assign cp0sel = {rd, sel};

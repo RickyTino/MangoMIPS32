@@ -6,7 +6,8 @@ Version :     v1.1.1
 `include "../Config.v"
 `include "../Defines.v"
 
-module ICache_Controller (
+module ICache_Controller
+(
     input  wire            aclk,
     input  wire            aresetn,
     output reg  [  3 : 0 ] arid,

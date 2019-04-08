@@ -6,7 +6,8 @@ Version:    v1.1.1
 `include "../Config.v"
 `include "../Defines.v"
 
-module DCache_Ram (
+module DCache_Ram
+(
     input  wire             clk,
     input  wire             enb,
     input  wire [`ByteWEn]  wea,  web,

@@ -6,7 +6,8 @@ Version:    v1.1.1
 `include "../Config.v"
 `include "../Defines.v"
 
-module ICache_Ram (
+module ICache_Ram
+(
     input  wire             clk,
     input  wire             wen,
     input  wire [`I_ramad]  adw,

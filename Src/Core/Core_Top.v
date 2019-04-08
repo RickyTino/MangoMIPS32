@@ -237,7 +237,7 @@ module MangoMIPS_Core_Top
         .vaddr      (if_i_vaddr ),
         .wdata      (`ZeroWord  ),
         .rdata      (if_i_rdata ),
-        .size       (`ASize_Word   ),
+        .size       (`ASize_Word),
 
         .bus_en     (ibus_en    ),
         .bus_paddr  (ibus_addr  ),
@@ -271,7 +271,7 @@ module MangoMIPS_Core_Top
 
         .if_pc          (if_i_vaddr ),
         .if_pcp4        (if_pcp4    ),
-        .if_inst        (ibus_rdata ),
+        .if_inst        (if_i_rdata ),
         .if_excp        (if_excp    ),
 
         .id_isbranch    (id_isbranch),
