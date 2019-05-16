@@ -365,7 +365,7 @@ module CP0
                     `ExcT_Trap: Cause_ExcCode <= `ExcC_Tr;
                     `ExcT_SysC: Cause_ExcCode <= `ExcC_SysC;
                     `ExcT_Bp:   Cause_ExcCode <= `ExcC_Bp;
-                    `ExcT_AdE:  Cause_ExcCode <= exc_save ? `ExcC_AdEL : `ExcC_AdES;
+                    `ExcT_AdE:  Cause_ExcCode <= exc_save ? `ExcC_AdES : `ExcC_AdEL;
                     `ExcT_TLBR: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
                     `ExcT_TLBI: Cause_ExcCode <= exc_save ? `ExcC_TLBS : `ExcC_TLBL;
                     `ExcT_TLBM: Cause_ExcCode <= `ExcC_Mod;
