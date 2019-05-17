@@ -240,11 +240,7 @@ module ALU_EX
                 m_wdata <= {2{opr2[15:0]}};
                 m_size  <= `ASize_Half;
                 exc_ade <= exc_user || sl_addr[0];
-                case (sl_addr[1:0])
-                    2'b00:   m_wen <= 4'b0011;
-                    2'b10:   m_wen <= 4'b1100;
-                    default: m_wen <= `WrDisable;
-                endcase
+                m_wen   <= sl_addr[1] ? 4'b1100 : 4'b0011;
             end
 
             `ALU_SW:  begin

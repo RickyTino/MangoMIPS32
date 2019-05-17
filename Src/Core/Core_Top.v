@@ -140,10 +140,11 @@ module MangoMIPS_Core_Top
     wire [`DataBus] mem_m_wdata;
     wire [`DataBus] mem_m_rdata;
     wire [`AXISize] mem_m_size;
+    wire            mem_m_refs;
 
     wire            dtlb_en;
     wire [`AddrBus] dtlb_vaddr;
-    wire            dtlb_refs;
+    // wire            dtlb_refs;
     wire            dtlb_rdy;
     wire [`AddrBus] dtlb_paddr;
     wire            dtlb_cat;
@@ -496,6 +497,7 @@ module MangoMIPS_Core_Top
         .wdata      (mem_m_wdata),
         .rdata      (mem_m_rdata),
         .size       (mem_m_size ),
+        .refs       (mem_m_refs ),
 
         .bus_en     (dbus_en    ),
         .bus_paddr  (dbus_addr  ),
@@ -508,7 +510,7 @@ module MangoMIPS_Core_Top
 
         .tlb_en     (dtlb_en    ),
         .tlb_vaddr  (dtlb_vaddr ),
-        .tlb_refs   (dtlb_refs  ),
+        // .tlb_refs   (dtlb_refs  ),
         .tlb_rdy    (dtlb_rdy   ),
         .tlb_paddr  (dtlb_paddr ),
         .tlb_cat    (dtlb_cat   ),
@@ -552,7 +554,7 @@ module MangoMIPS_Core_Top
         .d_tlbr     (exc_d_tlbr ),
         .d_tlbi     (exc_d_tlbi ),
         .d_tlbm     (exc_d_tlbm ),
-        .d_refs     (dtlb_refs  ),
+        .d_refs     (mem_m_refs ),
         .exc_intr   (exc_intr   ),
         .pc         (mem_pc     ),
         .m_en       (mem_m_en   ),
@@ -695,7 +697,7 @@ module MangoMIPS_Core_Top
         .immu_stall (stall[`IF]     ),
         .dmmu_en    (dtlb_en        ),
         .dmmu_vaddr (dtlb_vaddr     ),
-        .dmmu_refs  (dtlb_refs      ),
+        .dmmu_refs  (mem_m_refs     ),
         .dmmu_rdy   (dtlb_rdy       ),
         .dmmu_paddr (dtlb_paddr     ),
         .dmmu_cat   (dtlb_cat       ),
