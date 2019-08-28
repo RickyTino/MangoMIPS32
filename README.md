@@ -1,35 +1,36 @@
 # MangoMIPS32
-轻量级CPU软核，兼容MIPS32 release 1架构
+A soft-core microprocessor written by Verilog HDL, which is compliant with MIPS32 release 1 architecture.
 
-## 当前版本
+## Current Version
 MangoMIPS32 v1.1.1  
-该版本可成功启动Linux 2.6.32
+This version is capable for running Linux 2.6.32
 
-## CPU核心参数
-- 指令集：100条MIPS32 release 1指令
-- 微架构：单发射，顺序执行，经典五级流水线架构
-- FPGA上主频可达100MHz
-- 不含浮点部件
+## CPU Core 
+- Implemented 100 instructions from MIPS32r1 ISA
+- Single-issued 5-stage pipeline structure
+- Clock frequency up to 100MHz
+- No floating point coprocessors
 
-## 接口与缓存资源
-- 对外使用AMBA AXI总线接口
-- 分布式RAM作为缓存，使用Xilinx IP核
-- 指令/数据缓存均直接映射，大小可配置（2KB-128KB）
+## Interface and Caches
+- Uses AMBA-AXI as the bus interface
+- Instruction cache and data cache build with Xilinx Distributed Ram IP Core
+- Write-back, write-allocate, direct-mapped
+- size-configurable (2KB-128KB)
 
-## 特权资源
-- 实现了20个CP0寄存器，12种例外处理
-- 支持两种运行模式：用户态与核心态，可以配置禁用用户态
-- 不产生CP0 Execution Hazard
+## Privilege Resources
+- Implemented 20 coprocessor 0 (CP0) registers
+- Support user mode which could be disabled
+- No CP0 Execution Hazards
 
-## 虚实地址映射
-- 可配置使用固定映射MMU或TLB-MMU
-- 32项全相连JTLB
-- 支持除1KB以外所有页大小
+## Address Mapping
+- Fixed-mapping MMU and TLB-based MMU is supported
+- TLB with 32 items
+- Support all kind of page sizes except 1KB page
 
-## 详细信息
-目前实现的指令及操作：
+## Details
+ISA:
 - SLL/SRL/SRA/SLLV/SRLV/SRAV
-- SYNC/PREF (作为空指令)
+- SYNC/PREF (Decode as NOP)
 - AND/OR/XOR/NOR
 - MOVZ/MOVN/MFHI/MFLO/MTHI/MTLO
 - ANDI/ORI/XORI/LUI
@@ -55,7 +56,7 @@ MangoMIPS32 v1.1.1
     D-Hit Invalidate  
     D-Hit Writeback Invalidate  
 
-实现的CP0寄存器：  
+CP0 Registers：  
 
 |   Name   |Reg#|Sel#|  
 |:---------|:--:|:--:|  
@@ -80,7 +81,7 @@ MangoMIPS32 v1.1.1
 | TagHi    | 29 | 0  |
 | ErrorEPC | 30 | 0  |
 
-实现的例外处理及优先级：
+Exceptions sorted by priority：
 - Reset
 - Interrupt
 - I-Address Error
@@ -95,5 +96,5 @@ MangoMIPS32 v1.1.1
 - D-TLB Modified
 - ERET
 
-## 作者注
-持续更新中，计划最终实现完整的MIPS32r1兼容。
+## P.S.
+This project is being continuously developed and it aims to be completely compliant with the MIPS32r1 Architecture.
