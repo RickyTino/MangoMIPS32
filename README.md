@@ -1,34 +1,34 @@
 # MangoMIPS32
-A soft-core microprocessor written in Verilog HDL, which is compliant with MIPS32 release 1 architecture.
+A soft-core microprocessor written in Verilog HDL and compliant with MIPS32 release 1 architecture.
 
 ## Current Version
 MangoMIPS32 v1.1.1  
 This version is capable for running Linux 2.6.32
 
 ## CPU Core 
-- Implemented 100 instructions from MIPS32r1 ISA
+- Implemented 100 instructions in MIPS32r1 ISA
 - Single-issued 5-stage pipeline structure
-- Clock frequency up to 100MHz
+- Up to 100MHz on FPGA
 - No floating point coprocessors
 
 ## Interface and Caches
-- Uses AMBA-AXI as the bus interface
+- Implemented AMBA-AXI bus interface
 - Instruction cache and data cache build with Xilinx Distributed Ram IP Core
 - Write-back, write-allocate, direct-mapped
 - size-configurable (2KB-128KB)
 
 ## Privilege Resources
 - Implemented 20 coprocessor 0 (CP0) registers
-- Support user mode which could be disabled
+- Support user mode (can be disabled)
 - No CP0 Execution Hazards
 
 ## Address Mapping
-- Fixed-mapping MMU and TLB-based MMU is supported
-- TLB with 32 items
-- Support all kind of page sizes except 1KB page
+- Supports both Fixed-mapping MMU and TLB-based MMU
+- 32-item, full associated TLB
+- Best for 4KB page size
 
 ## Details
-ISA:
+Instructions supported:
 - SLL/SRL/SRA/SLLV/SRLV/SRAV
 - SYNC/PREF (Decode as NOP)
 - AND/OR/XOR/NOR
@@ -81,7 +81,7 @@ CP0 Registers：
 | TagHi    | 29 | 0  |
 | ErrorEPC | 30 | 0  |
 
-Exceptions sorted by priority：
+Exceptions (priority ranking)：
 - Reset
 - Interrupt
 - I-Address Error
@@ -96,5 +96,3 @@ Exceptions sorted by priority：
 - D-TLB Modified
 - ERET
 
-## P.S.
-This project is being continuously developed and it aims to be completely compliant with the MIPS32r1 Architecture.
