@@ -1,5 +1,5 @@
 # MangoMIPS32
-A soft-core microprocessor written by Verilog HDL, which is compliant with MIPS32 release 1 architecture.
+A soft-core microprocessor written in Verilog HDL, which is compliant with MIPS32 release 1 architecture.
 
 ## Current Version
 MangoMIPS32 v1.1.1  
