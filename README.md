@@ -1,14 +1,14 @@
 # MangoMIPS32
-A soft-core microprocessor written in Verilog HDL, which is compliant with MIPS32 release 1 architecture.
+A soft-core microprocessor written in Verilog HDL, compliant with MIPS32 release 1 architecture.
 
 ## Current Version
 MangoMIPS32 v1.1.1  
-This version is proven capable for running Linux 2.6.32 on an SoC in FPGA.
+This version is proven correct by running Linux 2.6.32 on an SoC in FPGA.
 
 ## CPU Core 
-- Supports 100 basic instructions from MIPS32r1 ISA
+- Supports 100 basic instructions in MIPS32r1 ISA
 - Single-issued 5-stage pipeline microarchitecture
-- Clock frequency up to 100MHz on FPGA
+- Reaching 100MHz on FPGA
 - Temporarily no floating point coprocessors
 
 ## Interface and Caches
@@ -28,7 +28,7 @@ This version is proven capable for running Linux 2.6.32 on an SoC in FPGA.
 - Support all kind of page sizes except 1KB page
 
 ## Details
-Supported Instructions:
+Instructions supported:
 - SLL/SRL/SRA/SLLV/SRLV/SRAV
 - SYNC/PREF (Decode as NOP)
 - AND/OR/XOR/NOR
@@ -81,7 +81,7 @@ CP0 Registers：
 | TagHi    | 29 | 0  |
 | ErrorEPC | 30 | 0  |
 
-Exceptions: (sorted by priority)
+Exceptions (priority ranking)：
 - Reset
 - Interrupt
 - I-Address Error
