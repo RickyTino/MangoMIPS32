@@ -2,7 +2,7 @@
 A soft-core microprocessor written in Verilog HDL, compliant with MIPS32 release 1 architecture.
 
 ## Current Version
-MangoMIPS32 v1.1.1  
+MangoMIPS32 v1.1.2  
 This version is proven correct by running Linux 2.6.32 on an SoC in FPGA.
 
 ## CPU Core 

@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   MMU.v
 Author:     RickyTino
-Version:    v1.1.1
+Version:    v1.1.2
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"
