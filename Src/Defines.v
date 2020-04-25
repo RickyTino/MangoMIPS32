@@ -48,12 +48,12 @@ Version:    v1.1.1
 // Entrance address
 `define         Reset_Entrance          32'hBFC00000
 
-`define         Base_Bts                32'hBFC00200
-`define         Base_Nml                32'h80000000
-`define         Bts_GenExc              32'hBFC00380
-`define         Nml_GenExc              32'h80000180
-`define         Bts_SpIntr              32'hBFC00400
-`define         Nml_SpIntr              32'h80000200
+`define         Bootstrap_Base          32'hBFC00200
+`define         Normal_Base             32'h80000000
+`define         Bootstrap_GenExc        32'hBFC00380
+`define         Normal_GenExc           32'h80000180
+`define         Bootstrap_SpIntr        32'hBFC00400
+`define         Normal_SpIntr           32'h80000200
 
 /*--------------------Vector--------------------*/
 // Bus Width

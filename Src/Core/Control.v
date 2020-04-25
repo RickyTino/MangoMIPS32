@@ -35,19 +35,19 @@ module Control
             case (exc_type)
                 `ExcT_Intr: begin
                     case ({bev, iv})
-                        2'b00: flush_pc <= `Nml_GenExc;
-                        2'b01: flush_pc <= `Nml_SpIntr;
-                        2'b10: flush_pc <= `Bts_GenExc;
-                        2'b11: flush_pc <= `Bts_SpIntr;
+                        2'b00: flush_pc <= `Normal_GenExc;
+                        2'b01: flush_pc <= `Normal_SpIntr;
+                        2'b10: flush_pc <= `Bootstrap_GenExc;
+                        2'b11: flush_pc <= `Bootstrap_SpIntr;
                     endcase
                 end
 
                 `ExcT_TLBR: begin
                     case ({bev, exl})
-                        2'b00: flush_pc <= `Base_Nml;
-                        2'b01: flush_pc <= `Nml_GenExc;
-                        2'b10: flush_pc <= `Base_Bts;
-                        2'b11: flush_pc <= `Bts_GenExc;
+                        2'b00: flush_pc <= `Normal_Base;
+                        2'b01: flush_pc <= `Normal_GenExc;
+                        2'b10: flush_pc <= `Bootstrap_Base;
+                        2'b11: flush_pc <= `Bootstrap_GenExc;
                     endcase
                 end
 
@@ -61,7 +61,7 @@ module Control
                 `ExcT_TLBM,
                 // `ExcT_IBE,
                 // `ExcT_DBE,
-                `ExcT_CpU:  flush_pc <= bev ? `Bts_GenExc  : `Nml_GenExc;
+                `ExcT_CpU:  flush_pc <= bev ? `Bootstrap_GenExc  : `Normal_GenExc;
 
                 `ExcT_ERET: flush_pc <= erl ? cp0_ErrorEPC : cp0_EPC;
 
