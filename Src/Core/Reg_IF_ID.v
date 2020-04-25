@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   Reg_IF_ID.v
 Author:     RickyTino
-Version:    v1.1.1
+Version:    v1.1.2
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"

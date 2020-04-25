@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   MangoMIPS_Top.v
 Author:     RickyTino
-Version:    v1.1.1
+Version:    v1.1.2
 **************************************************/
 `include "Defines.v"
 `include "Config.v"
