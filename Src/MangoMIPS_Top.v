@@ -8,49 +8,49 @@ Version:    v1.1.2
 
 module MangoMIPS_Top
 (
-    input  wire        cpu_clk,
-    input  wire        cpu_rstn,
-    input  wire [ 5:0] intr,
+    input  wire         cpu_clk,
+    input  wire         cpu_rstn,
+    input  wire [ 5: 0] intr,
 
-    output wire [ 3:0] m_arid,
-    output wire [31:0] m_araddr,
-    output wire [ 3:0] m_arlen,
-    output wire [ 2:0] m_arsize,
-    output wire [ 1:0] m_arburst,
-    output wire [ 1:0] m_arlock,
-    output wire [ 3:0] m_arcache,
-    output wire [ 2:0] m_arprot,
-    output wire        m_arvalid,
-    input  wire        m_arready,
-    input  wire [ 3:0] m_rid,
-    input  wire [31:0] m_rdata,
-    input  wire [ 1:0] m_rresp,
-    input  wire        m_rlast,
-    input  wire        m_rvalid,
-    output wire        m_rready,
-    output wire [ 3:0] m_awid,
-    output wire [31:0] m_awaddr,
-    output wire [ 3:0] m_awlen,
-    output wire [ 2:0] m_awsize,
-    output wire [ 1:0] m_awburst,
-    output wire [ 1:0] m_awlock,
-    output wire [ 3:0] m_awcache,
-    output wire [ 2:0] m_awprot,
-    output wire        m_awvalid,
-    input  wire        m_awready,
-    output wire [ 3:0] m_wid,
-    output wire [31:0] m_wdata,
-    output wire [ 3:0] m_wstrb,
-    output wire        m_wlast,
-    output wire        m_wvalid,
-    input  wire        m_wready,
-    input  wire [ 3:0] m_bid,
-    input  wire [ 1:0] m_bresp,
-    input  wire        m_bvalid,
-    output wire        m_bready
+    output wire [ 3: 0] m_axi_arid,
+    output wire [31: 0] m_axi_araddr,
+    output wire [ 3: 0] m_axi_arlen,
+    output wire [ 2: 0] m_axi_arsize,
+    output wire [ 1: 0] m_axi_arburst,
+    output wire [ 1: 0] m_axi_arlock,
+    output wire [ 3: 0] m_axi_arcache,
+    output wire [ 2: 0] m_axi_arprot,
+    output wire         m_axi_arvalid,
+    input  wire         m_axi_arready,
+    input  wire [ 3: 0] m_axi_rid,
+    input  wire [31: 0] m_axi_rdata,
+    input  wire [ 1: 0] m_axi_rresp,
+    input  wire         m_axi_rlast,
+    input  wire         m_axi_rvalid,
+    output wire         m_axi_rready,
+    output wire [ 3: 0] m_axi_awid,
+    output wire [31: 0] m_axi_awaddr,
+    output wire [ 3: 0] m_axi_awlen,
+    output wire [ 2: 0] m_axi_awsize,
+    output wire [ 1: 0] m_axi_awburst,
+    output wire [ 1: 0] m_axi_awlock,
+    output wire [ 3: 0] m_axi_awcache,
+    output wire [ 2: 0] m_axi_awprot,
+    output wire         m_axi_awvalid,
+    input  wire         m_axi_awready,
+    output wire [ 3: 0] m_axi_wid,
+    output wire [31: 0] m_axi_wdata,
+    output wire [ 3: 0] m_axi_wstrb,
+    output wire         m_axi_wlast,
+    output wire         m_axi_wvalid,
+    input  wire         m_axi_wready,
+    input  wire [ 3: 0] m_axi_bid,
+    input  wire [ 1: 0] m_axi_bresp,
+    input  wire         m_axi_bvalid,
+    output wire         m_axi_bready
 );
 
-    reg             rstn;
+    reg  rstn;
     always @(posedge cpu_clk) 
         rstn <= cpu_rstn;
 
@@ -74,79 +74,79 @@ module MangoMIPS_Top
     wire [`CacheOp] cacheop;
     wire [`DataBus] cop_tag;
 
-    wire [ 3:0] ibus_arid;
-    wire [31:0] ibus_araddr;
-    wire [ 3:0] ibus_arlen;
-    wire [ 2:0] ibus_arsize;
-    wire [ 1:0] ibus_arburst;
-    wire [ 1:0] ibus_arlock;
-    wire [ 3:0] ibus_arcache;
-    wire [ 2:0] ibus_arprot;
-    wire        ibus_arvalid;
-    wire        ibus_arready;
-    wire [ 3:0] ibus_rid;
-    wire [31:0] ibus_rdata;
-    wire [ 1:0] ibus_rresp;
-    wire        ibus_rlast;
-    wire        ibus_rvalid;
-    wire        ibus_rready;
-    wire [ 3:0] ibus_awid;
-    wire [31:0] ibus_awaddr;
-    wire [ 3:0] ibus_awlen;
-    wire [ 2:0] ibus_awsize;
-    wire [ 1:0] ibus_awburst;
-    wire [ 1:0] ibus_awlock;
-    wire [ 3:0] ibus_awcache;
-    wire [ 2:0] ibus_awprot;
-    wire        ibus_awvalid;
-    wire        ibus_awready;
-    wire [ 3:0] ibus_wid;
-    wire [31:0] ibus_wdata;
-    wire [ 3:0] ibus_wstrb;
-    wire        ibus_wlast;
-    wire        ibus_wvalid;
-    wire        ibus_wready;
-    wire [ 3:0] ibus_bid;
-    wire [ 1:0] ibus_bresp;
-    wire        ibus_bvalid;
-    wire        ibus_bready;
+    wire [ 3: 0] ibus_arid;
+    wire [31: 0] ibus_araddr;
+    wire [ 3: 0] ibus_arlen;
+    wire [ 2: 0] ibus_arsize;
+    wire [ 1: 0] ibus_arburst;
+    wire [ 1: 0] ibus_arlock;
+    wire [ 3: 0] ibus_arcache;
+    wire [ 2: 0] ibus_arprot;
+    wire         ibus_arvalid;
+    wire         ibus_arready;
+    wire [ 3: 0] ibus_rid;
+    wire [31: 0] ibus_rdata;
+    wire [ 1: 0] ibus_rresp;
+    wire         ibus_rlast;
+    wire         ibus_rvalid;
+    wire         ibus_rready;
+    wire [ 3: 0] ibus_awid;
+    wire [31: 0] ibus_awaddr;
+    wire [ 3: 0] ibus_awlen;
+    wire [ 2: 0] ibus_awsize;
+    wire [ 1: 0] ibus_awburst;
+    wire [ 1: 0] ibus_awlock;
+    wire [ 3: 0] ibus_awcache;
+    wire [ 2: 0] ibus_awprot;
+    wire         ibus_awvalid;
+    wire         ibus_awready;
+    wire [ 3: 0] ibus_wid;
+    wire [31: 0] ibus_wdata;
+    wire [ 3: 0] ibus_wstrb;
+    wire         ibus_wlast;
+    wire         ibus_wvalid;
+    wire         ibus_wready;
+    wire [ 3: 0] ibus_bid;
+    wire [ 1: 0] ibus_bresp;
+    wire         ibus_bvalid;
+    wire         ibus_bready;
 
-    wire [ 3:0] dbus_arid;
-    wire [31:0] dbus_araddr;
-    wire [ 3:0] dbus_arlen;
-    wire [ 2:0] dbus_arsize;
-    wire [ 1:0] dbus_arburst;
-    wire [ 1:0] dbus_arlock;
-    wire [ 3:0] dbus_arcache;
-    wire [ 2:0] dbus_arprot;
-    wire        dbus_arvalid;
-    wire        dbus_arready;
-    wire [ 3:0] dbus_rid;
-    wire [31:0] dbus_rdata;
-    wire [ 1:0] dbus_rresp;
-    wire        dbus_rlast;
-    wire        dbus_rvalid;
-    wire        dbus_rready;
-    wire [ 3:0] dbus_awid;
-    wire [31:0] dbus_awaddr;
-    wire [ 3:0] dbus_awlen;
-    wire [ 2:0] dbus_awsize;
-    wire [ 1:0] dbus_awburst;
-    wire [ 1:0] dbus_awlock;
-    wire [ 3:0] dbus_awcache;
-    wire [ 2:0] dbus_awprot;
-    wire        dbus_awvalid;
-    wire        dbus_awready;
-    wire [ 3:0] dbus_wid;
-    wire [31:0] dbus_wdata;
-    wire [ 3:0] dbus_wstrb;
-    wire        dbus_wlast;
-    wire        dbus_wvalid;
-    wire        dbus_wready;
-    wire [ 3:0] dbus_bid;
-    wire [ 1:0] dbus_bresp;
-    wire        dbus_bvalid;
-    wire        dbus_bready;
+    wire [ 3: 0] dbus_arid;
+    wire [31: 0] dbus_araddr;
+    wire [ 3: 0] dbus_arlen;
+    wire [ 2: 0] dbus_arsize;
+    wire [ 1: 0] dbus_arburst;
+    wire [ 1: 0] dbus_arlock;
+    wire [ 3: 0] dbus_arcache;
+    wire [ 2: 0] dbus_arprot;
+    wire         dbus_arvalid;
+    wire         dbus_arready;
+    wire [ 3: 0] dbus_rid;
+    wire [31: 0] dbus_rdata;
+    wire [ 1: 0] dbus_rresp;
+    wire         dbus_rlast;
+    wire         dbus_rvalid;
+    wire         dbus_rready;
+    wire [ 3: 0] dbus_awid;
+    wire [31: 0] dbus_awaddr;
+    wire [ 3: 0] dbus_awlen;
+    wire [ 2: 0] dbus_awsize;
+    wire [ 1: 0] dbus_awburst;
+    wire [ 1: 0] dbus_awlock;
+    wire [ 3: 0] dbus_awcache;
+    wire [ 2: 0] dbus_awprot;
+    wire         dbus_awvalid;
+    wire         dbus_awready;
+    wire [ 3: 0] dbus_wid;
+    wire [31: 0] dbus_wdata;
+    wire [ 3: 0] dbus_wstrb;
+    wire         dbus_wlast;
+    wire         dbus_wvalid;
+    wire         dbus_wready;
+    wire [ 3: 0] dbus_bid;
+    wire [ 1: 0] dbus_bresp;
+    wire         dbus_bvalid;
+    wire         dbus_bready;
 
     MangoMIPS_Core_Top mips_core (
         .clk            ( cpu_clk       ),
@@ -296,7 +296,7 @@ module MangoMIPS_Top
         .s_axi_arlock     ( {ibus_arlock ,dbus_arlock } ),
         .s_axi_arcache    ( {ibus_arcache,dbus_arcache} ),
         .s_axi_arprot     ( {ibus_arprot ,dbus_arprot } ),
-        .s_axi_arqos      ( 8'b0                        ),
+        .s_axi_arqos      ( 0                           ),
         .s_axi_arvalid    ( {ibus_arvalid,dbus_arvalid} ),
         .s_axi_arready    ( {ibus_arready,dbus_arready} ),
         .s_axi_rid        ( {ibus_rid    ,dbus_rid    } ),
@@ -313,7 +313,7 @@ module MangoMIPS_Top
         .s_axi_awlock     ( {ibus_awlock ,dbus_awlock } ),
         .s_axi_awcache    ( {ibus_awcache,dbus_awcache} ),
         .s_axi_awprot     ( {ibus_awprot ,dbus_awprot } ),
-        .s_axi_awqos      ( 8'b0                        ),
+        .s_axi_awqos      ( 0                           ),
         .s_axi_awvalid    ( {ibus_awvalid,dbus_awvalid} ),
         .s_axi_awready    ( {ibus_awready,dbus_awready} ),
         .s_axi_wid        ( {ibus_wid    ,dbus_wid    } ),
@@ -327,44 +327,44 @@ module MangoMIPS_Top
         .s_axi_bvalid     ( {ibus_bvalid ,dbus_bvalid } ),
         .s_axi_bready     ( {ibus_bready ,dbus_bready } ),
         
-        .m_axi_arid       ( m_arid        ),
-        .m_axi_araddr     ( m_araddr      ),
-        .m_axi_arlen      ( m_arlen[3:0]  ),
-        .m_axi_arsize     ( m_arsize      ),
-        .m_axi_arburst    ( m_arburst     ),
-        .m_axi_arlock     ( m_arlock      ),
-        .m_axi_arcache    ( m_arcache     ),
-        .m_axi_arprot     ( m_arprot      ),
-        .m_axi_arqos      (               ),
-        .m_axi_arvalid    ( m_arvalid     ),
-        .m_axi_arready    ( m_arready     ),
-        .m_axi_rid        ( m_rid         ),
-        .m_axi_rdata      ( m_rdata       ),
-        .m_axi_rresp      ( m_rresp       ),
-        .m_axi_rlast      ( m_rlast       ),
-        .m_axi_rvalid     ( m_rvalid      ),
-        .m_axi_rready     ( m_rready      ),
-        .m_axi_awid       ( m_awid        ),
-        .m_axi_awaddr     ( m_awaddr      ),
-        .m_axi_awlen      ( m_awlen[3:0]  ),
-        .m_axi_awsize     ( m_awsize      ),
-        .m_axi_awburst    ( m_awburst     ),
-        .m_axi_awlock     ( m_awlock      ),
-        .m_axi_awcache    ( m_awcache     ),
-        .m_axi_awprot     ( m_awprot      ),
-        .m_axi_awqos      (               ),
-        .m_axi_awvalid    ( m_awvalid     ),
-        .m_axi_awready    ( m_awready     ),
-        .m_axi_wid        ( m_wid         ),
-        .m_axi_wdata      ( m_wdata       ),
-        .m_axi_wstrb      ( m_wstrb       ),
-        .m_axi_wlast      ( m_wlast       ),
-        .m_axi_wvalid     ( m_wvalid      ),
-        .m_axi_wready     ( m_wready      ),
-        .m_axi_bid        ( m_bid         ),
-        .m_axi_bresp      ( m_bresp       ),
-        .m_axi_bvalid     ( m_bvalid      ),
-        .m_axi_bready     ( m_bready      )
+        .m_axi_arid       ( m_axi_arid          ),
+        .m_axi_araddr     ( m_axi_araddr        ),
+        .m_axi_arlen      ( m_axi_arlen[3:0]    ),
+        .m_axi_arsize     ( m_axi_arsize        ),
+        .m_axi_arburst    ( m_axi_arburst       ),
+        .m_axi_arlock     ( m_axi_arlock        ),
+        .m_axi_arcache    ( m_axi_arcache       ),
+        .m_axi_arprot     ( m_axi_arprot        ),
+        .m_axi_arqos      (                     ),
+        .m_axi_arvalid    ( m_axi_arvalid       ),
+        .m_axi_arready    ( m_axi_arready       ),
+        .m_axi_rid        ( m_axi_rid           ),
+        .m_axi_rdata      ( m_axi_rdata         ),
+        .m_axi_rresp      ( m_axi_rresp         ),
+        .m_axi_rlast      ( m_axi_rlast         ),
+        .m_axi_rvalid     ( m_axi_rvalid        ),
+        .m_axi_rready     ( m_axi_rready        ),
+        .m_axi_awid       ( m_axi_awid          ),
+        .m_axi_awaddr     ( m_axi_awaddr        ),
+        .m_axi_awlen      ( m_axi_awlen[3:0]    ),
+        .m_axi_awsize     ( m_axi_awsize        ),
+        .m_axi_awburst    ( m_axi_awburst       ),
+        .m_axi_awlock     ( m_axi_awlock        ),
+        .m_axi_awcache    ( m_axi_awcache       ),
+        .m_axi_awprot     ( m_axi_awprot        ),
+        .m_axi_awqos      (                     ),
+        .m_axi_awvalid    ( m_axi_awvalid       ),
+        .m_axi_awready    ( m_axi_awready       ),
+        .m_axi_wid        ( m_axi_wid           ),
+        .m_axi_wdata      ( m_axi_wdata         ),
+        .m_axi_wstrb      ( m_axi_wstrb         ),
+        .m_axi_wlast      ( m_axi_wlast         ),
+        .m_axi_wvalid     ( m_axi_wvalid        ),
+        .m_axi_wready     ( m_axi_wready        ),
+        .m_axi_bid        ( m_axi_bid           ),
+        .m_axi_bresp      ( m_axi_bresp         ),
+        .m_axi_bvalid     ( m_axi_bvalid        ),
+        .m_axi_bready     ( m_axi_bready        )
     );
 
 endmodule
