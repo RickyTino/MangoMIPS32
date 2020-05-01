@@ -165,7 +165,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_JR: if({rt, rd, sa} == 15'b0) begin
+                    `SP_JR: if({rt, rd} == 10'b0) begin // Supports JR.HB also
                         instvalid <= `true;
                         r1read    <= `true;
                         isbranch  <= `true;
@@ -173,7 +173,7 @@ module Decode
                         br_addr   <= opr1;
                     end
 
-                    `SP_JALR: if({rt, sa} == 10'b0) begin
+                    `SP_JALR: if(rt == 5'b0) begin  // Supports JALR.HB also
                         instvalid <= `true;
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
