@@ -672,6 +672,8 @@ module MangoMIPS_Core_Top
         .cp0_Cause      ( cp0_Cause     ),
         .cp0_EPC        ( cp0_EPC       ),
         .cp0_ErrorEPC   ( cp0_ErrorEPC  ),
+        .ex_null        ( ex_null       ),
+        .mem_null       ( mem_null      ),
         .flush          ( flush         ),
         .flush_pc       ( exc_newpc     )
     );
