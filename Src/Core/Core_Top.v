@@ -664,7 +664,7 @@ module MangoMIPS_Core_Top
     );
     
     Control control (
-        .stallreq       ( streq         ),
+        .streq          ( streq         ),
         .stall          ( stall         ),
         .exc_flag       ( exc_flag      ),
         .exc_type       ( exc_type      ),

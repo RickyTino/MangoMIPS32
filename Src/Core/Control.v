@@ -8,7 +8,7 @@ Version:    v1.1.2
 
 module Control
 (
-    input  wire [`Stages] stallreq,
+    input  wire [`Stages] streq,
     output reg  [`Stages] stall,
     
     input  wire            exc_flag,
