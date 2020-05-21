@@ -94,6 +94,10 @@ module ICache_Controller
         assign cached = bus_cached;
     `endif
 
+    // Sync Reset
+    reg ca_rstn;
+    always @(posedge aclk) ca_rstn <= aresetn;
+
     // Cached Channel
     reg             ca_wen;
     reg  [`I_ramad] ca_adw;
@@ -172,8 +176,8 @@ module ICache_Controller
     parameter S_UC_READ_TRANSFER    = 3'h5;
     parameter S_UC_READ_WAITEND     = 3'h6;
 
-    always @(posedge aclk, negedge aresetn) begin
-        if(!aresetn) begin
+    always @(posedge aclk, negedge ca_rstn) begin
+        if(!ca_rstn) begin
             state     <= 0;
             cnt       <= 0;
             lk_addr   <= `ZeroWord;
@@ -298,30 +302,37 @@ module ICache_Controller
     end
 
     always @(posedge aclk) begin
-        case (state)
-            S_IDLE:  
-            if(!cop_nop && cop_en) begin
-                case (cacheop)
-                    `COP_III: ca_valid[cad_idx] <= `false;
-                    `COP_IIST: begin
-                        ca_ptag [cad_idx] <= cop_itag[`ITag_Tag];
-                        ca_valid[cad_idx] <= cop_itag[`ITag_Vld];
-                    end
-                    `COP_IHI:
-                        if(cln_hit) ca_valid[cad_idx] <= `false;
-                endcase
+        if(!ca_rstn) begin
+            for(i = 0; i < `I_lineN; i = i + 1) begin
+                ca_valid[i] <= `false;
             end
-            else begin
-                if(cached) begin
-                    if(bus_en && !ln_hit) begin
-                        ca_ptag [ad_idx] <= bus_addr[`I_addr_ptag];
-                        ca_valid[ad_idx] <= `false;
+        end
+        else begin
+            case (state)
+                S_IDLE:  
+                if(!cop_nop && cop_en) begin
+                    case (cacheop)
+                        `COP_III: ca_valid[cad_idx] <= `false;
+                        `COP_IIST: begin
+                            ca_ptag [cad_idx] <= cop_itag[`ITag_Tag];
+                            ca_valid[cad_idx] <= cop_itag[`ITag_Vld];
+                        end
+                        `COP_IHI:
+                            if(cln_hit) ca_valid[cad_idx] <= `false;
+                    endcase
+                end
+                else begin
+                    if(cached) begin
+                        if(bus_en && !ln_hit) begin
+                            ca_ptag [ad_idx] <= bus_addr[`I_addr_ptag];
+                            ca_valid[ad_idx] <= `false;
+                        end
                     end
                 end
-            end
 
-            S_FILLCACHE_END: ca_valid[lk_idx] <= `true;
-        endcase
+                S_FILLCACHE_END: ca_valid[lk_idx] <= `true;
+            endcase
+        end
     end
 
     assign bus_rdata = cached ? ca_dout : uc_data;

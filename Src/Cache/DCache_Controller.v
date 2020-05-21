@@ -78,6 +78,10 @@ module DCache_Controller
     wire cop_nop = cacheop[0] || cacheop == `COP_NOP; // See Cache Op definition
     wire rreq    = bus_en & !refs;
     wire wreq    = bus_en &  refs;
+    
+    // Sync Reset
+    reg ca_rstn;
+    always @(posedge aclk) ca_rstn <= aresetn;
 
     // Cached Channel
     reg             ca_enb;
@@ -173,8 +177,8 @@ module DCache_Controller
     parameter S_UC_WRITE_RESPONSE   = 4'hC;
     parameter S_UC_WRITE_WAITEND    = 4'hD;
     
-    always @(posedge aclk, negedge aresetn) begin
-        if(!aresetn) begin
+    always @(posedge aclk, negedge ca_rstn) begin
+        if(!ca_rstn) begin
             state     <= 0;
             cnt       <= 0;
 
@@ -422,37 +426,45 @@ module DCache_Controller
     end
     
     always @(posedge aclk) begin
-        case (state)
-            S_IDLE: 
-            if(bus_en) begin
-                if(!cop_nop) begin
-                    case (cacheop)
-                        `COP_DIWI: ca_valid[ad_idx] <= `false;
+        if(!ca_rstn) begin
+            for(i = 0; i < `D_lineN; i = i + 1) begin
+                ca_valid[i] <= `false;
+                ca_dirty[i] <= `false;
+            end
+        end
+        else begin
+            case (state)
+                S_IDLE: 
+                if(bus_en) begin
+                    if(!cop_nop) begin
+                        case (cacheop)
+                            `COP_DIWI: ca_valid[ad_idx] <= `false;
 
-                        `COP_DIST: begin
-                            ca_ptag [ad_idx] <= cop_dtag[`DTag_Tag];
-                            ca_valid[ad_idx] <= cop_dtag[`DTag_Vld];
-                            ca_dirty[ad_idx] <= cop_dtag[`DTag_Drt];
+                            `COP_DIST: begin
+                                ca_ptag [ad_idx] <= cop_dtag[`DTag_Tag];
+                                ca_valid[ad_idx] <= cop_dtag[`DTag_Vld];
+                                ca_dirty[ad_idx] <= cop_dtag[`DTag_Drt];
+                            end
+
+                            `COP_DHI,
+                            `COP_DHWI: if(ln_hit) ca_valid[ad_idx] <= `false;
+                        endcase
+                    end
+                    else if(bus_cached) begin
+                        if(wreq && ln_hit) ca_dirty[ad_idx] <= `true;
+                        if(!ln_wb && !ln_hit) begin
+                            ca_ptag [ad_idx] <= bus_addr[`D_addr_ptag];
+                            ca_valid[ad_idx] <= `false;
                         end
-
-                        `COP_DHI,
-                        `COP_DHWI: if(ln_hit) ca_valid[ad_idx] <= `false;
-                    endcase
-                end
-                else if(bus_cached) begin
-                    if(wreq && ln_hit) ca_dirty[ad_idx] <= `true;
-                    if(!ln_wb && !ln_hit) begin
-                        ca_ptag [ad_idx] <= bus_addr[`D_addr_ptag];
-                        ca_valid[ad_idx] <= `false;
                     end
                 end
-            end
-            
-            S_FILLCACHE_END: ca_valid[lk_idx] <= `true;
-            
-            S_WRITEBACK_END:
-            if(bvalid) ca_dirty[lk_idx] <= `false;
-        endcase
+                
+                S_FILLCACHE_END: ca_valid[lk_idx] <= `true;
+                
+                S_WRITEBACK_END:
+                if(bvalid) ca_dirty[lk_idx] <= `false;
+            endcase
+        end
     end
         
     assign bus_rdata = bus_cached ? ca_dout : uc_data;

@@ -99,10 +99,23 @@ module Control
             //     5'b01???: flush <= 5'b10000; // MEM
             //     default:  flush <= 5'b00000;
             // endcase
+
+            // stall[`IF ] <= stall[`ID ];
+            // stall[`ID ] <= streq[`ID ] | streq[`IF ] | (stall[`EX ] &&  ~ex_null);
+            // stall[`EX ] <= streq[`EX ] | streq[`IF ] | (stall[`MEM] && ~mem_null);
+            // stall[`MEM] <= streq[`MEM] |                stall[`WB];
+            // stall[`WB ] <= streq[`WB ];
+
+            // flush[`IF ] <= 0;
+            // flush[`ID ] <= 0;
+            // flush[`EX ] <= stall[`ID ] & ~stall[`EX ];
+            // flush[`MEM] <= stall[`EX ] & ~stall[`MEM];
+            // flush[`WB ] <= stall[`MEM] & ~stall[`WB ];
+
             stall[`IF ] <= stall[`ID ];
-            stall[`ID ] <= streq[`ID ] | streq[`IF ] | (stall[`EX ] &&  ~ex_null);
-            stall[`EX ] <= streq[`EX ] | streq[`IF ] | (stall[`MEM] && ~mem_null);
-            stall[`MEM] <= streq[`MEM] |                stall[`WB];
+            stall[`ID ] <= streq[`ID ] | streq[`IF ] |  stall[`EX ];
+            stall[`EX ] <= streq[`EX ] | streq[`IF ] | (stall[`MEM] && ~ex_null );
+            stall[`MEM] <= streq[`MEM] |               (stall[`WB ] && ~mem_null);
             stall[`WB ] <= streq[`WB ];
 
             flush[`IF ] <= 0;
