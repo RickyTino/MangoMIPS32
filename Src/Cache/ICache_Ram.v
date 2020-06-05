@@ -1,7 +1,7 @@
 /********************MangoMIPS32*******************
 Filename:   ICache_Ram.v
 Author:     RickyTino
-Version:    v1.1.2
+Version:    v1.1.3
 **************************************************/
 `include "../Config.v"
 `include "../Defines.v"

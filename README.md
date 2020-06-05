@@ -2,7 +2,7 @@
 A soft-core microprocessor written in Verilog HDL, compliant with MIPS32 release 1 architecture.
 
 ## Current Version
-MangoMIPS32 v1.1.2  
+MangoMIPS32 v1.1.3  
 This version is proven correct by running Linux 2.6.32 on an SoC in FPGA.
 
 ## CPU Core 
@@ -97,5 +97,6 @@ Exceptions (priority ranking)：
 - ERET
 
 ## Related Work
-MangoMIPS32 is proven correct on this SoC:
+MangoMIPS32 can be embedded into [NSCSCC](http://www.nscscc.org/) environment or these FPGA SoCs:
 https://github.com/hitwh-nscscc/hyposoc_iot
+https://github.com/RickyTino/CatnipSoC
