@@ -1,31 +1,31 @@
 # MangoMIPS32
-A soft-core microprocessor written in Verilog HDL, compliant with MIPS32 release 1 architecture.
+MangoMIPS32 is a soft-core microprocessor written in Verilog HDL. It is compliant to MIPS32 release 1 architecture.
 
 ## Current Version
 MangoMIPS32 v1.1.3  
-This version is proven correct by running Linux 2.6.32 on an SoC in FPGA.
+This version succeded running Linux 2.6.32
 
 ## CPU Core 
-- Supports 100 basic instructions in MIPS32r1 ISA
-- Single-issued 5-stage pipeline microarchitecture
-- Reaching 100MHz on FPGA
-- Temporarily no floating point coprocessors
+- Supports 100 instructions in MIPS32r1 ISA (Listed below)
+- Single-issued 5-stage pipeline structure
+- Speed: 100MHz on -2 level Xilinx XC7A200T FPGA Chip
+- No floating point units
 
 ## Interface and Caches
 - Implemented AMBA-AXI as on-chip bus interface
-- Instruction cache and data cache build with Xilinx Distributed Ram IP Core
+- Instruction cache and data cache build with Xilinx Distributed Ram IP Core 
 - Write-back, write-allocate, direct-mapped caches
 - size-configurable (2KB-128KB)
 
 ## Privilege Resources
 - Implemented 20 coprocessor 0 (CP0) registers
-- Support user mode (could be disabled by configuration)
+- Support user mode (could be disabled with macros)
 - Avoided all CP0 Execution Hazards
 
 ## Address Mapping
-- Fixed-mapping MMU or TLB-based MMU is supported
-- 32-items full-associative translation look-aside buffer (TLB)
-- Support all kind of page sizes except 1KB page
+- Supports both Fixed-mapping MMU and TLB-based MMU
+- 32-items full-associative TLB
+- Support multiple page sizes starting from 4KB
 
 ## Details
 Instructions supported:
@@ -48,13 +48,13 @@ Instructions supported:
 - TEQI/TNEI/TGEI/TGEIU/TLTI/TLTIU
 - TLBP/TLBWI/TLBWR/TLBR
 - CACHE:  
-    I-Index Invalidate  
-    D-Index Writeback Invalidate  
-    I-Index Store Tag  
-    D-Index Store Tag  
-    I-Hit Invalidate  
-    D-Hit Invalidate  
-    D-Hit Writeback Invalidate  
+  - I-Index Invalidate  
+  - D-Index Writeback Invalidate  
+  - I-Index Store Tag  
+  - D-Index Store Tag  
+  - I-Hit Invalidate  
+  - D-Hit Invalidate  
+  - D-Hit Writeback Invalidate  
 
 CP0 Registers：  
 
@@ -97,6 +97,7 @@ Exceptions (priority ranking)：
 - ERET
 
 ## Related Work
-MangoMIPS32 can be embedded into [NSCSCC](http://www.nscscc.org/) environment or these FPGA SoCs:
-https://github.com/hitwh-nscscc/hyposoc_iot
-https://github.com/RickyTino/CatnipSoC
+MangoMIPS32 has an AXI master interface and can fit in these designs:
+- [NSCSCC](http://www.nscscc.org/) Environments
+- [HypoSoC_IoT](https://github.com/hitwh-nscscc/hyposoc_iot)
+- [CatnipSoC](https://github.com/RickyTino/CatnipSoC)
