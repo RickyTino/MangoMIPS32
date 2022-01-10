@@ -3,8 +3,8 @@ Filename:   TLBU.v
 Author:     RickyTino
 Version:    v1.1.3
 **************************************************/
-`include "../Config.v"
-`include "../Defines.v"
+`include "config.v"
+`include "defines.v"
 
 `define  TLB_Idle      2'd0
 `define  TLB_Translate 2'd1

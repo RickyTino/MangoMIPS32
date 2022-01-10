@@ -1,34 +1,55 @@
 # MangoMIPS32
+MangoMIPS32是一个用Verilog HDL编写的软处理器核，兼容MIPS32 release 1架构。
+
 MangoMIPS32 is a soft-core microprocessor written in Verilog HDL. It is compliant to MIPS32 release 1 architecture.
 
-## Current Version
+## 当前版本 Current Version
 MangoMIPS32 v1.1.3  
-This version succeded running Linux 2.6.32
+该版本可运行Linux Kernel 5.6.14  
+This version succeded running Linux Kernel 5.6.14
 
-## CPU Core 
-- Supports 100 instructions in MIPS32r1 ISA (Listed below)
-- Single-issued 5-stage pipeline structure
-- Speed: 100MHz on -2 level Xilinx XC7A200T FPGA Chip
+## 设计方案 Scheme
+- 支持下述100条MIPS32r1指令
+- 单发射顺序执行五级流水架构
+- 参考主频：在Xilinx的XC7A200T-2FBG676上可达到100MHz（NSCSCC环境）
+- 暂无浮点执行单元 
+  
+- Supports 100 MIPS32r1 instructions in ISA (Listed below)
+- Single-issued in-order 5-stage pipeline structure
+- Speed: 100MHz on XC7A200T-2FBG676 (NSCSCC environment)
 - No floating point units
 
-## Interface and Caches
+## 接口与缓存 Interface and Caches
+- 实现AMBA-AXI总线接口
+- 使用Xilinx Distributed RAM IP核构建的直接映射的L1 I-cache和L1 D-cache
+- D-cache写策略：写回、按写分配
+- 大小从2KB-128KB可配置
+  
 - Implemented AMBA-AXI as on-chip bus interface
-- Instruction cache and data cache build with Xilinx Distributed Ram IP Core 
-- Write-back, write-allocate, direct-mapped caches
+- Direct-Mapped L1 I-cache and L1 D-cache build with Xilinx Distributed Ram IP Core 
+- D-cache write strategy: Write-back, write-allocate
 - size-configurable (2KB-128KB)
 
-## Privilege Resources
+## 特权资源 Privilege Resources
+- 实现了20个协处理器0（CP0）寄存器
+- 支持用户模式（可通过宏禁用）
+- 避免了所有CP0相关
+
 - Implemented 20 coprocessor 0 (CP0) registers
 - Support user mode (could be disabled with macros)
 - Avoided all CP0 Execution Hazards
 
-## Address Mapping
+## 地址映射 Address Mapping
+- 支持固定映射模式和页表(TLB)映射的MMU
+- 32项全相连TLB
+- 支持4KB等多种页面大小
+
 - Supports both Fixed-mapping MMU and TLB-based MMU
-- 32-items full-associative TLB
+- 32-entry full-associative TLB
 - Support multiple page sizes starting from 4KB
 
-## Details
-Instructions supported:
+## 细节 Details
+支持的指令 / Instructions supported:
 - SLL/SRL/SRA/SLLV/SRLV/SRAV
 - SYNC/PREF (Decode as NOP)
 - AND/OR/XOR/NOR
@@ -56,7 +77,7 @@ Instructions supported:
   - D-Hit Invalidate  
   - D-Hit Writeback Invalidate  
 
-CP0 Registers：  
+CP0 寄存器 / CP0 Registers：  
 
 |   Name   |Reg#|Sel#|  
 |:---------|:--:|:--:|  
@@ -81,7 +102,7 @@ CP0 Registers：
 | TagHi    | 29 | 0  |
 | ErrorEPC | 30 | 0  |
 
-Exceptions (priority ranking)：
+支持的异常（按优先级排列）：/ Exceptions (prioritized)：
 - Reset
 - Interrupt
 - I-Address Error
@@ -96,7 +117,8 @@ Exceptions (priority ranking)：
 - D-TLB Modified
 - ERET
 
-## Related Work
+## 相关作品 Related Work
+MangoMIPS32对外实现为一个AXI master接口，已适配以下环境：
 MangoMIPS32 has an AXI master interface and can fit in these designs:
 - [NSCSCC](http://www.nscscc.org/) Environments
 - [HypoSoC_IoT](https://github.com/hitwh-nscscc/hyposoc_iot)

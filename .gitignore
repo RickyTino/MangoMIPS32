@@ -1,5 +1,9 @@
-*.o
-*.elf
-*.bin
-*.s
+# VSCode settings directory
+.vscode/
+
+# MacOS system files
+.DS_Store
+*/.DS_Store
+
+# Other ignored files
 *.txt
