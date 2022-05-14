@@ -111,7 +111,7 @@ module Decode
         case (opcode)
             `OP_SPECIAL: begin
                 case (funct)
-                    `SP_SLL: if(rs == 5'b0) begin
+                    `FUNCT_SP_SLL: if(rs == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SLL;
                         r2read    <= `true;
@@ -119,13 +119,13 @@ module Decode
                         ext_imme  <=  sa;
                     end
 
-                    `SP_MOVCI: begin // CP1 instruction
+                    `FUNCT_SP_MOVCI: begin // CP1 instruction
                         instvalid <= `true;
                         exc_cpu   <= !cp0_Status[`CU1];
                         ecpnum    <= `CP1;
                     end
 
-                    `SP_SRL: if(rs == 5'b0) begin
+                    `FUNCT_SP_SRL: if(rs == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SRL;
                         r2read    <= `true;
@@ -133,7 +133,7 @@ module Decode
                         ext_imme  <=  sa;
                     end
 
-                    `SP_SRA: if(rs == 5'b0) begin
+                    `FUNCT_SP_SRA: if(rs == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SRA;
                         r2read    <= `true;
@@ -141,7 +141,7 @@ module Decode
                         ext_imme  <=  sa;
                     end
 
-                    `SP_SLLV: if(sa == 5'b0) begin
+                    `FUNCT_SP_SLLV: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SLL;
                         r1read    <= `true;
@@ -149,7 +149,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SRLV: if(sa == 5'b0) begin
+                    `FUNCT_SP_SRLV: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SRL;
                         r1read    <= `true;
@@ -157,7 +157,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SRAV: if(sa == 5'b0) begin
+                    `FUNCT_SP_SRAV: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SRA;
                         r1read    <= `true;
@@ -165,7 +165,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_JR: if({rt, rd} == 10'b0) begin // Supports JR.HB also
+                    `FUNCT_SP_JR: if({rt, rd} == 10'b0) begin // Supports JR.HB also
                         instvalid <= `true;
                         r1read    <= `true;
                         isbranch  <= `true;
@@ -173,7 +173,7 @@ module Decode
                         br_addr   <= opr1;
                     end
 
-                    `SP_JALR: if(rt == 5'b0) begin  // Supports JALR.HB also
+                    `FUNCT_SP_JALR: if(rt == 5'b0) begin  // Supports JALR.HB also
                         instvalid <= `true;
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
@@ -184,7 +184,7 @@ module Decode
                         br_addr   <= opr1;
                     end
 
-                    `SP_MOVZ: if(sa == 5'b0) begin
+                    `FUNCT_SP_MOVZ: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MOV;
                         r1read    <= `true;
@@ -192,7 +192,7 @@ module Decode
                         wreg      <= (opr2 == `ZeroWord);
                     end
 
-                    `SP_MOVN: if(sa == 5'b0) begin
+                    `FUNCT_SP_MOVN: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MOV;
                         r1read    <= `true;
@@ -200,75 +200,75 @@ module Decode
                         wreg      <= (opr2 != `ZeroWord);
                     end
 
-                    `SP_SYSCALL: begin
+                    `FUNCT_SP_SYSCALL: begin
                         instvalid <= `true;
                         exc_sc    <= `true;
                     end
 
-                    `SP_BREAK: begin
+                    `FUNCT_SP_BREAK: begin
                         instvalid <= `true;
                         exc_bp    <= `true;
                     end
 
                     // SYNC temporarily decode as nop
-                    `SP_SYNC: if({rs, rt, rd} == 15'b0) begin
+                    `FUNCT_SP_SYNC: if({rs, rt, rd} == 15'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_NOP;
                     end
 
-                    `SP_MFHI: if({rs, rt, sa} == 15'b0) begin
+                    `FUNCT_SP_MFHI: if({rs, rt, sa} == 15'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MFHI;
                         wreg      <= `true;
                     end
 
-                    `SP_MTHI: if({rt, rd, sa} == 15'b0) begin
+                    `FUNCT_SP_MTHI: if({rt, rd, sa} == 15'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MTHI;
                         r1read    <= `true;
                     end
 
-                    `SP_MFLO: if({rs, rt, sa} == 15'b0) begin
+                    `FUNCT_SP_MFLO: if({rs, rt, sa} == 15'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MFLO;
                         wreg      <= `true;
                     end
 
-                    `SP_MTLO: if({rt, rd, sa} == 15'b0) begin
+                    `FUNCT_SP_MTLO: if({rt, rd, sa} == 15'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MTLO;
                         r1read    <= `true;
                     end
 
-                    `SP_MULT: if({rd, sa} == 10'b0) begin
+                    `FUNCT_SP_MULT: if({rd, sa} == 10'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MULT;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_MULTU: if({rd, sa} == 10'b0) begin
+                    `FUNCT_SP_MULTU: if({rd, sa} == 10'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_MULTU;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_DIV: if({rd, sa} == 10'b0) begin
+                    `FUNCT_SP_DIV: if({rd, sa} == 10'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_DIV;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_DIVU: if({rd, sa} == 10'b0) begin
+                    `FUNCT_SP_DIVU: if({rd, sa} == 10'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_DIVU;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_ADD: if(sa == 5'b0) begin
+                    `FUNCT_SP_ADD: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_ADD;
                         r1read    <= `true;
@@ -276,7 +276,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_ADDU: if(sa == 5'b0) begin
+                    `FUNCT_SP_ADDU: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_ADDU;
                         r1read    <= `true;
@@ -284,7 +284,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SUB: if(sa == 5'b0) begin
+                    `FUNCT_SP_SUB: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SUB;
                         r1read    <= `true;
@@ -292,7 +292,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SUBU: if(sa == 5'b0) begin
+                    `FUNCT_SP_SUBU: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SUBU;
                         r1read    <= `true;
@@ -300,7 +300,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_AND: if(sa == 5'b0) begin
+                    `FUNCT_SP_AND: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_AND;
                         r1read    <= `true;
@@ -308,7 +308,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_OR: if(sa == 5'b0) begin
+                    `FUNCT_SP_OR: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_OR;
                         r1read    <= `true;
@@ -316,7 +316,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_XOR: if(sa == 5'b0) begin
+                    `FUNCT_SP_XOR: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_XOR;
                         r1read    <= `true;
@@ -324,7 +324,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_NOR: if(sa == 5'b0) begin
+                    `FUNCT_SP_NOR: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_NOR;
                         r1read    <= `true;
@@ -332,7 +332,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SLT: if(sa == 5'b0) begin
+                    `FUNCT_SP_SLT: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SLT;
                         r1read    <= `true;
@@ -340,7 +340,7 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_SLTU: if(sa == 5'b0) begin
+                    `FUNCT_SP_SLTU: if(sa == 5'b0) begin
                         instvalid <= `true;
                         aluop     <= `ALU_SLTU;
                         r1read    <= `true;
@@ -348,42 +348,42 @@ module Decode
                         wreg      <= `true;
                     end
 
-                    `SP_TGE: begin
+                    `FUNCT_SP_TGE: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TGE;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_TGEU: begin
+                    `FUNCT_SP_TGEU: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TGEU;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_TLT: begin
+                    `FUNCT_SP_TLT: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TLT;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_TLTU: begin
+                    `FUNCT_SP_TLTU: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TLTU;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_TEQ: begin
+                    `FUNCT_SP_TEQ: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TEQ;
                         r1read    <= `true;
                         r2read    <= `true;
                     end
 
-                    `SP_TNE: begin
+                    `FUNCT_SP_TNE: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TNE;
                         r1read    <= `true;
@@ -394,7 +394,7 @@ module Decode
 
             `OP_REGIMM: begin
                 case (rt)
-                    `RI_BLTZ: begin
+                    `RT_REGIMM_BLTZ: begin
                         instvalid <= `true;
                         r1read    <= `true;
                         isbranch  <= `true;
@@ -402,7 +402,7 @@ module Decode
                         br_addr   <= br_target;
                     end
 
-                    `RI_BGEZ: begin
+                    `RT_REGIMM_BGEZ: begin
                         instvalid <= `true;
                         r1read    <= `true;
                         isbranch  <= `true;
@@ -410,7 +410,7 @@ module Decode
                         br_addr   <= br_target;
                     end
 
-                    `RI_BLTZL: begin
+                    `RT_REGIMM_BLTZL: begin
                         instvalid <= `true;
                         r1read    <= `true;
                         isbranch  <= `true;
@@ -419,7 +419,7 @@ module Decode
                         clrslot <= !opr1[31];
                     end
 
-                    `RI_BGEZL: begin
+                    `RT_REGIMM_BGEZL: begin
                         instvalid <= `true;
                         r1read    <= `true;
                         isbranch  <= `true;
@@ -428,49 +428,49 @@ module Decode
                         clrslot <= opr1[31];
                     end
 
-                    `RI_TGEI: begin
+                    `RT_REGIMM_TGEI: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TGE;
                         r1read    <= `true;
                         ext_imme  <=  sign_ext;
                     end
 
-                    `RI_TGEIU: begin
+                    `RT_REGIMM_TGEIU: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TGEU;
                         r1read    <= `true;
                         ext_imme  <=  sign_ext;
                     end
                     
-                    `RI_TLTI: begin
+                    `RT_REGIMM_TLTI: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TLT;
                         r1read    <= `true;
                         ext_imme  <=  sign_ext;
                     end
                     
-                    `RI_TLTIU: begin
+                    `RT_REGIMM_TLTIU: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TLTU;
                         r1read    <= `true;
                         ext_imme  <=  sign_ext;
                     end
                     
-                    `RI_TEQI: begin
+                    `RT_REGIMM_TEQI: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TEQ;
                         r1read    <= `true;
                         ext_imme  <=  sign_ext;
                     end
                     
-                    `RI_TNEI: begin
+                    `RT_REGIMM_TNEI: begin
                         instvalid <= `true;
                         aluop     <= `ALU_TNE;
                         r1read    <= `true;
                         ext_imme  <=  sign_ext;
                     end
 
-                    `RI_BLTZAL: begin
+                    `RT_REGIMM_BLTZAL: begin
                         instvalid <= `true;
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
@@ -481,7 +481,7 @@ module Decode
                         br_addr   <= br_target;
                     end
 
-                    `RI_BGEZAL: begin
+                    `RT_REGIMM_BGEZAL: begin
                         instvalid <= `true;
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
@@ -492,7 +492,7 @@ module Decode
                         br_addr   <= br_target;
                     end
 
-                    `RI_BLTZALL: begin
+                    `RT_REGIMM_BLTZALL: begin
                         instvalid <= `true;
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
@@ -504,7 +504,7 @@ module Decode
                         clrslot <= !opr1[31];
                     end
 
-                    `RI_BGEZALL: begin
+                    `RT_REGIMM_BGEZALL: begin
                         instvalid <= `true;
                         aluop     <= `ALU_BAL;
                         r1read    <= `true;
@@ -647,48 +647,48 @@ module Decode
                 end
                 else begin
                     case (rs)
-                        `C0_MFC0: begin
+                        `RS_COP0_MFC0: begin
                             instvalid <= `true;
                             aluop     <= `ALU_MFC0;
                             wreg      <= `true;
                             wraddr    <= rt;
                         end
 
-                        `C0_MTC0: begin
+                        `RS_COP0_MTC0: begin
                             instvalid <= `true;
                             aluop     <= `ALU_MTC0;
                             r2read    <= `true;
                         end
 
-                        `C0_CO: begin
+                        `RS_COP0_CO: begin
                             case (funct)
-                                `C0F_TLBR: begin
+                                `FUNCT_COP0_TLBR: begin
                                     instvalid <= `true;
                                     aluop     <= `ALU_TLBR;
                                 end
 
-                                `C0F_TLBWI: begin
+                                `FUNCT_COP0_TLBWI: begin
                                     instvalid <= `true;
                                     aluop     <= `ALU_TLBWI;
                                 end
 
-                                `C0F_TLBWR: begin
+                                `FUNCT_COP0_TLBWR: begin
                                     instvalid <= `true;
                                     aluop     <= `ALU_TLBWR;
                                 end
 
-                                `C0F_TLBP: begin
+                                `FUNCT_COP0_TLBP: begin
                                     instvalid <= `true;
                                     aluop     <= `ALU_TLBP;
                                 end
 
-                                `C0F_ERET: begin
+                                `FUNCT_COP0_ERET: begin
                                     instvalid <= `true;
                                     aluop     <= `ALU_ERET;
                                     exc_eret  <= `true;
                                 end
 
-                                `C0F_WAIT: begin
+                                `FUNCT_COP0_WAIT: begin
                                     instvalid <= `true;
                                     aluop     <= `ALU_WAIT;
                                 end
@@ -754,21 +754,21 @@ module Decode
             `OP_SPECIAL2: begin
                 if(sa == 5'b0) begin
                     case (funct)
-                        `SP2_MADD: if(rd == 5'b0) begin
+                        `FUNCT_SP2_MADD: if(rd == 5'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MADD;
                             r1read    <= `true;
                             r2read    <= `true;
                         end
 
-                        `SP2_MADDU: if(rd == 5'b0) begin
+                        `FUNCT_SP2_MADDU: if(rd == 5'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MADDU;
                             r1read    <= `true;
                             r2read    <= `true;
                         end
 
-                        `SP2_MUL: begin
+                        `FUNCT_SP2_MUL: begin
                             instvalid <= `true;
                             aluop     <= `ALU_MUL;
                             r1read    <= `true;
@@ -776,28 +776,28 @@ module Decode
                             wreg      <= `true;
                         end
 
-                        `SP2_MSUB: if(rd == 5'b0) begin
+                        `FUNCT_SP2_MSUB: if(rd == 5'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MSUB;
                             r1read    <= `true;
                             r2read    <= `true;
                         end
 
-                        `SP2_MSUBU: if(rd == 5'b0) begin
+                        `FUNCT_SP2_MSUBU: if(rd == 5'b0) begin
                             instvalid <= `true;
                             aluop     <= `ALU_MSUBU;
                             r1read    <= `true;
                             r2read    <= `true;
                         end
 
-                        `SP2_CLZ: begin
+                        `FUNCT_SP2_CLZ: begin
                             instvalid <= `true;
                             aluop     <= `ALU_CLZ;
                             r1read    <= `true;
                             wreg      <= `true;
                         end
 
-                        `SP2_CLO: begin
+                        `FUNCT_SP2_CLO: begin
                             instvalid <= `true;
                             aluop     <= `ALU_CLO;
                             r1read    <= `true;
@@ -904,37 +904,37 @@ module Decode
                 aluop     <= `ALU_CACHE;
                 r1read    <= `true;
                 case (rt)
-                    `CA_III: begin
+                    `RT_CACHE_III: begin
                         instvalid <= `true;
                         cacheop   <= `COP_III;
                     end
 
-                    `CA_DIWI: begin
+                    `RT_CACHE_DIWI: begin
                         instvalid <= `true;
                         cacheop   <= `COP_DIWI;
                     end
 
-                    `CA_IIST: begin
+                    `RT_CACHE_IIST: begin
                         instvalid <= `true;
                         cacheop   <= `COP_IIST;
                     end
                     
-                    `CA_DIST: begin
+                    `RT_CACHE_DIST: begin
                         instvalid <= `true;
                         cacheop   <= `COP_DIST;
                     end
                     
-                    `CA_IHI: begin
+                    `RT_CACHE_IHI: begin
                         instvalid <= `true;
                         cacheop   <= `COP_IHI;
                     end
                     
-                    `CA_DHI: begin
+                    `RT_CACHE_DHI: begin
                         instvalid <= `true;
                         cacheop   <= `COP_DHI;
                     end
                     
-                    `CA_DHWI: begin
+                    `RT_CACHE_DHWI: begin
                         instvalid <= `true;
                         cacheop   <= `COP_DHWI;
                     end
