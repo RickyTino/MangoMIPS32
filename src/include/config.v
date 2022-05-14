@@ -26,7 +26,11 @@ Version:    v1.1.3
 // Note that coherency problems might occur under other circumstances. It is strongly
 // NOT recommended to set this option when applying this CPU to any use other than
 // the NSCSCC tests.
- `define _IF_Force_Cached
+ `define IF_Force_Cached
+
+ // Define "CpU_as_RI" to make CPU report RI exception when CpU exception occurs.
+ // This setting is necessary to pass NSCSCC-2018/2019 tests.
+ `define CpU_as_RI
 
 //------------------------MMU & Cache Options------------------------
 // Define "Fixed_Mapping_MMU" to implement a Fixed Mapping MMU.

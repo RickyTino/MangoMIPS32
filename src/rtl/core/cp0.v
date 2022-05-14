@@ -352,14 +352,19 @@ module CP0
                         Context_BadVPN2 <= exc_baddr[`VPN2];
                         EntryHi_VPN2    <= exc_baddr[`VPN2];
                     end
-
-                    `ExcT_CpU: Cause_CE <= exc_cpnum;
+                    `ifndef CpU_as_RI
+                        `ExcT_CpU: Cause_CE <= exc_cpnum;
+                    `endif
                 endcase
 
                 // ExcCode
                 case (exc_type)
                     `ExcT_Intr: Cause_ExcCode <= `ExcC_Intr;
-                    `ExcT_CpU:  Cause_ExcCode <= `ExcC_CpU;
+                    `ifdef CpU_as_RI
+                        `ExcT_CpU:  Cause_ExcCode <= `ExcC_RI;
+                    `else
+                        `ExcT_CpU:  Cause_ExcCode <= `ExcC_CpU;
+                    `endif
                     `ExcT_RI:   Cause_ExcCode <= `ExcC_RI;
                     `ExcT_Ov:   Cause_ExcCode <= `ExcC_Ov;
                     `ExcT_Trap: Cause_ExcCode <= `ExcC_Tr;
